@@ -1,0 +1,43 @@
+[
+  {
+    "id": "classic-white-tee",
+    "productId": "classic-white-tee",
+    "title": "Classic White Tee",
+    "price": 2075,
+    "size": "M",
+    "color": "white",
+    "quantity": 1,
+    "imageUrl": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "slim-fit-jeans",
+    "productId": "slim-fit-jeans",
+    "title": "Slim Fit Jeans",
+    "price": 4980,
+    "size": "8",
+    "color": "denim",
+    "quantity": 1,
+    "imageUrl": "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "leather-ankle-boots",
+    "productId": "running-shoes",
+    "title": "Leather Ankle Boots",
+    "price": 4150,
+    "size": "9",
+    "color": "tan",
+    "quantity": 1,
+    "imageUrl": "https://images.unsplash.com/photo-1475180098004-ca77a66827be?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "heritage-backpack",
+    "productId": "casual-backpack",
+    "title": "Heritage Backpack",
+    "price": 4150,
+    "size": "OS",
+    "color": "navy",
+    "quantity": 1,
+    "imageUrl": "https://images.unsplash.com/photo-1511389026070-a14ae610a1be?auto=format&fit=crop&w=400&q=80",
+    "savedForLater": true
+  }
+]

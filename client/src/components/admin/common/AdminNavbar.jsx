@@ -9,14 +9,16 @@ const adminLinks = [
   { label: "Reports", to: "/admin/reports" },
 ];
 
-const adminAction = { label: "Log out", to: "/admin/logout" };
+const adminActions = [
+  { label: "Log out", to: "/admin/logout", variant: "button" },
+];
 
 const AdminNavbar = () => (
   <Navbar
     brand="Ciyatake Admin"
     brandHref="/admin/dashboard"
     links={adminLinks}
-    action={adminAction}
+    actions={adminActions}
   />
 );
 
