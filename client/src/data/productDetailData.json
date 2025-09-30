@@ -1,0 +1,345 @@
+{
+  "colorHexMap": {
+    "white": "#fafafa",
+    "black": "#171717",
+    "sage": "#8da792",
+    "denim": "#1e3a8a",
+    "blue": "#1d4ed8",
+    "brown": "#92400e",
+    "tan": "#d6a169",
+    "beige": "#f5f5dc",
+    "navy": "#1e3a8a",
+    "sand": "#e7caa4",
+    "charcoal": "#1f2937"
+  },
+  "sharedBenefits": [
+    {
+      "title": "Free shipping",
+      "description": "Complimentary delivery and easy 30-day returns on all orders."
+    },
+    {
+      "title": "Secure checkout",
+      "description": "Protected payments with industry-leading TLS encryption."
+    },
+    {
+      "title": "Sustainable sourcing",
+      "description": "Materials sourced from certified and audited partners."
+    }
+  ],
+  "media": {
+    "classic-white-tee": [
+      {
+        "src": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=300&q=60",
+        "alt": "Classic white crew neck tee on hanger",
+        "tag": "Bestseller"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=60",
+        "alt": "Fabric texture close-up of white cotton"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=60",
+        "alt": "Model wearing white tee with denim"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=300&q=60",
+        "alt": "Folded white tees on table"
+      }
+    ],
+    "slim-fit-jeans": [
+      {
+        "src": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=60",
+        "alt": "Dark denim jeans folded on table",
+        "tag": "New"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=300&q=60",
+        "alt": "Denim texture close-up"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1531062940523-9c5c4d5e8f73?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1531062940523-9c5c4d5e8f73?auto=format&fit=crop&w=300&q=60",
+        "alt": "Model wearing slim fit jeans"
+      }
+    ],
+    "leather-belt": [
+      {
+        "src": "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=300&q=60",
+        "alt": "Brown leather belt rolled on table",
+        "tag": "Handmade"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=60",
+        "alt": "Leather texture close-up"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1542038784456-17b0d5be4c2b?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1542038784456-17b0d5be4c2b?auto=format&fit=crop&w=300&q=60",
+        "alt": "Craftsperson working on leather belt"
+      }
+    ],
+    "summer-dress": [
+      {
+        "src": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=60",
+        "alt": "Flowing summer dress on mannequin",
+        "tag": "Limited"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1521572163475-b0af67dd57c0?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1521572163475-b0af67dd57c0?auto=format&fit=crop&w=300&q=60",
+        "alt": "Soft fabric detail of dress"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=60",
+        "alt": "Model wearing summer dress"
+      }
+    ],
+    "running-shoes": [
+      {
+        "src": "https://images.unsplash.com/photo-1528701800489-20be3c2ea4f1?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1528701800489-20be3c2ea4f1?auto=format&fit=crop&w=300&q=60",
+        "alt": "Black running shoes on wooden surface",
+        "tag": "Performance"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1517964106626-460c4a8131a0?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1517964106626-460c4a8131a0?auto=format&fit=crop&w=300&q=60",
+        "alt": "Runner tying shoe laces"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=300&q=60",
+        "alt": "Running shoes in motion"
+      }
+    ],
+    "casual-backpack": [
+      {
+        "src": "https://images.unsplash.com/photo-1511389026070-a14ae610a1be?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1511389026070-a14ae610a1be?auto=format&fit=crop&w=300&q=60",
+        "alt": "Navy backpack on stool",
+        "tag": "Carry-on"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=300&q=60",
+        "alt": "Backpack interior compartments"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80",
+        "thumbnail": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=300&q=60",
+        "alt": "Person wearing backpack"
+      }
+    ]
+  },
+  "overrides": {
+    "classic-white-tee": {
+      "summary": "An elevated take on an everyday essential. Premium organic cotton delivers a tailored fit and buttery-soft handfeel from the first wear.",
+      "rating": 4.7,
+      "reviewCount": 862,
+      "discount": 15,
+      "sizes": ["xs", "s", "m", "l", "xl"],
+      "colors": ["white", "black", "sage"],
+      "details": {
+        "description": "Designed for year-round comfort, the Classic Tee retains structure while staying breathable. Reinforced seams and taped shoulders ensure it keeps its shape wash after wash.",
+        "features": [
+          "100% GOTS-certified organic cotton",
+          "Tailored athletic fit",
+          "Pre-shrunk and garment dyed",
+          "Machine washable"
+        ]
+      },
+      "specifications": [
+        { "label": "Material", "value": "6oz organic cotton" },
+        { "label": "Fit", "value": "Tailored crew" },
+        { "label": "Care", "value": "Machine wash cold, tumble dry low" },
+        { "label": "Origin", "value": "Made in Portugal" }
+      ],
+      "reviewHighlights": [
+        {
+          "title": "Perfect everyday tee",
+          "description": "Customers love the premium fabric feel and versatile fit."
+        },
+        {
+          "title": "Holds up after washing",
+          "description": "Maintains structure and color after multiple laundry cycles."
+        }
+      ]
+    },
+    "slim-fit-jeans": {
+      "summary": "A modern slim fit cut from stretch selvedge denim that moves with you while retaining a clean silhouette.",
+      "rating": 4.6,
+      "reviewCount": 542,
+      "discount": 10,
+      "sizes": ["s", "m", "l"],
+      "colors": ["denim", "black"],
+      "details": {
+        "description": "Our signature denim is woven in Okayama, Japan and finished with a soft rinse for day-one comfort.",
+        "features": [
+          "12oz stretch selvedge with 2% elastane",
+          "Reinforced pockets and waistband",
+          "Chain-stitched hems",
+          "Antique copper hardware"
+        ]
+      },
+      "specifications": [
+        { "label": "Material", "value": "98% cotton, 2% elastane" },
+        { "label": "Fit", "value": "Mid-rise slim" },
+        { "label": "Care", "value": "Cold wash inside out, hang dry" },
+        { "label": "Origin", "value": "Made in Japan" }
+      ],
+      "reviewHighlights": [
+        {
+          "title": "Tailored without being tight",
+          "description": "Stretch denim keeps things comfortable on long days."
+        },
+        {
+          "title": "Denim with character",
+          "description": "Aged hardware and rich indigo fade beautifully over time."
+        }
+      ]
+    },
+    "leather-belt": {
+      "summary": "Full-grain vegetable-tanned leather finished by hand for a belt that gains character with every wear.",
+      "rating": 4.8,
+      "reviewCount": 312,
+      "sizes": ["s", "m", "l"],
+      "colors": ["brown", "black", "tan"],
+      "details": {
+        "description": "Crafted in small batches by artisans in Tuscany using a traditional pit-tanning process.",
+        "features": [
+          "Full-grain Italian leather",
+          "Brushed nickel buckle",
+          "Hand-finished edges",
+          "Five-hole adjustability"
+        ]
+      },
+      "specifications": [
+        { "label": "Material", "value": "Vegetable-tanned leather" },
+        { "label": "Width", "value": "1.25 inches" },
+        {
+          "label": "Care",
+          "value": "Condition with leather balm twice a year"
+        },
+        { "label": "Origin", "value": "Made in Italy" }
+      ],
+      "reviewHighlights": [
+        {
+          "title": "Built to last",
+          "description": "Leather softens without stretching or cracking."
+        },
+        {
+          "title": "Elevates every outfit",
+          "description": "Pairs effortlessly with denim or tailoring."
+        }
+      ]
+    },
+    "summer-dress": {
+      "summary": "A breezy midi dress cut in sustainable eucalyptus silk with a movable waist tie.",
+      "rating": 4.9,
+      "reviewCount": 643,
+      "discount": 20,
+      "sizes": ["s", "m", "l"],
+      "colors": ["beige", "sage", "sand"],
+      "details": {
+        "description": "Lightweight eucalyptus silk drapes effortlessly while staying cool in warm weather.",
+        "features": [
+          "Adjustable straps",
+          "Removable waist tie",
+          "Lined bodice",
+          "Hidden side pockets"
+        ]
+      },
+      "specifications": [
+        { "label": "Material", "value": "Eucalyptus silk" },
+        { "label": "Length", "value": "46 inches" },
+        { "label": "Care", "value": "Dry clean or hand wash cold" },
+        { "label": "Origin", "value": "Made in Spain" }
+      ],
+      "reviewHighlights": [
+        {
+          "title": "Travel-friendly",
+          "description": "Resists wrinkles and packs down easily."
+        },
+        {
+          "title": "Compliments guaranteed",
+          "description": "Customers rave about the flattering fit."
+        }
+      ]
+    },
+    "running-shoes": {
+      "summary": "Responsive cushioning engineered for daily training with a lightweight knit upper.",
+      "rating": 4.5,
+      "reviewCount": 1204,
+      "sizes": ["m", "l", "xl"],
+      "colors": ["black", "white", "charcoal"],
+      "details": {
+        "description": "Dual-density foam absorbs impact while the carbon-blend plate propels you forward.",
+        "features": [
+          "Recycled knit upper",
+          "Carbon-infused propulsion plate",
+          "Removable ortholite insole",
+          "360° reflective accents"
+        ]
+      },
+      "specifications": [
+        { "label": "Drop", "value": "8mm" },
+        { "label": "Weight", "value": "8.7oz" },
+        { "label": "Support", "value": "Neutral" },
+        { "label": "Care", "value": "Hand wash, air dry" }
+      ],
+      "reviewHighlights": [
+        {
+          "title": "Ready for long miles",
+          "description": "Cushioning holds up on marathon training weeks."
+        },
+        {
+          "title": "Locked-in fit",
+          "description": "Midfoot band keeps your heel planted without pressure."
+        }
+      ]
+    },
+    "casual-backpack": {
+      "summary": "Streamlined daypack with padded laptop protection and thoughtful organization.",
+      "rating": 4.6,
+      "reviewCount": 489,
+      "discount": 5,
+      "sizes": ["all"],
+      "colors": ["navy", "black", "sand"],
+      "details": {
+        "description": "Weatherproof recycled canvas keeps gear dry while the structured frame holds its shape.",
+        "features": [
+          "16L capacity with lay-flat access",
+          "Dedicated 16\" laptop sleeve",
+          "Hidden passport pocket",
+          "Luggage pass-through"
+        ]
+      },
+      "specifications": [
+        { "label": "Volume", "value": "16 liters" },
+        { "label": "Weight", "value": "1.8 lbs" },
+        { "label": "Material", "value": "600D recycled canvas" },
+        { "label": "Origin", "value": "Made in Vietnam" }
+      ],
+      "reviewHighlights": [
+        {
+          "title": "Organization upgraded",
+          "description": "Pockets for everything without feeling fussy."
+        },
+        {
+          "title": "Commute-proof",
+          "description": "Comfortable straps and weatherproof fabric."
+        }
+      ]
+    }
+  }
+}

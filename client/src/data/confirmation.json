@@ -1,0 +1,68 @@
+{
+  "order": {
+    "id": "CYA-2406-8352",
+    "placedOn": "April 18, 2024 at 10:24 AM",
+    "deliveryWindow": "April 22 - April 24, 2024",
+    "transactionId": "TXN83F24P6",
+    "paymentMethod": "UPI •••• 3821",
+    "items": [
+      {
+        "id": "classic-white-tee",
+        "title": "Classic White T-Shirt",
+        "size": "M",
+        "price": 2075,
+        "quantity": 1,
+        "imageUrl": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=400&q=80"
+      },
+      {
+        "id": "running-shoes",
+        "title": "Comfort Runner Sneakers",
+        "size": "9",
+        "price": 4150,
+        "quantity": 1,
+        "imageUrl": "https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111?auto=format&fit=crop&w=400&q=80"
+      }
+    ],
+    "totals": {
+      "subtotal": 6225,
+      "shipping": 0,
+      "shippingLabel": "Free",
+      "tax": 375
+    }
+  },
+  "customer": {
+    "name": "Aditi Sharma",
+    "email": "aditi.sharma@example.com",
+    "phone": "+91 98765 43210"
+  },
+  "shipping": {
+    "addressLines": [
+      "Flat 9B, Green Heights",
+      "12th Main, Indiranagar",
+      "Bengaluru, Karnataka - 560038"
+    ],
+    "instructions": "Gate code 9281. Leave with security if not available."
+  },
+  "support": {
+    "email": "support@ciyatake.com",
+    "phone": "+91 1800-123-456",
+    "hours": "Monday to Saturday, 10am - 6pm IST"
+  },
+  "nextSteps": [
+    {
+      "title": "Order confirmed",
+      "description": "We've received your payment and started preparing your package.",
+      "status": "complete"
+    },
+    {
+      "title": "Packed and ready",
+      "description": "Our warehouse team is carefully packing your items.",
+      "status": "current"
+    },
+    {
+      "title": "Out for delivery",
+      "description": "You'll get a notification once the courier picks it up.",
+      "status": "upcoming"
+    }
+  ]
+}
