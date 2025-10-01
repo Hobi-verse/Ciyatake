@@ -19,45 +19,58 @@ const createIconRenderer =
   ({ className = "" } = {}) =>
     <img src={src} alt="" className={className} aria-hidden="true" />;
 
-const userActions = [
-  {
-    label: "Wishlist",
-    to: "/wishlist",
-    icon: createIconRenderer(heartIcon),
-  },
-  { label: "Cart", to: "/cart", icon: createIconRenderer(bagIcon) },
-  {
-    label: "Account",
-    to: "/account",
-    icon: createIconRenderer(userIcon),
-  },
-];
+const UserNavbar = ({ searchTerm = "", onSearchChange, onSearchSubmit, isLoggedIn = false }) => {
+  const actions = [
+    {
+      label: "Wishlist",
+      to: "/wishlist",
+      icon: createIconRenderer(heartIcon),
+    },
+    { 
+      label: "Cart", 
+      to: "/cart", 
+      icon: createIconRenderer(bagIcon) 
+    },
 
-const UserNavbar = ({ searchTerm = "", onSearchChange, onSearchSubmit }) => (
-  <Navbar
-    brand={
-      <>
-        <img
-          src="/ciyatakeLogo.png"
-          alt="Ciyatake"
-          className="h-8 w-auto md:h-10"
-        />
-        <span className="text-base font-semibold tracking-tight text-emerald-50 md:text-lg">
-          Ciyatake
-        </span>
-      </>
-    }
-    brandHref="/"
-    links={userLinks}
-    search={{
-      placeholder: "Search products...",
-      value: searchTerm,
-      onChange: (value) => onSearchChange?.(value),
-      onSubmit: (value) => onSearchSubmit?.(value),
-      icon: createIconRenderer(searchIcon),
-    }}
-    actions={userActions}
-  />
-);
+    isLoggedIn
+      ? {
+          label: "Account",
+          to: "/account",
+          icon: createIconRenderer(userIcon),
+        }
+      : {
+          label: "Login",
+          to: "/login",
+          variant: "button",
+        },
+  ];
+
+  return (
+    <Navbar
+      brand={
+        <>
+          <img
+            src="/ciyatakeLogo.png"
+            alt="Ciyatake"
+            className="h-8 w-auto md:h-10"
+          />
+          <span className="text-base font-semibold tracking-tight text-emerald-50 md:text-lg">
+            Ciyatake
+          </span>
+        </>
+      }
+      brandHref="/"
+      links={userLinks}
+      search={{
+        placeholder: "Search products...",
+        value: searchTerm,
+        onChange: (value) => onSearchChange?.(value),
+        onSubmit: (value) => onSearchSubmit?.(value),
+        icon: createIconRenderer(searchIcon),
+      }}
+      actions={actions}
+    />
+  );
+};
 
 export default UserNavbar;

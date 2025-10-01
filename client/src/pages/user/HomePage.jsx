@@ -36,7 +36,7 @@ const colorOptions = [
   { label: "Navy", value: "navy", hex: "#1e3a8a" },
 ];
 
-const HomePage = () => {
+const HomePage = ({ isLoggedIn }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSize, setSelectedSize] = useState("all");
@@ -109,6 +109,7 @@ const HomePage = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onSearchSubmit={setSearchTerm}
+        isLoggedIn={isLoggedIn}
       />
 
       <main className="mx-auto max-w-6xl space-y-12 px-4 py-12">
