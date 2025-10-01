@@ -9,6 +9,13 @@ import ConfirmationPage from "./pages/user/ConfirmationPage.jsx";
 import Login from "./pages/auth/login.jsx";
 import Register from "./pages/auth/Register.jsx";
 import ForgetPass from "./pages/auth/ForgetPass.jsx";
+import AdminDashboardLayout from "./components/admin/common/AdminDashboardLayout.jsx";
+import Dashboard from "./components/admin/dashboard.jsx";
+import Orders from "./components/admin/orders/Orders.jsx";
+import Products from "./components/admin/products/Products.jsx";
+import Customers from "./components/admin/customers/Customers.jsx";
+import Reports from "./components/admin/reports/Reports.jsx";
+import Users from "./components/admin/users/Users.jsx";
 
 function App() {
   return (
@@ -20,6 +27,18 @@ function App() {
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/confirmation" element={<ConfirmationPage />} />
+
+        
+        <Route path="/admin" element={<AdminDashboardLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="orders" element={<Orders />} />
+          <Route path="products" element={<Products />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="users" element={<Users />} />
+          <Route path="*" element={<Navigate to="dashboard" replace />} />
+        </Route>
         <Route path="/login" element={<Login/>} />
         <Route path="/signup" element={<Register/>} />
         <Route path="/forget-password" element={<ForgetPass/>} />
