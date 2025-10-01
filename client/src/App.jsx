@@ -6,6 +6,9 @@ import CartPage from "./pages/user/CartPage.jsx";
 import WishlistPage from "./pages/user/WishlistPage.jsx";
 import CheckoutPage from "./pages/user/CheckoutPage.jsx";
 import ConfirmationPage from "./pages/user/ConfirmationPage.jsx";
+import Login from "./pages/auth/login.jsx";
+import Register from "./pages/auth/Register.jsx";
+import ForgetPass from "./pages/auth/ForgetPass.jsx";
 
 function App() {
   return (
@@ -17,6 +20,9 @@ function App() {
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/confirmation" element={<ConfirmationPage />} />
+        <Route path="/login" element={<Login/>} />
+        <Route path="/signup" element={<Register/>} />
+        <Route path="/forget-password" element={<ForgetPass/>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
