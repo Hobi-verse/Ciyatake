@@ -78,7 +78,6 @@ const AuthForm = ({
             <Button
               type="submit"
               className="w-full bg-green-600 text-white"
-              onClick = {onSubmit}
             >
               {buttonLabel}
             </Button>
