@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserNavbar from "../../components/user/common/UserNavbar.jsx";
 import Breadcrumbs from "../../components/common/Breadcrumbs.jsx";
@@ -6,7 +6,7 @@ import CheckoutProgress from "../../components/user/checkout/CheckoutProgress.js
 import CheckoutSection from "../../components/user/checkout/CheckoutSection.jsx";
 import CheckoutField from "../../components/user/checkout/CheckoutField.jsx";
 import CheckoutOrderSummary from "../../components/user/checkout/CheckoutOrderSummary.jsx";
-import checkoutData from "../../data/checkout.json";
+import { fetchCheckoutSummary, placeOrder } from "../../api/orders.js";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -22,15 +22,53 @@ const CheckoutPage = () => {
     []
   );
 
-  const { steps, order } = checkoutData;
+  const [steps, setSteps] = useState([]);
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [orderError, setOrderError] = useState(null);
 
-  const handlePlaceOrder = (summaryOrder = order) => {
-    if (isPlacingOrder) {
+  const loadCheckoutSummary = useCallback(async ({ signal } = {}) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetchCheckoutSummary({ signal });
+      if (signal?.aborted) {
+        return;
+      }
+
+      const loadedSteps = Array.isArray(response?.steps) ? response.steps : [];
+      const loadedOrder = response?.order ?? null;
+
+      setSteps(loadedSteps);
+      setOrder(loadedOrder);
+    } catch (apiError) {
+      if (!signal?.aborted) {
+        setError(apiError);
+      }
+    } finally {
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadCheckoutSummary({ signal: controller.signal });
+
+    return () => controller.abort();
+  }, [loadCheckoutSummary]);
+
+  const handlePlaceOrder = async (summaryOrder = order) => {
+    if (isPlacingOrder || !summaryOrder) {
       return;
     }
 
     setIsPlacingOrder(true);
+    setOrderError(null);
 
     const now = new Date();
     const orderNumber = `CYA-${now.getFullYear().toString().slice(-2)}${(
@@ -64,12 +102,21 @@ const CheckoutPage = () => {
       },
     };
 
-    setTimeout(() => {
+    try {
+      const response = await placeOrder(payload);
+      const responseOrder = response?.order ?? payload;
+
       navigate("/confirmation", {
         replace: true,
-        state: { order: payload },
+        state: { order: responseOrder },
       });
-    }, 600);
+    } catch (submissionError) {
+      setOrderError(
+        submissionError?.message ?? "We couldn't place your order just yet."
+      );
+    } finally {
+      setIsPlacingOrder(false);
+    }
   };
 
   return (
@@ -93,7 +140,18 @@ const CheckoutPage = () => {
           </p>
         </header>
 
-        <CheckoutProgress steps={steps} />
+        {loading ? (
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-emerald-200/70">
+            Loading your checkout details...
+          </div>
+        ) : error ? (
+          <div className="rounded-3xl border border-rose-300/40 bg-rose-500/10 p-6 text-sm text-rose-100">
+            We couldn&apos;t load your checkout summary. Please refresh the
+            page.
+          </div>
+        ) : (
+          <CheckoutProgress steps={steps} />
+        )}
 
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <form className="space-y-6">
@@ -186,11 +244,24 @@ const CheckoutPage = () => {
             </CheckoutSection>
           </form>
 
-          <CheckoutOrderSummary
-            order={order}
-            onPlaceOrder={handlePlaceOrder}
-            isPlacingOrder={isPlacingOrder}
-          />
+          {order ? (
+            <div className="space-y-4">
+              {orderError ? (
+                <div className="rounded-2xl border border-rose-300/40 bg-rose-500/10 p-4 text-sm text-rose-100">
+                  {orderError}
+                </div>
+              ) : null}
+              <CheckoutOrderSummary
+                order={order}
+                onPlaceOrder={handlePlaceOrder}
+                isPlacingOrder={isPlacingOrder}
+              />
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-emerald-200/70">
+              No items in your order yet.
+            </div>
+          )}
         </section>
       </main>
     </div>

@@ -19,17 +19,22 @@ const createIconRenderer =
   ({ className = "" } = {}) =>
     <img src={src} alt="" className={className} aria-hidden="true" />;
 
-const UserNavbar = ({ searchTerm = "", onSearchChange, onSearchSubmit, isLoggedIn = false }) => {
+const UserNavbar = ({
+  searchTerm = "",
+  onSearchChange,
+  onSearchSubmit,
+  isLoggedIn = false,
+}) => {
   const actions = [
     {
       label: "Wishlist",
       to: "/wishlist",
       icon: createIconRenderer(heartIcon),
     },
-    { 
-      label: "Cart", 
-      to: "/cart", 
-      icon: createIconRenderer(bagIcon) 
+    {
+      label: "Cart",
+      to: "/cart",
+      icon: createIconRenderer(bagIcon),
     },
 
     isLoggedIn

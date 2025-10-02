@@ -1,112 +1,264 @@
 // AuthForm.jsx
-import React, { useState } from "react";
-import Button from "./Button"; // Reusable button component we made earlier
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Button from "./Button";
+
+const defaultInputClasses =
+  "w-full rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-emerald-50 placeholder-emerald-200/50 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 disabled:cursor-not-allowed disabled:opacity-60";
 
 const AuthForm = ({
   title = "Welcome back",
   subtitle = "Sign in to continue your shopping journey.",
   fields = [],
+  initialValues = {},
   onSubmit,
+  onFieldChange,
   socialProviders = [],
   buttonLabel = "Sign In",
+  isSubmitDisabled = false,
   footerText = "Don't have an account?",
   footerLinkText = "Sign up",
   footerLinkHref = "#",
-  forgetPasswordText = ""
+  forgetPasswordText = "",
 }) => {
-  
-  const [show, setShow] = useState(false);
-  const navigate = useNavigate()
-  const [formData, setFormData] = useState(
-    fields.reduce((acc, field) => {
-      acc[field.name] = "";
-      return acc;
-    }, {})
+  const navigate = useNavigate();
+
+  const initialState = useMemo(() => {
+    const base = { ...initialValues };
+    fields.forEach((field = {}) => {
+      if (typeof field.name !== "string" || !field.name.length) {
+        return;
+      }
+      if (base[field.name] === undefined) {
+        base[field.name] = field.defaultValue ?? "";
+      }
+    });
+    return base;
+  }, [fields, initialValues]);
+
+  const [formData, setFormData] = useState(initialState);
+  const [visibleFields, setVisibleFields] = useState({});
+
+  const fieldsSignature = useMemo(
+    () =>
+      JSON.stringify(
+        fields.map((field = {}) => ({
+          name: field.name ?? null,
+          hidden: !!field.hidden,
+        }))
+      ),
+    [fields]
   );
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const initialValuesSignature = useMemo(
+    () => JSON.stringify(initialValues ?? {}),
+    [initialValues]
+  );
+
+  const signatureRef = useRef(`${fieldsSignature}|${initialValuesSignature}`);
+
+  useEffect(() => {
+    const nextSignature = `${fieldsSignature}|${initialValuesSignature}`;
+    if (signatureRef.current !== nextSignature) {
+      signatureRef.current = nextSignature;
+      setFormData(initialState);
+      setVisibleFields({});
+    }
+  }, [fieldsSignature, initialValuesSignature, initialState]);
+
+  const setFieldValue = (name, value) => {
+    if (typeof name !== "string" || !name.length) {
+      return;
+    }
+
+    setFormData((previous) => {
+      const next = { ...previous, [name]: value };
+      onFieldChange?.(name, value, next);
+      return next;
+    });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(formData);
-    navigate('/')
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFieldValue(name, value);
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (isSubmitDisabled) {
+      return;
+    }
+    onSubmit?.(formData, { reset: () => setFormData(initialState) });
+  };
+
+  const toggleVisibility = (name) => {
+    if (!name) {
+      return;
+    }
+    setVisibleFields((previous) => ({
+      ...previous,
+      [name]: !previous?.[name],
+    }));
+  };
+
+  const renderStandardField = (field, index) => {
+    if (field.hidden) {
+      return null;
+    }
+
+    const {
+      name,
+      label,
+      type = "text",
+      placeholder,
+      required,
+      disabled,
+      autoComplete,
+      inputMode,
+      maxLength,
+      helperText,
+      wrapperClassName = "",
+      inputClassName = "",
+      id,
+    } = field;
+
+    const fieldName = name ?? `field-${index}`;
+    const inputId = id ?? `${fieldName}-input`;
+    const value = formData[fieldName] ?? "";
+    const isPassword = type === "password";
+    const displayType = isPassword && visibleFields[fieldName] ? "text" : type;
+
+    return (
+      <div key={fieldName} className={wrapperClassName}>
+        {label ? (
+          <label
+            htmlFor={inputId}
+            className="mb-1 block text-sm font-medium text-emerald-100"
+          >
+            {label}
+          </label>
+        ) : null}
+        <div className="relative">
+          <input
+            id={inputId}
+            name={fieldName}
+            type={displayType}
+            placeholder={placeholder}
+            value={value}
+            onChange={handleChange}
+            required={required}
+            disabled={disabled}
+            autoComplete={autoComplete}
+            inputMode={inputMode}
+            maxLength={maxLength}
+            className={`${defaultInputClasses} ${inputClassName}`.trim()}
+          />
+          {isPassword ? (
+            <button
+              type="button"
+              onClick={() => toggleVisibility(fieldName)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold uppercase tracking-wide text-emerald-200/80"
+            >
+              {visibleFields[fieldName] ? "Hide" : "Show"}
+            </button>
+          ) : null}
+        </div>
+        {helperText ? (
+          <p className="mt-1 text-xs text-emerald-200/70">{helperText}</p>
+        ) : null}
+      </div>
+    );
+  };
+
+  const renderField = (field, index) => {
+    if (!field || field.hidden) {
+      return null;
+    }
+
+    if (typeof field.render === "function") {
+      const fieldName = field.name ?? `custom-field-${index}`;
+      const value = field.name ? formData[field.name] : undefined;
+
+      return (
+        <div key={fieldName} className={field.wrapperClassName ?? ""}>
+          {field.render({
+            field,
+            value,
+            setValue: (nextValue) => setFieldValue(field.name, nextValue),
+            formData,
+            setFieldValue,
+            toggleVisibility: () => toggleVisibility(field.name),
+            isVisible: !!visibleFields[field.name],
+            inputClasses: defaultInputClasses,
+          })}
+        </div>
+      );
+    }
+
+    return renderStandardField(field, index);
   };
 
   return (
-    <div className="flex items-center justify-center h-[calc(100vh-64px)] bg-green-300/0"> {/* Adjusted height, assuming navbar is 64px */}
-      <div className="w-full max-w-md p-6  bg-white/10 backdrop-blur-lg 
-               border border-white/20 shadow-xl rounded-2xl overflow-y-auto"> {/* Reduced padding from p-8 to p-6 */}
-        <h2 className="text-center text-white text-2xl font-bold">{title}</h2>
-        <p className="text-center text-green-500 mt-1">{subtitle}</p>
+    <div className="flex h-[calc(100vh-64px)] items-center justify-center bg-[#07150f]">
+      <div className="w-full max-w-md overflow-y-auto rounded-2xl border border-white/15 bg-white/5 p-6 shadow-[0_24px_60px_rgba(8,35,25,0.45)] backdrop-blur">
+        <h2 className="text-center text-2xl font-semibold text-white">
+          {title}
+        </h2>
+        <p className="mt-1 text-center text-sm text-emerald-200/80">
+          {subtitle}
+        </p>
 
-        {/* Form */}
-          <form onSubmit={handleSubmit} className="mt-4 space-y-3"> {/* Reduced spacing */}
-            {fields.map((field, idx) => (
-              <div key={idx}>
-                <div className="relative">
-            <input
-              type={field.type === "password" ? (show ? "text" : "password") : field.type}
-              name={field.name}
-              placeholder={field.placeholder}
-              value={formData[field.name]}
-              onChange={handleChange}
-              required={field.required}
-              className="w-full text-green-300 border border-gray-300 rounded-lg px-4 py-2 focus:ring focus:ring-green-300 focus:border-green-500 outline-none"
-            />
-            {field.type === "password" && field.placeholder==="confirm Password" && (
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          {fields.map((field, index) => renderField(field, index))}
+
+          {forgetPasswordText ? (
+            <div className="text-right text-sm">
               <button
                 type="button"
-                onClick={() => setShow(!show)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                className="text-emerald-400 transition hover:text-emerald-300"
+                onClick={() => navigate("/forget-password")}
               >
-                {show ? "Hide" : "Show"}
-              </button>
-            )}
-                </div>
-              </div>
-            ))}
-
-            <div className="text-right text-sm">
-              <a onClick={()=>navigate('/forget-password')} className="text-green-600 cursor-pointer hover:underline">
                 {forgetPasswordText}
-              </a>
+              </button>
             </div>
+          ) : null}
 
-            <Button
-              type="submit"
-              className="w-full bg-green-600 text-white"
-            >
-              {buttonLabel}
-            </Button>
-          </form>
+          <Button
+            type="submit"
+            disabled={isSubmitDisabled}
+            className="w-full bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
+          >
+            {buttonLabel}
+          </Button>
+        </form>
 
-          {/* Divider */}
-        <div className="flex items-center my-4"> 
-          <hr className="flex-grow border-gray-300" />
-          <span className="px-2 text-gray-500 text-sm">Or sign in with</span>
-          <hr className="flex-grow border-gray-300" />
-        </div>
+        {socialProviders.length ? (
+          <>
+            <div className="my-4 flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-emerald-200/60">
+              <div className="h-px flex-1 bg-white/10" />
+              <span>Or continue with</span>
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {socialProviders.map((provider, index) => (
+                <Button
+                  key={`${provider.label}-${index}`}
+                  className="flex-1 border border-white/20 bg-transparent text-emerald-100 hover:border-emerald-300/60 hover:bg-emerald-400/10"
+                  onClick={provider.onClick}
+                >
+                  Continue with {provider.label}
+                </Button>
+              ))}
+            </div>
+          </>
+        ) : null}
 
-        {/* Social Buttons */}
-        <div className="flex space-x-3">
-          {socialProviders.map((provider, idx) => (
-            <Button
-              key={idx}
-              className="flex-1 border border-gray-300 bg-green-300/0 text-white-700 cursor-pointer"
-              onClick={provider.onClick}
-            >
-              Continue with {provider.label}
-            </Button>
-          ))}
-        </div>
-
-        {/* Footer */}
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="mt-6 text-center text-sm text-emerald-200/70">
           {footerText}{" "}
-          <a href={footerLinkHref} className="text-green-600 font-medium hover:underline">
+          <a
+            href={footerLinkHref}
+            className="text-emerald-300 transition hover:text-emerald-100"
+          >
             {footerLinkText}
           </a>
         </p>

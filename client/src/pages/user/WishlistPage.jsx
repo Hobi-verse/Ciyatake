@@ -1,34 +1,98 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import UserNavbar from "../../components/user/common/UserNavbar.jsx";
 import Breadcrumbs from "../../components/common/Breadcrumbs.jsx";
 import WishlistItem from "../../components/user/wishlist/WishlistItem.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
-import wishlistData from "../../data/wishlist.json";
-import products from "../../data/products.json";
 import heartIcon from "../../assets/icons/heart.svg";
+import { fetchWishlist, removeWishlistItem } from "../../api/wishlist.js";
+import { fetchProducts } from "../../api/catalog.js";
+import { addCartItem } from "../../api/cart.js";
 
 const WishlistPage = () => {
-  const [items, setItems] = useState(wishlistData);
+  const [items, setItems] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
+
+  const loadWishlist = useCallback(async ({ signal } = {}) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const [wishlistResponse, productsResponse] = await Promise.all([
+        fetchWishlist({ signal }),
+        fetchProducts({}, { signal }),
+      ]);
+
+      if (signal?.aborted) {
+        return;
+      }
+
+      setItems(
+        Array.isArray(wishlistResponse)
+          ? wishlistResponse
+          : wishlistResponse?.items ?? []
+      );
+      setAllProducts(
+        Array.isArray(productsResponse)
+          ? productsResponse
+          : productsResponse?.items ?? []
+      );
+    } catch (apiError) {
+      if (!signal?.aborted) {
+        setError(apiError);
+      }
+    } finally {
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadWishlist({ signal: controller.signal });
+
+    return () => controller.abort();
+  }, [loadWishlist]);
 
   const handleRemove = (itemId) => {
     setItems((current) => current.filter((item) => item.id !== itemId));
     setToastMessage("Removed from wishlist");
     window.setTimeout(() => setToastMessage(""), 2500);
+
+    removeWishlistItem(itemId).catch(() => {
+      loadWishlist().catch(() => {});
+    });
   };
 
   const handleAddToCart = (itemId) => {
     setItems((current) => current.filter((item) => item.id !== itemId));
     setToastMessage("Moved to cart");
     window.setTimeout(() => setToastMessage(""), 2500);
+
+    const targetItem = items.find((item) => item.id === itemId);
+    if (targetItem) {
+      addCartItem({
+        productId: targetItem.productId,
+        quantity: 1,
+      }).catch(() => {
+        loadWishlist().catch(() => {});
+      });
+    }
+
+    removeWishlistItem(itemId).catch(() => {
+      loadWishlist().catch(() => {});
+    });
   };
 
   const recommendedProducts = useMemo(() => {
     const wishlistIds = new Set(items.map((item) => item.productId));
-    return products
+    return allProducts
       .filter((product) => !wishlistIds.has(product.id))
       .slice(0, 4);
-  }, [items]);
+  }, [allProducts, items]);
 
   return (
     <div className="min-h-screen bg-[#07150f] text-emerald-50">
@@ -53,7 +117,22 @@ const WishlistPage = () => {
         </header>
 
         <section className="space-y-4">
-          {items.length ? (
+          {error ? (
+            <div className="rounded-3xl border border-rose-300/40 bg-rose-500/10 p-10 text-center text-sm text-rose-100">
+              We couldn&apos;t load your wishlist. Please try again.
+              <button
+                type="button"
+                onClick={loadWishlist}
+                className="mt-4 inline-flex items-center justify-center rounded-full border border-rose-200/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-100 transition hover:border-rose-100 hover:bg-rose-100/10"
+              >
+                Retry
+              </button>
+            </div>
+          ) : loading ? (
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-sm text-emerald-200/70">
+              Loading your saved items...
+            </div>
+          ) : items.length ? (
             items.map((item) => (
               <WishlistItem
                 key={item.id}

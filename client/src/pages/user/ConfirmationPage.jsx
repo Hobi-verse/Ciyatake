@@ -1,12 +1,12 @@
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import UserNavbar from "../../components/user/common/UserNavbar.jsx";
 import Breadcrumbs from "../../components/common/Breadcrumbs.jsx";
 import OrderItemCard from "../../components/common/OrderItemCard.jsx";
 import OrderSummaryRow from "../../components/common/OrderSummaryRow.jsx";
 import { formatINR } from "../../utils/currency.js";
-import confirmationData from "../../data/confirmation.json";
 import arrowRightIcon from "../../assets/icons/arrow-right.svg";
+import { fetchOrderById } from "../../api/orders.js";
 
 const StatusBadge = ({ status }) => {
   const styles = {
@@ -95,9 +95,30 @@ const ConfirmationPage = () => {
   const location = useLocation();
 
   const runtimeData = location.state ?? {};
+  const [confirmationData, setConfirmationData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadConfirmation = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetchOrderById(runtimeData.order?.id ?? "latest");
+      setConfirmationData(response);
+    } catch (apiError) {
+      setError(apiError);
+    } finally {
+      setLoading(false);
+    }
+  }, [runtimeData.order?.id]);
+
+  useEffect(() => {
+    loadConfirmation();
+  }, [loadConfirmation]);
 
   const order = useMemo(() => {
-    const fallbackOrder = confirmationData.order;
+    const fallbackOrder = confirmationData?.order ?? {};
     const runtimeOrder = runtimeData.order ?? {};
     return {
       ...fallbackOrder,
@@ -108,16 +129,16 @@ const ConfirmationPage = () => {
       },
       items: runtimeOrder.items ?? fallbackOrder.items,
     };
-  }, [runtimeData.order]);
+  }, [confirmationData?.order, runtimeData.order]);
 
   const customer = useMemo(() => {
-    const fallbackCustomer = confirmationData.customer;
+    const fallbackCustomer = confirmationData?.customer ?? {};
     const runtimeCustomer = runtimeData.customer ?? {};
     return { ...fallbackCustomer, ...runtimeCustomer };
-  }, [runtimeData.customer]);
+  }, [confirmationData?.customer, runtimeData.customer]);
 
   const shipping = useMemo(() => {
-    const fallbackShipping = confirmationData.shipping;
+    const fallbackShipping = confirmationData?.shipping ?? {};
     const runtimeShipping = runtimeData.shipping ?? {};
     return {
       ...fallbackShipping,
@@ -126,10 +147,10 @@ const ConfirmationPage = () => {
       instructions:
         runtimeShipping.instructions ?? fallbackShipping.instructions,
     };
-  }, [runtimeData.shipping]);
+  }, [confirmationData?.shipping, runtimeData.shipping]);
 
-  const support = confirmationData.support;
-  const nextSteps = confirmationData.nextSteps;
+  const support = confirmationData?.support ?? {};
+  const nextSteps = confirmationData?.nextSteps ?? [];
 
   const orderItems = order.items ?? [];
   const totals = order.totals ?? {};
@@ -143,9 +164,10 @@ const ConfirmationPage = () => {
   const total = subtotal + shippingCost + tax;
 
   const placedOnLabel = useMemo(() => {
-    const value = order.placedOn ?? confirmationData.order.placedOn;
+    const fallbackPlacedOn = confirmationData?.order?.placedOn;
+    const value = order.placedOn ?? fallbackPlacedOn;
     return value ? formatPlacedOn(value) : null;
-  }, [order.placedOn]);
+  }, [confirmationData?.order?.placedOn, order.placedOn]);
 
   const handleContinueShopping = () => {
     navigate("/");
@@ -172,50 +194,61 @@ const ConfirmationPage = () => {
           ]}
         />
 
-        <section className="space-y-6 rounded-3xl border border-white/5 bg-[#0b1f19] p-8 shadow-[0_26px_60px_rgba(8,35,25,0.45)]">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-3xl text-emerald-300 shadow-inner">
-                ✓
+        {loading ? (
+          <section className="rounded-3xl border border-white/5 bg-[#0b1f19] p-8 text-sm text-emerald-200/70">
+            Finalising your order details...
+          </section>
+        ) : error ? (
+          <section className="rounded-3xl border border-rose-300/40 bg-rose-500/10 p-8 text-sm text-rose-100">
+            We couldn&apos;t load your order confirmation. Please refresh the
+            page.
+          </section>
+        ) : (
+          <section className="space-y-6 rounded-3xl border border-white/5 bg-[#0b1f19] p-8 shadow-[0_26px_60px_rgba(8,35,25,0.45)]">
+            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-3xl text-emerald-300 shadow-inner">
+                  ✓
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-200/70">
+                    Order confirmed
+                  </p>
+                  <h1 className="text-3xl font-semibold text-white md:text-4xl">
+                    Thank you, {greetingName}! Your order is on its way.
+                  </h1>
+                  <p className="text-sm text-emerald-200/75">
+                    We'll email updates to {customer.email}. Delivery window{" "}
+                    {order.deliveryWindow ??
+                      confirmationData?.order?.deliveryWindow}
+                    .
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-200/70">
-                  Order confirmed
+              <div className="rounded-3xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+                <p className="text-xs uppercase tracking-[0.3em] text-emerald-200/70">
+                  Order ID
                 </p>
-                <h1 className="text-3xl font-semibold text-white md:text-4xl">
-                  Thank you, {greetingName}! Your order is on its way.
-                </h1>
-                <p className="text-sm text-emerald-200/75">
-                  We'll email updates to {customer.email}. Delivery window{" "}
-                  {order.deliveryWindow ??
-                    confirmationData.order.deliveryWindow}
-                  .
+                <p className="mt-1 text-xl font-semibold text-white">
+                  {order.id}
                 </p>
+                {placedOnLabel ? (
+                  <p className="mt-1 text-xs text-emerald-200/70">
+                    Placed on {placedOnLabel}
+                  </p>
+                ) : null}
+                {order.transactionId ? (
+                  <p className="mt-3 text-xs text-emerald-200/70">
+                    Transaction ID:{" "}
+                    <span className="text-emerald-100">
+                      {order.transactionId}
+                    </span>
+                  </p>
+                ) : null}
               </div>
             </div>
-            <div className="rounded-3xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-sm text-emerald-100">
-              <p className="text-xs uppercase tracking-[0.3em] text-emerald-200/70">
-                Order ID
-              </p>
-              <p className="mt-1 text-xl font-semibold text-white">
-                {order.id}
-              </p>
-              {placedOnLabel ? (
-                <p className="mt-1 text-xs text-emerald-200/70">
-                  Placed on {placedOnLabel}
-                </p>
-              ) : null}
-              {order.transactionId ? (
-                <p className="mt-3 text-xs text-emerald-200/70">
-                  Transaction ID:{" "}
-                  <span className="text-emerald-100">
-                    {order.transactionId}
-                  </span>
-                </p>
-              ) : null}
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
           <div className="space-y-6">
@@ -238,7 +271,9 @@ const ConfirmationPage = () => {
             <InfoBlock
               title="Delivery details"
               description={`Estimated delivery ${
-                order.deliveryWindow ?? confirmationData.order.deliveryWindow
+                order.deliveryWindow ??
+                confirmationData?.order?.deliveryWindow ??
+                "TBD"
               }`}
             >
               <div className="grid gap-6 sm:grid-cols-2">
@@ -260,7 +295,8 @@ const ConfirmationPage = () => {
                   </p>
                   <p className="text-sm text-emerald-100">
                     {order.paymentMethod ??
-                      confirmationData.order.paymentMethod}
+                      confirmationData?.order?.paymentMethod ??
+                      "Pending"}
                   </p>
                   {order.placedOn ? (
                     <div className="rounded-2xl border border-white/5 bg-[#0d221c] p-4 text-xs text-emerald-200/70">

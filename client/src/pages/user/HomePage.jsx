@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import UserNavbar from "../../components/user/common/UserNavbar.jsx";
 import CategoryTabs from "../../components/common/CategoryTabs.jsx";
 import SectionHeading from "../../components/common/SectionHeading.jsx";
@@ -6,7 +6,7 @@ import RangeSlider from "../../components/common/RangeSlider.jsx";
 import SelectionGroup from "../../components/common/SelectionGroup.jsx";
 import ColorSwatchGroup from "../../components/common/ColorSwatchGroup.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
-import products from "../../data/products.json";
+import { fetchProducts } from "../../api/catalog.js";
 
 const categoryOptions = [
   { label: "All", value: "all" },
@@ -37,20 +37,76 @@ const colorOptions = [
 ];
 
 const HomePage = ({ isLoggedIn }) => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSize, setSelectedSize] = useState("all");
   const [selectedColor, setSelectedColor] = useState("all");
-  const priceValues = products.map((product) => product.price);
-  const minProductPrice = priceValues.length ? Math.min(...priceValues) : 0;
-  const maxProductPrice = priceValues.length ? Math.max(...priceValues) : 0;
-  const priceStep = priceValues.length
-    ? Math.max(100, Math.round((maxProductPrice - minProductPrice) / 40) || 100)
-    : 100;
-  const [priceRange, setPriceRange] = useState([
-    minProductPrice,
-    maxProductPrice,
-  ]);
+  const priceValues = useMemo(
+    () => products.map((product) => product.price ?? 0),
+    [products]
+  );
+  const minProductPrice = useMemo(
+    () => (priceValues.length ? Math.min(...priceValues) : 0),
+    [priceValues]
+  );
+  const maxProductPrice = useMemo(
+    () => (priceValues.length ? Math.max(...priceValues) : 0),
+    [priceValues]
+  );
+  const priceStep = useMemo(() => {
+    if (!priceValues.length) {
+      return 100;
+    }
+
+    const span = maxProductPrice - minProductPrice;
+    return Math.max(100, Math.round(span / 40) || 100);
+  }, [maxProductPrice, minProductPrice, priceValues]);
+  const [priceRange, setPriceRange] = useState([0, 0]);
+
+  const loadProducts = useCallback(async ({ signal } = {}) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetchProducts({}, { signal });
+      if (signal?.aborted) {
+        return;
+      }
+
+      setProducts(Array.isArray(response) ? response : response?.items ?? []);
+    } catch (apiError) {
+      if (signal?.aborted) {
+        return;
+      }
+
+      setError(apiError);
+    } finally {
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadProducts({ signal: controller.signal });
+
+    return () => {
+      controller.abort();
+    };
+  }, [loadProducts]);
+
+  useEffect(() => {
+    if (!priceValues.length) {
+      setPriceRange([0, 0]);
+      return;
+    }
+
+    setPriceRange([minProductPrice, maxProductPrice]);
+  }, [minProductPrice, maxProductPrice, priceValues]);
 
   const filteredProducts = useMemo(() => {
     const [minPrice, maxPrice] = priceRange;
@@ -179,7 +235,22 @@ const HomePage = ({ isLoggedIn }) => {
 
         <section>
           <SectionHeading title="Featured Products" eyebrow="Explore" />
-          {filteredProducts.length ? (
+          {loading ? (
+            <div className="flex min-h-[16rem] items-center justify-center rounded-3xl border border-white/10 bg-white/5 text-sm text-emerald-200/70">
+              Loading products...
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-rose-300/40 bg-rose-500/10 p-12 text-center text-sm text-rose-100">
+              <p>We couldn&apos;t load products right now.</p>
+              <button
+                type="button"
+                onClick={() => loadProducts()}
+                className="rounded-full border border-rose-300/60 px-4 py-2 font-medium text-rose-100 transition hover:border-rose-200 hover:bg-rose-400/10"
+              >
+                Retry loading products
+              </button>
+            </div>
+          ) : filteredProducts.length ? (
             <ProductGrid products={filteredProducts} />
           ) : (
             <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-emerald-300/40 bg-white/5 p-12 text-center text-sm text-emerald-200/80">
