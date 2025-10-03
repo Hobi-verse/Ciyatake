@@ -1,5 +1,5 @@
 const AdminHeader = ({ user = { name: "Ayush" } }) => (
-  <header className="h-20 flex items-center gap-4 border-b border-emerald-100 bg-white/95 px-8 text-emerald-900 shadow-lg">
+  <header className="sticky top-0 z-40 flex h-20 items-center gap-4 border-b border-emerald-100/70 bg-white/95 px-8 text-emerald-900 shadow-lg backdrop-blur">
     <h1 className="text-2xl font-bold tracking-tight">Admin Panel</h1>
     <p className="hidden text-sm text-emerald-700/80 md:block">
       Manage your commerce operations with real-time insights.

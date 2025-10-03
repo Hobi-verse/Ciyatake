@@ -54,3 +54,31 @@ input[type="range"]::-moz-range-track {
   border-radius: 9999px;
   background: rgba(255, 255, 255, 0);
 }
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(110, 231, 183, 0.35) transparent;
+}
+
+.custom-scrollbar:hover {
+  scrollbar-color: rgba(110, 231, 183, 0.55) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.35), rgba(45, 212, 191, 0.55));
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.55), rgba(110, 231, 183, 0.75));
+}

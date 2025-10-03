@@ -5,7 +5,7 @@ import AdminSidebar, { adminLinks } from "./AdminSidebar";
 const AdminDashboardLayout = () => (
   <div className="min-h-screen bg-emerald-400/10 flex flex-col">
     <AdminHeader />
-    <div className="flex flex-1 flex-col gap-6 px-6 pb-6 lg:flex-row">
+    <div className="flex flex-1 flex-col gap-6 px-6 pb-6 lg:flex-row mt-4">
       <nav className="lg:hidden">
         <ul className="grid grid-cols-2 gap-3">
           {adminLinks.map((link) => {
@@ -31,7 +31,7 @@ const AdminDashboardLayout = () => (
         </ul>
       </nav>
       <AdminSidebar />
-      <div className="flex-1 overflow-y-auto rounded-2xl bg-white/95 p-8 text-slate-900 shadow-xl ring-1 ring-emerald-100 mt-4">
+      <div className="custom-scrollbar mt-4 flex-1 overflow-y-auto rounded-2xl bg-white/95 px-8 pb-10 pt-16 text-slate-900 shadow-xl ring-1 ring-emerald-100 scroll-pt-24 lg:mt-0 lg:max-h-[calc(100vh-7.5rem)] lg:pt-20">
         <Outlet />
       </div>
     </div>
