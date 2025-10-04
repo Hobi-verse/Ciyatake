@@ -6,6 +6,7 @@ import CartPage from "./pages/user/CartPage.jsx";
 import WishlistPage from "./pages/user/WishlistPage.jsx";
 import CheckoutPage from "./pages/user/CheckoutPage.jsx";
 import ConfirmationPage from "./pages/user/ConfirmationPage.jsx";
+import MyAccountPage from "./pages/user/MyAccountPage.jsx";
 import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register.jsx";
 import ForgetPass from "./pages/auth/ForgetPass.jsx";
@@ -19,18 +20,33 @@ import Users from "./components/admin/users/Users.jsx";
 
 function App() {
   const isLoggedIn = !!localStorage.getItem("User1");
-  
+
   return (
     <div className="min-h-screen bg-[#07150f]">
       <Routes>
         <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
-        <Route path="/products/:productId" element={<ProductDetailsPage isLoggedIn={isLoggedIn} />} />
+        <Route
+          path="/products/:productId"
+          element={<ProductDetailsPage isLoggedIn={isLoggedIn} />}
+        />
         <Route path="/cart" element={<CartPage isLoggedIn={isLoggedIn} />} />
-        <Route path="/wishlist" element={<WishlistPage isLoggedIn={isLoggedIn} />} />
-        <Route path="/checkout" element={<CheckoutPage isLoggedIn={isLoggedIn} />} />
-        <Route path="/confirmation" element={<ConfirmationPage isLoggedIn={isLoggedIn} />} />
+        <Route
+          path="/wishlist"
+          element={<WishlistPage isLoggedIn={isLoggedIn} />}
+        />
+        <Route
+          path="/checkout"
+          element={<CheckoutPage isLoggedIn={isLoggedIn} />}
+        />
+        <Route
+          path="/confirmation"
+          element={<ConfirmationPage isLoggedIn={isLoggedIn} />}
+        />
+        <Route
+          path="/account"
+          element={<MyAccountPage isLoggedIn={isLoggedIn} />}
+        />
 
-        
         <Route path="/admin" element={<AdminDashboardLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
@@ -41,9 +57,9 @@ function App() {
           <Route path="users" element={<Users />} />
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Route>
-        <Route path="/login" element={<Login/>} />
-        <Route path="/signup" element={<Register/>} />
-        <Route path="/forget-password" element={<ForgetPass/>} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Register />} />
+        <Route path="/forget-password" element={<ForgetPass />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

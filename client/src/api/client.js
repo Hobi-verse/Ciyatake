@@ -90,7 +90,6 @@ export const withApiFallback = async (requestFn, mockFn, {
     }
 
     if (!silenceWarnings) {
-      // eslint-disable-next-line no-console
       console.warn(
         `${MOCK_WARNING_PREFIX} Falling back to mock data due to API error:`,
         error

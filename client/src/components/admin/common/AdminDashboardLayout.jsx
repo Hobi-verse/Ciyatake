@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import AdminHeader from "./AdminHeader";
-import AdminSidebar, { adminLinks } from "./AdminSidebar";
+import AdminSidebar from "./AdminSidebar";
+import adminLinks from "./adminLinks";
 
 const AdminDashboardLayout = () => (
   <div className="min-h-screen bg-emerald-400/10 flex flex-col">

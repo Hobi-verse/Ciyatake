@@ -150,7 +150,14 @@ const HomePage = ({ isLoggedIn }) => {
 
       return true;
     });
-  }, [priceRange, searchTerm, selectedCategory, selectedSize, selectedColor]);
+  }, [
+    priceRange,
+    searchTerm,
+    selectedCategory,
+    selectedSize,
+    selectedColor,
+    products,
+  ]);
 
   const handleResetFilters = () => {
     setSelectedCategory("all");

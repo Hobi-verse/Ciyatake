@@ -5,7 +5,7 @@ const OrderItemCard = ({ item, className = "", showSize = true }) => {
     return null;
   }
 
-  const { id, title, size, price, quantity = 1, imageUrl } = item;
+  const { title, size, price, quantity = 1, imageUrl } = item;
 
   return (
     <article

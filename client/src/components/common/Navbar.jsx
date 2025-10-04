@@ -75,7 +75,6 @@ const Navbar = ({
                 {desktopActions.map((action, index) => {
                   const key =
                     action.key ?? `${action.label ?? "action"}-${index}`;
-                  const destination = action.to ?? action.href;
 
                   if (action.variant === "button") {
                     if (action.to) {
@@ -176,7 +175,6 @@ const Navbar = ({
               {mobileActions.map((action, index) => {
                 const key =
                   action.key ?? `${action.label ?? "action"}-mobile-${index}`;
-                const destination = action.to ?? action.href;
 
                 if (action.variant === "button") {
                   const buttonClasses =
