@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import UserNavbar from "../../components/user/common/UserNavbar";
 import AuthForm from "../../components/common/AuthForm";
 import Button from "../../components/common/Button";
+import { sendOtp, verifyOtp, registerUser } from "../../api/auth";
+import { storeAuthSession } from "../../utils/authStorage";
 
 const OTP_LENGTH = 6;
 
@@ -10,32 +12,90 @@ const Register = () => {
   const navigate = useNavigate();
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
-  const [expectedOtp, setExpectedOtp] = useState("");
+  const [otpMobileNumber, setOtpMobileNumber] = useState("");
   const [otpFeedback, setOtpFeedback] = useState(null);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState(null);
 
-  const handleSendOtp = useCallback((phoneNumber, resetOtp) => {
-    if (!phoneNumber || phoneNumber.trim().length !== 10) {
-      setOtpFeedback({
-        type: "error",
-        message:
-          "Enter a valid 10-digit mobile number before requesting an OTP.",
-      });
-      return;
-    }
+  const extractErrorMessage = useCallback(
+    (error, fallback = "Something went wrong. Please try again.") => {
+      if (!error) {
+        return fallback;
+      }
 
-    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    setExpectedOtp(generatedOtp);
-    setIsOtpSent(true);
-    setIsOtpVerified(false);
-    resetOtp?.();
-    setOtpFeedback({
-      type: "info",
-      message: `OTP sent successfully. (For demo use ${generatedOtp})`,
-    });
-  }, []);
+      const payload = error.payload ?? error.response ?? null;
+
+      if (payload) {
+        if (typeof payload === "string" && payload.length) {
+          return payload;
+        }
+        if (typeof payload.message === "string" && payload.message.length) {
+          return payload.message;
+        }
+      }
+
+      if (typeof error.message === "string" && error.message.length) {
+        return error.message;
+      }
+
+      return fallback;
+    },
+    []
+  );
+
+  const handleSendOtp = useCallback(
+    async (phoneNumber, resetOtp) => {
+      const sanitized = (phoneNumber ?? "").replace(/[^0-9]/g, "").slice(0, 10);
+
+      if (!sanitized || sanitized.length !== 10) {
+        setOtpFeedback({
+          type: "error",
+          message:
+            "Enter a valid 10-digit mobile number before requesting an OTP.",
+        });
+        return;
+      }
+
+      setIsSendingOtp(true);
+      setOtpFeedback(null);
+      setStatus(null);
+
+      try {
+        const response = await sendOtp({
+          mobileNumber: sanitized,
+          context: "register",
+        });
+
+        setIsOtpSent(true);
+        setIsOtpVerified(false);
+        setOtpMobileNumber(sanitized);
+        resetOtp?.();
+
+        setOtpFeedback({
+          type: "info",
+          message: `${response?.message ?? "OTP sent successfully."}${
+            response?.otp ? ` (For testing use ${response.otp})` : ""
+          }`,
+        });
+      } catch (error) {
+        setOtpFeedback({
+          type: "error",
+          message: extractErrorMessage(
+            error,
+            "Failed to send OTP. Please try again."
+          ),
+        });
+      } finally {
+        setIsSendingOtp(false);
+      }
+    },
+    [extractErrorMessage]
+  );
 
   const handleVerifyOtp = useCallback(
-    (enteredOtp) => {
+    async (phoneNumber, enteredOtp) => {
       if (!isOtpSent) {
         setOtpFeedback({
           type: "error",
@@ -44,7 +104,33 @@ const Register = () => {
         return;
       }
 
-      if (!enteredOtp || enteredOtp.length !== OTP_LENGTH) {
+      const sanitizedNumber = (phoneNumber ?? "")
+        .replace(/[^0-9]/g, "")
+        .slice(0, 10);
+
+      if (!sanitizedNumber || sanitizedNumber.length !== 10) {
+        setOtpFeedback({
+          type: "error",
+          message: "Enter the mobile number used to request the OTP.",
+        });
+        return;
+      }
+
+      if (otpMobileNumber && sanitizedNumber !== otpMobileNumber) {
+        setOtpFeedback({
+          type: "error",
+          message:
+            "Mobile number changed. Please request a new OTP for this number.",
+        });
+        setIsOtpVerified(false);
+        return;
+      }
+
+      const sanitizedOtp = (enteredOtp ?? "")
+        .replace(/[^0-9]/g, "")
+        .slice(0, OTP_LENGTH);
+
+      if (!sanitizedOtp || sanitizedOtp.length !== OTP_LENGTH) {
         setOtpFeedback({
           type: "error",
           message: "Enter the 6-digit OTP that was sent to your mobile number.",
@@ -52,23 +138,40 @@ const Register = () => {
         return;
       }
 
-      if (enteredOtp !== expectedOtp) {
+      setIsVerifyingOtp(true);
+      setOtpFeedback(null);
+      setStatus(null);
+
+      try {
+        const response = await verifyOtp({
+          mobileNumber: sanitizedNumber,
+          otp: sanitizedOtp,
+        });
+
+        setIsOtpVerified(true);
+        setOtpFeedback({
+          type: "success",
+          message:
+            response?.message ??
+            "OTP verified successfully. You can now create your password.",
+        });
+      } catch (error) {
+        setIsOtpVerified(false);
         setOtpFeedback({
           type: "error",
-          message: "Invalid OTP. Please try again.",
+          message: extractErrorMessage(
+            error,
+            "Failed to verify OTP. Please try again."
+          ),
         });
-        setIsOtpVerified(false);
-        return;
+      } finally {
+        setIsVerifyingOtp(false);
       }
-
-      setIsOtpVerified(true);
-      setOtpFeedback({
-        type: "success",
-        message: "OTP verified successfully. You can now create your password.",
-      });
     },
-    [expectedOtp, isOtpSent]
+    [extractErrorMessage, isOtpSent, otpMobileNumber]
   );
+
+  const buttonLabel = isSubmitting ? "Creating account..." : "Register";
 
   const fields = [
     {
@@ -88,6 +191,21 @@ const Register = () => {
             .replace(/[^0-9]/g, "")
             .slice(0, 10);
           setValue(nextValue);
+
+          setStatus(null);
+
+          if (isOtpSent || isOtpVerified) {
+            if (nextValue !== otpMobileNumber) {
+              setIsOtpSent(false);
+              setIsOtpVerified(false);
+              setOtpMobileNumber("");
+              setFieldValue("otp", "");
+            }
+          }
+
+          if (otpFeedback) {
+            setOtpFeedback(null);
+          }
         };
 
         const handleOtpChange = (event) => {
@@ -96,6 +214,9 @@ const Register = () => {
             .slice(0, OTP_LENGTH);
           setFieldValue("otp", nextValue);
           setOtpFeedback(null);
+          if (isOtpVerified) {
+            setIsOtpVerified(false);
+          }
         };
 
         return (
@@ -121,13 +242,17 @@ const Register = () => {
                 />
                 <Button
                   type="button"
-                  className="w-full bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
+                  className="w-full bg-emerald-500 text-emerald-950 hover:bg-emerald-400 disabled:opacity-60"
                   onClick={() =>
                     handleSendOtp(value, () => setFieldValue("otp", ""))
                   }
-                  disabled={value.length !== 10}
+                  disabled={value.length !== 10 || isSendingOtp}
                 >
-                  {isOtpSent ? "Resend OTP" : "Send OTP"}
+                  {isSendingOtp
+                    ? "Sending..."
+                    : isOtpSent
+                    ? "Resend OTP"
+                    : "Send OTP"}
                 </Button>
               </div>
               <div className="space-y-2">
@@ -146,13 +271,20 @@ const Register = () => {
                 />
                 <Button
                   type="button"
-                  className="w-full border border-emerald-300/60 bg-transparent text-emerald-100 hover:bg-emerald-400/10"
-                  onClick={() => handleVerifyOtp(formData.otp ?? "")}
+                  className="w-full border border-emerald-300/60 bg-transparent text-emerald-100 hover:bg-emerald-400/10 disabled:opacity-60"
+                  onClick={() => handleVerifyOtp(value, formData.otp ?? "")}
                   disabled={
-                    !isOtpSent || (formData.otp ?? "").length !== OTP_LENGTH
+                    !isOtpSent ||
+                    (formData.otp ?? "").length !== OTP_LENGTH ||
+                    isVerifyingOtp ||
+                    isOtpVerified
                   }
                 >
-                  Verify OTP
+                  {isVerifyingOtp
+                    ? "Verifying..."
+                    : isOtpVerified
+                    ? "OTP Verified"
+                    : "Verify OTP"}
                 </Button>
               </div>
             </div>
@@ -200,30 +332,90 @@ const Register = () => {
     { label: "Google", onClick: () => alert("Register with Google") },
   ];
 
-  const handleSubmit = (formValues) => {
-    if (!isOtpVerified) {
-      setOtpFeedback({
-        type: "error",
-        message: "Please verify the OTP before creating your account.",
-      });
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (formValues, { reset }) => {
+      if (!isOtpVerified) {
+        setOtpFeedback({
+          type: "error",
+          message: "Please verify the OTP before creating your account.",
+        });
+        return;
+      }
 
-    if (formValues.password !== formValues.confirmPassword) {
-      setOtpFeedback({
-        type: "error",
-        message: "Passwords do not match. Please re-enter them.",
-      });
-      return;
-    }
+      const mobileNumber = (formValues.phoneNumber ?? "")
+        .replace(/[^0-9]/g, "")
+        .slice(0, 10);
 
-    setOtpFeedback({
-      type: "success",
-      message: "Account created successfully! Redirecting to home...",
-    });
+      if (!mobileNumber || mobileNumber.length !== 10) {
+        setOtpFeedback({
+          type: "error",
+          message: "Enter the mobile number you verified with OTP.",
+        });
+        return;
+      }
 
-    setTimeout(() => navigate("/"), 600);
-  };
+      if (otpMobileNumber && otpMobileNumber !== mobileNumber) {
+        setOtpFeedback({
+          type: "error",
+          message:
+            "Mobile number no longer matches the verified OTP. Please request a new OTP.",
+        });
+        setIsOtpVerified(false);
+        return;
+      }
+
+      if (formValues.password !== formValues.confirmPassword) {
+        setOtpFeedback({
+          type: "error",
+          message: "Passwords do not match. Please re-enter them.",
+        });
+        return;
+      }
+
+      setIsSubmitting(true);
+      setStatus(null);
+
+      try {
+        const response = await registerUser({
+          mobileNumber,
+          password: formValues.password,
+          confirmPassword: formValues.confirmPassword,
+        });
+
+        if (!response?.success) {
+          throw new Error(response?.message ?? "Failed to create account");
+        }
+
+        storeAuthSession({ token: response.token, user: response.user });
+
+        setStatus({
+          type: "success",
+          message:
+            response?.message ??
+            "Account created successfully! Redirecting to home...",
+        });
+
+        reset?.();
+        setIsOtpSent(false);
+        setIsOtpVerified(false);
+        setOtpMobileNumber("");
+        setOtpFeedback(null);
+
+        setTimeout(() => navigate("/"), 700);
+      } catch (error) {
+        setStatus({
+          type: "error",
+          message: extractErrorMessage(
+            error,
+            "Failed to create account. Please try again."
+          ),
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [extractErrorMessage, isOtpVerified, navigate, otpMobileNumber]
+  );
 
   return (
     <div className="min-h-screen bg-[#07150f]">
@@ -233,12 +425,18 @@ const Register = () => {
         subtitle="Start your personalised shopping experience"
         fields={fields}
         onSubmit={handleSubmit}
+        onFieldChange={() => {
+          if (status?.type === "error") {
+            setStatus(null);
+          }
+        }}
         socialProviders={socialProviders}
-        buttonLabel="Register"
-        isSubmitDisabled={!isOtpVerified}
+        buttonLabel={buttonLabel}
+        isSubmitDisabled={!isOtpVerified || isSubmitting}
         footerText="Already have an account?"
         footerLinkText="Login"
         footerLinkHref="/login"
+        status={status}
       />
     </div>
   );

@@ -1,11 +1,45 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthForm from "../../components/common/AuthForm";
 import UserNavbar from "../../components/user/common/UserNavbar";
+import { loginUser } from "../../api/auth";
+import { storeAuthSession } from "../../utils/authStorage";
 
 const Login = () => {
   const navigate = useNavigate();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState(null);
+
+  const buttonLabel = useMemo(
+    () => (isSubmitting ? "Signing in..." : "Sign In"),
+    [isSubmitting]
+  );
+
+  const extractErrorMessage = (
+    error,
+    fallback = "Unable to sign in. Please try again."
+  ) => {
+    if (!error) {
+      return fallback;
+    }
+
+    const payload = error.payload ?? error.response ?? null;
+    if (payload) {
+      if (typeof payload === "string" && payload.length) {
+        return payload;
+      }
+      if (typeof payload.message === "string" && payload.message.length) {
+        return payload.message;
+      }
+    }
+
+    if (typeof error.message === "string" && error.message.length) {
+      return error.message;
+    }
+
+    return fallback;
+  };
 
   const fields = [
     {
@@ -14,6 +48,8 @@ const Login = () => {
       placeholder: "Enter the Mobile Number",
       required: true,
       autoComplete: "tel",
+      inputMode: "numeric",
+      maxLength: 10,
     },
     {
       name: "password",
@@ -59,9 +95,48 @@ const Login = () => {
     { label: "Google", onClick: () => alert("Login with Google") },
   ];
 
-  const handleLogin = (formValues) => {
-    localStorage.setItem("User1", formValues.phoneNumber ?? "");
-    navigate("/");
+  const handleLogin = async (formValues, { reset }) => {
+    const mobileNumber = (formValues.phoneNumber ?? "")
+      .replace(/[^0-9]/g, "")
+      .slice(0, 10);
+    const password = formValues.password ?? "";
+
+    if (!mobileNumber || !password) {
+      setStatus({
+        type: "error",
+        message: "Please enter both mobile number and password.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setStatus(null);
+
+    try {
+      const response = await loginUser({ mobileNumber, password });
+
+      if (!response?.success) {
+        throw new Error(response?.message ?? "Login failed");
+      }
+
+      storeAuthSession({ token: response.token, user: response.user });
+
+      setStatus({
+        type: "success",
+        message: response.message ?? "Login successful. Redirecting...",
+      });
+
+      reset?.();
+
+      setTimeout(() => navigate("/"), 500);
+    } catch (error) {
+      setStatus({
+        type: "error",
+        message: extractErrorMessage(error),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -72,11 +147,18 @@ const Login = () => {
         subtitle="Sign in to continue your shopping journey."
         fields={fields}
         onSubmit={handleLogin}
+        onFieldChange={() => {
+          if (status?.type === "error") {
+            setStatus(null);
+          }
+        }}
         socialProviders={socialProviders}
-        buttonLabel="Sign In"
+        buttonLabel={buttonLabel}
         footerText="Don't have an account?"
         footerLinkText="Sign up"
         footerLinkHref="/signup"
+        status={status}
+        isSubmitDisabled={isSubmitting}
         forgetPasswordText="Forget Password?"
       />
     </div>

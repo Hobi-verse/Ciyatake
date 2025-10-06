@@ -1,4 +1,5 @@
 import { API_BASE_URL, MOCK_WARNING_PREFIX, USE_API_MOCKS } from "./config";
+import { getAuthToken } from "../utils/authStorage";
 
 export class ApiError extends Error {
   constructor(message, { status, payload } = {}) {
@@ -52,6 +53,11 @@ export const apiRequest = async (
     },
     signal,
   };
+
+  const token = getAuthToken();
+  if (token && !requestInit.headers.Authorization) {
+    requestInit.headers.Authorization = `Bearer ${token}`;
+  }
 
   if (body !== undefined && body !== null) {
     requestInit.body = typeof body === "string" ? body : JSON.stringify(body);

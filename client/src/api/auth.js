@@ -5,12 +5,20 @@ const createMockResponse = (data = {}) => ({
   ...data,
 });
 
-export const sendOtp = async ({ phoneNumber, context = "register" }) =>
+const normalizeMobilePayload = (payload = {}) => {
+  const { phoneNumber, mobileNumber, ...rest } = payload ?? {};
+  return {
+    ...rest,
+    mobileNumber: mobileNumber ?? phoneNumber ?? "",
+  };
+};
+
+export const sendOtp = async ({ phoneNumber, mobileNumber, context = "register" } = {}) =>
   withApiFallback(
     () =>
-      apiRequest("/auth/otp", {
+      apiRequest("/v1/auth/send-otp", {
         method: "POST",
-        body: { phoneNumber, context },
+        body: normalizeMobilePayload({ phoneNumber, mobileNumber, context }),
       }),
     () =>
       Promise.resolve(
@@ -21,12 +29,12 @@ export const sendOtp = async ({ phoneNumber, context = "register" }) =>
       )
   );
 
-export const verifyOtp = async ({ phoneNumber, otp, context = "register" }) =>
+export const verifyOtp = async ({ phoneNumber, mobileNumber, otp } = {}) =>
   withApiFallback(
     () =>
-      apiRequest("/auth/otp/verify", {
+      apiRequest("/v1/auth/verify-otp", {
         method: "POST",
-        body: { phoneNumber, otp, context },
+        body: normalizeMobilePayload({ phoneNumber, mobileNumber, otp }),
       }),
     () =>
       Promise.resolve(
@@ -36,12 +44,12 @@ export const verifyOtp = async ({ phoneNumber, otp, context = "register" }) =>
       )
   );
 
-export const registerUser = async (payload) =>
+export const registerUser = async (payload = {}) =>
   withApiFallback(
     () =>
-      apiRequest("/auth/register", {
+      apiRequest("/v1/auth/signup", {
         method: "POST",
-        body: payload,
+        body: normalizeMobilePayload(payload),
       }),
     () =>
       Promise.resolve(
@@ -49,34 +57,39 @@ export const registerUser = async (payload) =>
           message: "User registered (mock)",
           user: {
             id: "mock-user",
-            phoneNumber: payload?.phoneNumber,
+            mobileNumber: payload?.phoneNumber ?? payload?.mobileNumber,
           },
+          token: "mock-token",
         })
       )
   );
 
-export const loginUser = async (payload) =>
+export const loginUser = async (payload = {}) =>
   withApiFallback(
     () =>
-      apiRequest("/auth/login", {
+      apiRequest("/v1/auth/login", {
         method: "POST",
-        body: payload,
+        body: normalizeMobilePayload(payload),
       }),
     () =>
       Promise.resolve(
         createMockResponse({
           message: "Login successful (mock)",
           token: "mock-token",
+          user: {
+            id: "mock-user",
+            mobileNumber: payload?.phoneNumber ?? payload?.mobileNumber,
+          },
         })
       )
   );
 
-export const updatePassword = async (payload) =>
+export const updatePassword = async (payload = {}) =>
   withApiFallback(
     () =>
-      apiRequest("/auth/password", {
+      apiRequest("/v1/auth/password", {
         method: "PATCH",
-        body: payload,
+        body: normalizeMobilePayload(payload),
       }),
     () =>
       Promise.resolve(

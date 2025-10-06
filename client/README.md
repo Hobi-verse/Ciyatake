@@ -8,8 +8,8 @@ Configure API behaviour with the following Vite env variables (create a `.env` f
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `VITE_API_BASE_URL` | `http://localhost:3000` | Base URL for all REST calls. Point this to your Express server once it’s ready. |
-| `VITE_USE_API_MOCKS` | `true` | When truthy, failed network calls automatically fall back to local mock data so the UI keeps working. Set to `false` to surface real API errors while testing the backend. |
+| `VITE_API_BASE_URL` | `http://localhost:4000/api` | Base URL for all REST calls. Point this to your Express server once it’s ready. |
+| `VITE_USE_API_MOCKS` | `false` | When set to `true`, failed network calls automatically fall back to local mock data so the UI keeps working. Leave it `false` to surface real API errors while testing the backend. |
 
 ## Project commands
 
