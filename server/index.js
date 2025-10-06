@@ -1,17 +1,27 @@
+// Load environment variables FIRST before anything else
+require('dotenv').config();
+
 const express = require("express");
 const app = express();
+const cors = require("cors");
 
 const dataBase = require("./config/dataBase");
-const dotenv = require('dotenv');
+const authRoutes = require("./routes/authRoutes");
 
-dotenv.config({ quiet: true });  // Suppress logs
-const PORT = process.env.PORT || 5173;
+const PORT = process.env.PORT || 4000; // Backend on port 4000
 
-//middleware
+//middleware - Enable CORS for frontend communication
+app.use(cors({
+  origin: "http://localhost:5173", // Allow requests from frontend
+  credentials: true,
+}));
 app.use(express.json());
 
 //database connection
 dataBase.connect();
+
+//routes
+app.use("/api/v1/auth", authRoutes); // Mount authentication routes
 
 //default routes
 app.get("/", (req, res) => {
