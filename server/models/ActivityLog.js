@@ -21,19 +21,19 @@ const activityLogSchema = new mongoose.Schema(
       ],
       required: true,
     },
-    
+
     // Activity icon for UI display
     icon: {
       type: String,
       default: "🔔",
     },
-    
+
     // Activity message
     message: {
       type: String,
       required: true,
     },
-    
+
     // Related entities
     relatedEntity: {
       entityType: {
@@ -45,32 +45,32 @@ const activityLogSchema = new mongoose.Schema(
         refPath: "relatedEntity.entityType",
       },
     },
-    
+
     // User who triggered the activity (if applicable)
     triggeredBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    
+
     // Additional metadata
     metadata: {
       type: mongoose.Schema.Types.Mixed,
     },
-    
+
     // Priority level
     priority: {
       type: String,
       enum: ["low", "medium", "high", "urgent"],
       default: "medium",
     },
-    
+
     // Status
     status: {
       type: String,
       enum: ["new", "read", "resolved", "archived"],
       default: "new",
     },
-    
+
     // For admin notifications
     notifiedAdmins: [
       {
@@ -101,7 +101,7 @@ activityLogSchema.statics.getRecentActivities = async function (limit = 10) {
     .sort({ createdAt: -1 })
     .limit(limit)
     .populate("triggeredBy", "fullName email");
-  
+
   return activities.map((activity) => ({
     icon: activity.icon,
     message: activity.message,
@@ -116,12 +116,12 @@ activityLogSchema.statics.getRecentActivities = async function (limit = 10) {
 activityLogSchema.statics.formatTimestamp = function (date) {
   const now = new Date();
   const diff = Math.floor((now - date) / 1000); // difference in seconds
-  
+
   if (diff < 60) return `${diff} seconds ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
   if (diff < 604800) return `${Math.floor(diff / 86400)} days ago`;
-  
+
   return date.toLocaleDateString();
 };
 
@@ -133,14 +133,14 @@ activityLogSchema.statics.logOrderActivity = async function (order, type) {
     order_delivered: "✅",
     order_cancelled: "❌",
   };
-  
+
   const messages = {
     order_placed: `New order ${order.orderNumber} was placed.`,
     order_shipped: `Order ${order.orderNumber} has been shipped.`,
     order_delivered: `Order ${order.orderNumber} was delivered.`,
     order_cancelled: `Order ${order.orderNumber} was cancelled.`,
   };
-  
+
   return await this.create({
     type,
     icon: icons[type] || "🛒",
@@ -163,7 +163,7 @@ activityLogSchema.statics.logUserActivity = async function (user, type) {
   const messages = {
     user_registered: `New user registered: ${user.fullName || user.mobileNumber}.`,
   };
-  
+
   return await this.create({
     type,
     icon: "👤",
@@ -188,7 +188,7 @@ activityLogSchema.statics.logProductActivity = async function (product, type) {
     product_created: `New product added: ${product.title}.`,
     product_updated: `Product updated: ${product.title}.`,
   };
-  
+
   return await this.create({
     type,
     icon: "⚠️",

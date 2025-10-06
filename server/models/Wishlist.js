@@ -7,55 +7,55 @@ const wishlistItemSchema = new mongoose.Schema({
     ref: "Product",
     required: true,
   },
-  
+
   // Variant SKU for specific size/color combination (optional)
   variantSku: {
     type: String,
   },
-  
+
   // Snapshot data (in case product details change)
   title: {
     type: String,
     required: true,
   },
-  
+
   price: {
     type: Number,
     required: true,
     min: 0,
   },
-  
+
   size: {
     type: String,
   },
-  
+
   color: {
     type: String,
   },
-  
+
   imageUrl: {
     type: String,
   },
-  
+
   // Stock availability (computed from product)
   inStock: {
     type: Boolean,
     default: true,
   },
-  
+
   // When item was added to wishlist
   addedAt: {
     type: Date,
     default: Date.now,
   },
-  
+
   // Priority level for user organization
   priority: {
     type: String,
     enum: ["low", "medium", "high"],
     default: "medium",
   },
-  
+
   // User notes about the item
   notes: {
     type: String,
@@ -74,23 +74,23 @@ const wishlistSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    
+
     // Wishlist items
     items: [wishlistItemSchema],
-    
+
     // Wishlist name (for multiple wishlists feature)
     name: {
       type: String,
       default: "My Wishlist",
       trim: true,
     },
-    
+
     // Wishlist privacy setting
     isPublic: {
       type: Boolean,
       default: false,
     },
-    
+
     // Last activity timestamp
     lastActivityAt: {
       type: Date,
@@ -115,12 +115,12 @@ wishlistSchema.methods.addItem = function (itemData) {
       item.productId.toString() === itemData.productId.toString() &&
       (itemData.variantSku ? item.variantSku === itemData.variantSku : true)
   );
-  
+
   if (!existingItem) {
     this.items.push(itemData);
     this.lastActivityAt = new Date();
   }
-  
+
   return !existingItem; // Returns true if item was added
 };
 
@@ -133,7 +133,7 @@ wishlistSchema.methods.removeItem = function (itemId) {
 // Method to update item stock status
 wishlistSchema.methods.updateItemStock = async function () {
   const Product = mongoose.model("Product");
-  
+
   for (const item of this.items) {
     const product = await Product.findById(item.productId);
     if (product) {
@@ -143,7 +143,7 @@ wishlistSchema.methods.updateItemStock = async function () {
       } else {
         item.inStock = product.totalStock > 0;
       }
-      
+
       // Update price if changed
       if (item.variantSku) {
         const variant = product.getVariantBySku(item.variantSku);

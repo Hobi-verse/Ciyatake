@@ -68,7 +68,7 @@ const customerProfileSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    
+
     // Membership information
     membership: {
       tier: {
@@ -94,7 +94,7 @@ const customerProfileSchema = new mongoose.Schema(
         },
       },
     },
-    
+
     // Rewards and wallet
     rewards: {
       rewardPoints: {
@@ -109,7 +109,7 @@ const customerProfileSchema = new mongoose.Schema(
       },
       walletExpiryDate: Date,
     },
-    
+
     // Account statistics
     stats: {
       totalOrders: {
@@ -133,7 +133,7 @@ const customerProfileSchema = new mongoose.Schema(
         min: 0,
       },
     },
-    
+
     // User preferences
     preferences: {
       marketingEmails: {
@@ -165,7 +165,7 @@ const customerProfileSchema = new mongoose.Schema(
         default: "INR",
       },
     },
-    
+
     // Security settings
     security: {
       twoFactorEnabled: {
@@ -186,7 +186,7 @@ const customerProfileSchema = new mongoose.Schema(
         lockedUntil: Date,
       },
     },
-    
+
     // Support information
     support: {
       concierge: {
@@ -209,16 +209,16 @@ const customerProfileSchema = new mongoose.Schema(
       },
       tickets: [supportTicketSchema],
     },
-    
+
     // Profile avatar
     avatar: {
       url: String,
       cloudinaryId: String,
     },
-    
+
     // Birthday (for special offers)
     birthday: Date,
-    
+
     // Referral information
     referral: {
       referralCode: {
@@ -293,18 +293,18 @@ customerProfileSchema.methods.updateMembershipTier = function () {
     Emerald: 100000,
     "Sapphire Elite": 250000,
   };
-  
+
   const tiers = Object.keys(tierThresholds);
   let newTier = "Bronze";
-  
+
   for (const tier of tiers) {
     if (this.stats.totalSpent >= tierThresholds[tier]) {
       newTier = tier;
     }
   }
-  
+
   this.membership.tier = newTier;
-  
+
   // Calculate progress to next tier
   const currentIndex = tiers.indexOf(newTier);
   if (currentIndex < tiers.length - 1) {
@@ -313,7 +313,7 @@ customerProfileSchema.methods.updateMembershipTier = function () {
     const currentThreshold = tierThresholds[newTier];
     const progress = this.stats.totalSpent - currentThreshold;
     const needed = nextThreshold - currentThreshold;
-    
+
     this.membership.nextTier = {
       name: nextTier,
       progressPercent: Math.round((progress / needed) * 100),
@@ -332,7 +332,7 @@ customerProfileSchema.methods.updateMembershipTier = function () {
 customerProfileSchema.methods.recordOrder = function (orderAmount) {
   this.stats.totalOrders += 1;
   this.stats.totalSpent += orderAmount;
-  
+
   // Award reward points (1 point per ₹100 spent)
   const pointsEarned = Math.floor(orderAmount / 100);
   this.addRewardPoints(pointsEarned, "order");
@@ -344,7 +344,7 @@ customerProfileSchema.methods.addTrustedDevice = function (deviceInfo) {
   const existingDevice = this.security.trustedDevices.find(
     (d) => d.deviceId === deviceInfo.deviceId
   );
-  
+
   if (existingDevice) {
     existingDevice.lastActive = new Date();
     existingDevice.location = deviceInfo.location || existingDevice.location;
@@ -360,14 +360,14 @@ customerProfileSchema.methods.addTrustedDevice = function (deviceInfo) {
 customerProfileSchema.methods.generateReferralCode = async function () {
   const User = mongoose.model("User");
   const user = await User.findById(this.userId);
-  
+
   if (!user) return null;
-  
+
   // Generate code from name + random string
   const name = (user.fullName || user.mobileNumber).replace(/\s+/g, "").substring(0, 6).toUpperCase();
   const random = Math.random().toString(36).substring(2, 6).toUpperCase();
   const code = `${name}${random}`;
-  
+
   this.referral.referralCode = code;
   return code;
 };
@@ -375,19 +375,19 @@ customerProfileSchema.methods.generateReferralCode = async function () {
 // Static method to get profile summary for account page
 customerProfileSchema.statics.getAccountSummary = async function (userId) {
   const profile = await this.findOne({ userId }).populate("userId");
-  
+
   if (!profile) return null;
-  
+
   const User = mongoose.model("User");
   const Order = mongoose.model("Order");
   const Wishlist = mongoose.model("Wishlist");
-  
+
   const user = await User.findById(userId);
   const recentOrders = await Order.find({ userId })
     .sort({ placedAt: -1 })
     .limit(5);
   const wishlist = await Wishlist.findOne({ userId });
-  
+
   return {
     profile: {
       id: user._id,

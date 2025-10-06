@@ -9,20 +9,20 @@ const reviewSchema = new mongoose.Schema(
       ref: "Product",
       required: true,
     },
-    
+
     // User who wrote the review
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    
+
     // Order reference (to verify purchase)
     orderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order",
     },
-    
+
     // Rating (1-5 stars)
     rating: {
       type: Number,
@@ -30,14 +30,14 @@ const reviewSchema = new mongoose.Schema(
       min: 1,
       max: 5,
     },
-    
+
     // Review title
     title: {
       type: String,
       trim: true,
       maxlength: 200,
     },
-    
+
     // Review content
     comment: {
       type: String,
@@ -45,7 +45,7 @@ const reviewSchema = new mongoose.Schema(
       trim: true,
       maxlength: 2000,
     },
-    
+
     // Review images
     images: [
       {
@@ -54,27 +54,27 @@ const reviewSchema = new mongoose.Schema(
         alt: String,
       },
     ],
-    
+
     // Verified purchase
     isVerifiedPurchase: {
       type: Boolean,
       default: false,
     },
-    
+
     // Review status
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
-    
+
     // Helpful votes
     helpfulVotes: {
       type: Number,
       default: 0,
       min: 0,
     },
-    
+
     // Users who found this helpful
     helpfulBy: [
       {
@@ -82,7 +82,7 @@ const reviewSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
-    
+
     // Admin response
     adminResponse: {
       message: String,
@@ -92,13 +92,13 @@ const reviewSchema = new mongoose.Schema(
       },
       respondedAt: Date,
     },
-    
+
     // Metadata
     variant: {
       size: String,
       color: String,
     },
-    
+
     // Moderation
     moderatedBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -147,14 +147,14 @@ reviewSchema.statics.calculateProductRating = async function (productId) {
       },
     },
   ]);
-  
+
   if (result.length > 0) {
     return {
       averageRating: Math.round(result[0].averageRating * 10) / 10,
       reviewCount: result[0].reviewCount,
     };
   }
-  
+
   return { averageRating: 0, reviewCount: 0 };
 };
 
@@ -165,7 +165,7 @@ reviewSchema.post("save", async function () {
     const { averageRating, reviewCount } = await this.constructor.calculateProductRating(
       this.productId
     );
-    
+
     await Product.findByIdAndUpdate(this.productId, {
       averageRating,
       reviewCount,

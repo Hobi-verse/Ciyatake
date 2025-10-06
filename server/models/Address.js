@@ -9,86 +9,86 @@ const addressSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    
+
     // Address label (Home, Office, etc.)
     label: {
       type: String,
       trim: true,
       default: "Home",
     },
-    
+
     // Recipient information
     recipient: {
       type: String,
       required: true,
       trim: true,
     },
-    
+
     phone: {
       type: String,
       required: true,
       trim: true,
       match: [/^[+]?[0-9\s\-()]+$/, "Please enter a valid phone number"],
     },
-    
+
     // Address details
     addressLine1: {
       type: String,
       required: true,
       trim: true,
     },
-    
+
     addressLine2: {
       type: String,
       trim: true,
       default: "",
     },
-    
+
     city: {
       type: String,
       required: true,
       trim: true,
     },
-    
+
     state: {
       type: String,
       required: true,
       trim: true,
     },
-    
+
     postalCode: {
       type: String,
       required: true,
       trim: true,
     },
-    
+
     country: {
       type: String,
       required: true,
       trim: true,
       default: "India",
     },
-    
+
     // Default address flag
     isDefault: {
       type: Boolean,
       default: false,
     },
-    
+
     // Address type
     type: {
       type: String,
       enum: ["home", "office", "other"],
       default: "home",
     },
-    
+
     // Additional delivery instructions
     deliveryInstructions: {
       type: String,
       trim: true,
       maxlength: 500,
     },
-    
+
     // Coordinates for future delivery optimization
     coordinates: {
       latitude: Number,
@@ -113,7 +113,7 @@ addressSchema.methods.getFormattedAddress = function () {
     `${this.state} - ${this.postalCode}`,
     this.country,
   ].filter(Boolean);
-  
+
   return parts.join(", ");
 };
 
@@ -132,12 +132,12 @@ addressSchema.pre("save", async function (next) {
 // Static method to get default address for a user
 addressSchema.statics.getDefaultAddress = async function (userId) {
   let defaultAddress = await this.findOne({ userId, isDefault: true });
-  
+
   // If no default address, return the most recently created one
   if (!defaultAddress) {
     defaultAddress = await this.findOne({ userId }).sort({ createdAt: -1 });
   }
-  
+
   return defaultAddress;
 };
 

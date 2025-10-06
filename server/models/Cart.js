@@ -7,52 +7,52 @@ const cartItemSchema = new mongoose.Schema({
     ref: "Product",
     required: true,
   },
-  
+
   // Variant SKU for specific size/color combination
   variantSku: {
     type: String,
     required: true,
   },
-  
+
   // Snapshot data (in case product details change)
   title: {
     type: String,
     required: true,
   },
-  
+
   price: {
     type: Number,
     required: true,
     min: 0,
   },
-  
+
   size: {
     type: String,
     required: true,
   },
-  
+
   color: {
     type: String,
     required: true,
   },
-  
+
   imageUrl: {
     type: String,
   },
-  
+
   quantity: {
     type: Number,
     required: true,
     min: 1,
     default: 1,
   },
-  
+
   // For "Save for later" feature
   savedForLater: {
     type: Boolean,
     default: false,
   },
-  
+
   addedAt: {
     type: Date,
     default: Date.now,
@@ -69,10 +69,10 @@ const cartSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    
+
     // Cart items
     items: [cartItemSchema],
-    
+
     // Computed totals
     totals: {
       subtotal: {
@@ -91,7 +91,7 @@ const cartSchema = new mongoose.Schema(
         min: 0,
       },
     },
-    
+
     // Last activity timestamp
     lastActivityAt: {
       type: Date,
@@ -111,7 +111,7 @@ cartSchema.index({ lastActivityAt: 1 }); // For cleaning abandoned carts
 cartSchema.methods.calculateTotals = function () {
   const activeItems = this.items.filter((item) => !item.savedForLater);
   const savedItems = this.items.filter((item) => item.savedForLater);
-  
+
   this.totals.subtotal = activeItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -121,7 +121,7 @@ cartSchema.methods.calculateTotals = function () {
     0
   );
   this.totals.savedItemCount = savedItems.length;
-  
+
   return this.totals;
 };
 
@@ -134,7 +134,7 @@ cartSchema.methods.addItem = function (itemData) {
       item.variantSku === itemData.variantSku &&
       !item.savedForLater
   );
-  
+
   if (existingItem) {
     // Update quantity
     existingItem.quantity += itemData.quantity || 1;
@@ -142,7 +142,7 @@ cartSchema.methods.addItem = function (itemData) {
     // Add new item
     this.items.push(itemData);
   }
-  
+
   this.lastActivityAt = new Date();
   this.calculateTotals();
 };

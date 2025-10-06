@@ -29,56 +29,56 @@ const categorySchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-    
+
     // Category display name
     name: {
       type: String,
       required: true,
       trim: true,
     },
-    
+
     // Category description
     description: {
       type: String,
       trim: true,
       default: "",
     },
-    
+
     // Hero/banner image for category page
     heroImage: {
       url: String,
       alt: String,
     },
-    
+
     // Parent category (for subcategories)
     parentCategory: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       default: null,
     },
-    
+
     // Available filters for this category
     filters: filterOptionsSchema,
-    
+
     // Display order for navigation
     displayOrder: {
       type: Number,
       default: 0,
     },
-    
+
     // Category status
     isActive: {
       type: Boolean,
       default: true,
     },
-    
+
     // Product count (computed field)
     productCount: {
       type: Number,
       default: 0,
       min: 0,
     },
-    
+
     // SEO metadata
     seo: {
       metaTitle: String,

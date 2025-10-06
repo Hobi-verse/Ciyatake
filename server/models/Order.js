@@ -7,51 +7,51 @@ const orderItemSchema = new mongoose.Schema({
     ref: "Product",
     required: true,
   },
-  
+
   variantSku: {
     type: String,
     required: true,
   },
-  
+
   // Snapshot data (frozen at time of order)
   title: {
     type: String,
     required: true,
   },
-  
+
   size: {
     type: String,
     required: true,
   },
-  
+
   color: {
     type: String,
     required: true,
   },
-  
+
   unitPrice: {
     type: Number,
     required: true,
     min: 0,
   },
-  
+
   quantity: {
     type: Number,
     required: true,
     min: 1,
   },
-  
+
   imageUrl: {
     type: String,
   },
-  
+
   // Item-level discount
   discount: {
     type: Number,
     default: 0,
     min: 0,
   },
-  
+
   // Subtotal for this item
   subtotal: {
     type: Number,
@@ -90,17 +90,17 @@ const orderSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
-    
+
     // Customer reference
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    
+
     // Order items
     items: [orderItemSchema],
-    
+
     // Order status
     status: {
       type: String,
@@ -117,7 +117,7 @@ const orderSchema = new mongoose.Schema(
       ],
       default: "pending",
     },
-    
+
     // Payment information
     payment: {
       method: {
@@ -141,7 +141,7 @@ const orderSchema = new mongoose.Schema(
         ref: "PaymentMethod",
       },
     },
-    
+
     // Pricing breakdown
     pricing: {
       subtotal: {
@@ -170,7 +170,7 @@ const orderSchema = new mongoose.Schema(
         min: 0,
       },
     },
-    
+
     // Shipping information (snapshot of address)
     shipping: {
       recipient: String,
@@ -187,7 +187,7 @@ const orderSchema = new mongoose.Schema(
         ref: "Address",
       },
     },
-    
+
     // Delivery tracking
     delivery: {
       estimatedDeliveryDate: Date,
@@ -196,17 +196,17 @@ const orderSchema = new mongoose.Schema(
       trackingNumber: String,
       courierService: String,
     },
-    
+
     // Order timeline
     timeline: [timelineEventSchema],
-    
+
     // Customer information snapshot
     customer: {
       name: String,
       email: String,
       phone: String,
     },
-    
+
     // Support information
     support: {
       email: {
@@ -222,19 +222,19 @@ const orderSchema = new mongoose.Schema(
         default: "Monday to Saturday, 10am - 6pm IST",
       },
     },
-    
+
     // Order notes
     notes: {
       customerNotes: String,
       internalNotes: String,
     },
-    
+
     // Timestamps
     placedAt: {
       type: Date,
       default: Date.now,
     },
-    
+
     confirmedAt: Date,
     shippedAt: Date,
     deliveredAt: Date,
@@ -267,7 +267,7 @@ orderSchema.methods.calculateGrandTotal = function () {
 // Method to update order status
 orderSchema.methods.updateStatus = function (newStatus, additionalData = {}) {
   this.status = newStatus;
-  
+
   // Update relevant timestamps
   const now = new Date();
   switch (newStatus) {
@@ -287,7 +287,7 @@ orderSchema.methods.updateStatus = function (newStatus, additionalData = {}) {
       this.cancelledAt = now;
       break;
   }
-  
+
   // Add timeline event
   this.timeline.push({
     title: this.getStatusTitle(newStatus),
@@ -334,18 +334,18 @@ orderSchema.methods.getStatusDescription = function (status) {
 orderSchema.statics.generateOrderNumber = async function () {
   const prefix = "CYA";
   const datePart = new Date().toISOString().slice(2, 10).replace(/-/g, ""); // YYMMDD
-  
+
   // Find the last order number for today
   const lastOrder = await this.findOne({
     orderNumber: new RegExp(`^${prefix}-${datePart}`),
   }).sort({ orderNumber: -1 });
-  
+
   let sequence = 1000;
   if (lastOrder) {
     const lastSequence = parseInt(lastOrder.orderNumber.split("-")[2]);
     sequence = lastSequence + 1;
   }
-  
+
   return `${prefix}-${datePart.slice(0, 4)}-${sequence}`;
 };
 
