@@ -7,23 +7,41 @@ const cors = require("cors");
 
 const dataBase = require("./config/dataBase");
 const authRoutes = require("./routes/authRoutes");
+const productRoutes = require("./routes/productRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
+const cartRoutes = require("./routes/cartRoutes");
+const wishlistRoutes = require("./routes/wishlistRoutes");
+const addressRoutes = require("./routes/addressRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const customerProfileRoutes = require("./routes/customerProfileRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
+const couponRoutes = require("./routes/couponRoutes");
+const searchRoutes = require("./routes/searchRoutes");
 
-const PORT = process.env.PORT || 4000; // Backend on port 4000
+const PORT = process.env.PORT || 4000;
 
 //middleware - Enable CORS for frontend communication
 app.use(cors({
-  origin: "http://localhost:5173", // Allow requests from frontend
+  origin: "http://localhost:5173",
   credentials: true,
 }));
 app.use(express.json());
 
-//database connection
 dataBase.connect();
 
 //routes
-app.use("/api/v1/auth", authRoutes); // Mount authentication routes
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/addresses", addressRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/profile", customerProfileRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/search", searchRoutes);
 
-//default routes
 app.get("/", (req, res) => {
   return res.json({
     success: true,

@@ -171,6 +171,18 @@ const orderSchema = new mongoose.Schema(
       },
     },
 
+    // Coupon information
+    coupon: {
+      couponId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Coupon",
+      },
+      code: String,
+      discountType: String,
+      discountValue: Number,
+      discountApplied: Number,
+    },
+
     // Shipping information (snapshot of address)
     shipping: {
       recipient: String,

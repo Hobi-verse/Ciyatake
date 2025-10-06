@@ -102,6 +102,7 @@ const reviewHighlightSchema = new mongoose.Schema({
 const productSchema = new mongoose.Schema(
   {
     // Unique identifier for URL (e.g., "classic-white-tee")
+    // Used as 'id' in frontend for consistency
     slug: {
       type: String,
       required: true,
@@ -213,11 +214,27 @@ productSchema.index({ category: 1 });
 productSchema.index({ tags: 1 });
 productSchema.index({ isActive: 1 });
 productSchema.index({ "variants.sku": 1 });
+productSchema.index({ title: "text", description: "text", tags: "text", "seo.keywords": "text" });
 
 // Virtual for availability
 productSchema.virtual("isAvailable").get(function () {
   return this.isActive && this.totalStock > 0;
 });
+
+// Virtual for 'id' field (frontend compatibility)
+productSchema.virtual("id").get(function () {
+  return this.slug;
+});
+
+// Virtual for primary image URL (backward compatibility)
+productSchema.virtual("imageUrl").get(function () {
+  const primaryMedia = this.media?.find((m) => m.isPrimary);
+  return primaryMedia?.url || this.media?.[0]?.url || "";
+});
+
+// Enable virtuals in JSON output
+productSchema.set("toJSON", { virtuals: true });
+productSchema.set("toObject", { virtuals: true });
 
 // Method to update total stock
 productSchema.methods.updateTotalStock = function () {
@@ -231,6 +248,45 @@ productSchema.methods.updateTotalStock = function () {
 // Method to get variant by SKU
 productSchema.methods.getVariantBySku = function (sku) {
   return this.variants.find((v) => v.sku === sku);
+};
+
+// Method to get available sizes (unique list)
+productSchema.methods.getAvailableSizes = function () {
+  return [...new Set(this.variants.filter((v) => v.isActive).map((v) => v.size))];
+};
+
+// Method to get available colors (unique list with hex)
+productSchema.methods.getAvailableColors = function () {
+  const colorMap = new Map();
+  this.variants
+    .filter((v) => v.isActive)
+    .forEach((v) => {
+      if (!colorMap.has(v.color.name)) {
+        colorMap.set(v.color.name, {
+          value: v.color.name,
+          label: v.color.name.charAt(0).toUpperCase() + v.color.name.slice(1),
+          hex: v.color.hex || v.color.name,
+        });
+      }
+    });
+  return Array.from(colorMap.values());
+};
+
+// Method to transform to frontend format
+productSchema.methods.toFrontendFormat = function () {
+  return {
+    id: this.slug,
+    title: this.title,
+    price: this.basePrice,
+    category: this.category,
+    sizes: this.getAvailableSizes(),
+    colors: this.getAvailableColors(),
+    imageUrl: this.imageUrl,
+    description: this.description,
+    isAvailable: this.isAvailable,
+    averageRating: this.averageRating,
+    reviewCount: this.reviewCount,
+  };
 };
 
 // Pre-save hook to update total stock
