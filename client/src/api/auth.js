@@ -98,3 +98,17 @@ export const updatePassword = async (payload = {}) =>
         })
       )
   );
+
+export const logoutUser = async () =>
+  withApiFallback(
+    () =>
+      apiRequest("/v1/auth/logout", {
+        method: "POST",
+      }),
+    () =>
+      Promise.resolve(
+        createMockResponse({
+          message: "Logout successful (mock)",
+        })
+      )
+  );

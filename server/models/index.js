@@ -14,4 +14,5 @@ module.exports = {
   ActivityLog: require("./ActivityLog"),
   Report: require("./Report"),
   Coupon: require("./Coupon"),
+  TokenBlacklist: require("./TokenBlacklist"),
 };

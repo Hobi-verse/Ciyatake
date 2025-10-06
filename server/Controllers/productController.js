@@ -18,10 +18,15 @@ exports.getAllProducts = async (req, res) => {
       page = 1,
       limit = 12,
       inStock,
+      includeInactive,
     } = req.query;
 
     // Build filter query
-    const filter = { isActive: true };
+    const filter = {};
+
+    if (includeInactive !== "true") {
+      filter.isActive = true;
+    }
 
     // Category filter
     if (category) {

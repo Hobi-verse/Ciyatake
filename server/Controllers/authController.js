@@ -1,11 +1,31 @@
 const User = require("../models/User");
 const OTP = require("../models/OTP");
+const TokenBlacklist = require("../models/TokenBlacklist");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // Generate a random 6-digit OTP
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+const extractTokenFromRequest = (req) => {
+  if (req?.token) {
+    return req.token;
+  }
+
+  if (
+    req?.headers?.authorization &&
+    req.headers.authorization.startsWith("Bearer ")
+  ) {
+    return req.headers.authorization.split(" ")[1];
+  }
+
+  if (req?.cookies?.token) {
+    return req.cookies.token;
+  }
+
+  return null;
 };
 
 // Send OTP to user's mobile number (stored in DB, logged to console for development)
@@ -248,6 +268,37 @@ exports.login = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Login failed. Please try again",
+    });
+  }
+};
+
+// Logout user and invalidate current token
+exports.logout = async (req, res) => {
+  try {
+    const token = extractTokenFromRequest(req);
+
+    if (token) {
+      const decoded = jwt.decode(token);
+      const expiresAt = decoded?.exp
+        ? new Date(decoded.exp * 1000)
+        : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      await TokenBlacklist.addToken(token, expiresAt);
+    }
+
+    if (typeof res.clearCookie === "function") {
+      res.clearCookie("token");
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error("Logout Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Logout failed. Please try again",
     });
   }
 };

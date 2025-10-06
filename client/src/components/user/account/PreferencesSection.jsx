@@ -76,10 +76,14 @@ const PreferencesSection = ({
               key={device.id}
               className="rounded-2xl border border-white/10 bg-white/5 p-3 text-sm text-emerald-200/80"
             >
-              <p className="font-medium text-emerald-100">{device.device}</p>
-              <p className="text-xs text-emerald-200/70">{device.location}</p>
+              <p className="font-medium text-emerald-100">
+                {device.device || "Trusted device"}
+              </p>
               <p className="text-xs text-emerald-200/70">
-                Last active: {device.lastActive}
+                {device.location || "Location unknown"}
+              </p>
+              <p className="text-xs text-emerald-200/70">
+                Last active: {formatDate(device.lastActive)}
               </p>
               {device.trusted ? (
                 <span className="mt-2 inline-flex rounded-full border border-emerald-300/60 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-emerald-100">

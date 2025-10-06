@@ -1,5 +1,6 @@
 const AUTH_TOKEN_STORAGE_KEY = "ciyatake.auth.token";
 const AUTH_USER_STORAGE_KEY = "ciyatake.auth.user";
+export const AUTH_SESSION_EVENT = "auth:session-changed";
 
 const isBrowser = typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 
@@ -16,13 +17,36 @@ const safeParse = (value) => {
   }
 };
 
+const dispatchAuthSessionEvent = ({ token = null, user = null } = {}) => {
+  if (!isBrowser || typeof window.dispatchEvent !== "function") {
+    return;
+  }
+
+  try {
+    window.dispatchEvent(
+      new CustomEvent(AUTH_SESSION_EVENT, {
+        detail: { token, user },
+      })
+    );
+  } catch (error) {
+    console.warn("Failed to dispatch auth session event", error);
+  }
+};
+
 export const storeAuthSession = ({ token, user } = {}) => {
   if (!isBrowser) {
     return;
   }
 
+  const currentSession = getStoredAuthSession();
+  const nextSession = {
+    token: currentSession.token,
+    user: currentSession.user,
+  };
+
   if (token) {
     window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+    nextSession.token = token;
   }
 
   if (user) {
@@ -31,10 +55,13 @@ export const storeAuthSession = ({ token, user } = {}) => {
         AUTH_USER_STORAGE_KEY,
         typeof user === "string" ? user : JSON.stringify(user)
       );
+      nextSession.user = user;
     } catch (error) {
       console.warn("Unable to persist auth user", error);
     }
   }
+
+  dispatchAuthSessionEvent(nextSession);
 };
 
 export const clearAuthSession = () => {
@@ -42,8 +69,19 @@ export const clearAuthSession = () => {
     return;
   }
 
-  window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-  window.localStorage.removeItem(AUTH_USER_STORAGE_KEY);
+  try {
+    window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+  } catch (error) {
+    console.warn("Unable to remove stored auth token", error);
+  }
+
+  try {
+    window.localStorage.removeItem(AUTH_USER_STORAGE_KEY);
+  } catch (error) {
+    console.warn("Unable to remove stored auth user", error);
+  }
+
+  dispatchAuthSessionEvent({ token: null, user: null });
 };
 
 export const getAuthToken = () => {

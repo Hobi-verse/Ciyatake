@@ -5,7 +5,9 @@ const {
   verifyOTP,
   signup,
   login,
+  logout,
 } = require("../Controllers/authController");
+const { protect } = require("../middleware/authMiddleware");
 
 // Route to send OTP to user's mobile number
 router.post("/send-otp", sendOTP);
@@ -18,5 +20,8 @@ router.post("/signup", signup);
 
 // Route to login existing user
 router.post("/login", login);
+
+// Route to logout user and invalidate token
+router.post("/logout", protect, logout);
 
 module.exports = router;

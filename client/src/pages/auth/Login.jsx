@@ -121,14 +121,21 @@ const Login = () => {
 
       storeAuthSession({ token: response.token, user: response.user });
 
+      const redirectPath =
+        response?.user?.role === "admin" ? "/admin/dashboard" : "/";
+
       setStatus({
         type: "success",
-        message: response.message ?? "Login successful. Redirecting...",
+        message:
+          response.message ??
+          `Login successful. Redirecting to${
+            redirectPath === "/" ? " the store" : " the admin dashboard"
+          }...`,
       });
 
       reset?.();
 
-      setTimeout(() => navigate("/"), 500);
+      setTimeout(() => navigate(redirectPath, { replace: true }), 400);
     } catch (error) {
       setStatus({
         type: "error",

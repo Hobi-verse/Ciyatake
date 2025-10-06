@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchProductsSummary } from "../../api/admin.js";
+import {
+  fetchProductsSummary,
+  updateProduct as updateProductRequest,
+  deleteProduct as deleteProductRequest,
+} from "../../api/admin.js";
 import { fetchProductById } from "../../api/catalog.js";
 import ProductUpload from "../../components/admin/products/ProductUpload.jsx";
 
@@ -49,6 +53,30 @@ const formatPrice = (value) => {
   }).format(amount);
 };
 
+const resolveErrorMessage = (error, fallback) => {
+  if (!error) {
+    return fallback;
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  if (error?.payload?.message) {
+    return error.payload.message;
+  }
+
+  if (error?.response?.data?.message) {
+    return error.response.data.message;
+  }
+
+  if (error?.message) {
+    return error.message;
+  }
+
+  return fallback;
+};
+
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +86,13 @@ const Products = () => {
   const [productToDelete, setProductToDelete] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [productToView, setProductToView] = useState(null);
-  const [showCreateDrawer, setShowCreateDrawer] = useState(false);
+  const [drawerState, setDrawerState] = useState({
+    open: false,
+    mode: "create",
+    productId: null,
+  });
+  const [drawerKey, setDrawerKey] = useState(0);
+  const [actionNotice, setActionNotice] = useState(null);
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
@@ -129,7 +163,6 @@ const Products = () => {
       }
     } catch (requestError) {
       setError(requestError);
-      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -138,6 +171,15 @@ const Products = () => {
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
+
+  useEffect(() => {
+    if (!actionNotice?.message) {
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(() => setActionNotice(null), 4000);
+    return () => window.clearTimeout(timeout);
+  }, [actionNotice]);
 
   const metrics = useMemo(() => {
     const total = products.length;
@@ -159,6 +201,7 @@ const Products = () => {
   }, [products]);
 
   const setRowAction = (productId, status) => {
+    setActionNotice(null);
     setActionLoading((current) => ({
       ...current,
       [productId]: status,
@@ -174,26 +217,56 @@ const Products = () => {
   };
 
   const handleToggleStatus = async (productId) => {
+    if (!productId) {
+      return;
+    }
+
+    const targetProduct = products.find((product) => product.id === productId);
+    if (!targetProduct) {
+      return;
+    }
+
+    const nextIsActive = targetProduct.status !== "Active";
+
     setRowAction(productId, "toggling");
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      await updateProductRequest(productId, { isActive: nextIsActive });
+
       setProducts((current) =>
         current.map((product) =>
           product.id === productId
             ? {
                 ...product,
-                status: product.status === "Active" ? "Inactive" : "Active",
+                status: nextIsActive ? "Active" : "Inactive",
               }
             : product
         )
       );
+
+      setActionNotice({
+        type: "success",
+        message: `Product ${
+          nextIsActive ? "published" : "archived"
+        } successfully.`,
+      });
+
+      void loadProducts();
+    } catch (requestError) {
+      setActionNotice({
+        type: "error",
+        message: resolveErrorMessage(
+          requestError,
+          "Unable to update product status. Please try again."
+        ),
+      });
     } finally {
       clearRowAction(productId);
     }
   };
 
   const handleDeleteProduct = (product) => {
+    setActionNotice(null);
     setProductToDelete(product);
     setShowDeleteModal(true);
   };
@@ -207,30 +280,85 @@ const Products = () => {
     setRowAction(productId, "deleting");
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await deleteProductRequest(productId);
       setProducts((current) =>
         current.filter((product) => product.id !== productId)
       );
+      setActionNotice({
+        type: "success",
+        message: "Product archived successfully.",
+      });
       setShowDeleteModal(false);
       setProductToDelete(null);
+      void loadProducts();
+    } catch (requestError) {
+      setActionNotice({
+        type: "error",
+        message: resolveErrorMessage(
+          requestError,
+          "Unable to delete product. Please try again."
+        ),
+      });
     } finally {
       clearRowAction(productId);
     }
   };
 
   const handleViewProduct = (product) => {
+    setActionNotice(null);
     setProductToView(product);
     setShowViewModal(true);
   };
 
   const handleEditProduct = (productId) => {
-    setRowAction(productId, "editing");
+    if (!productId) {
+      return;
+    }
 
-    window.setTimeout(() => {
-      window.alert(`Edit flow for product #${productId} coming soon.`);
-      clearRowAction(productId);
-    }, 500);
+    setActionNotice(null);
+    setDrawerKey((current) => current + 1);
+    setDrawerState({
+      open: true,
+      mode: "edit",
+      productId,
+    });
   };
+
+  const handleDrawerClose = useCallback(() => {
+    setDrawerState({
+      open: false,
+      mode: "create",
+      productId: null,
+    });
+  }, []);
+
+  const openCreateDrawer = useCallback(() => {
+    setActionNotice(null);
+    setDrawerKey((current) => current + 1);
+    setDrawerState({
+      open: true,
+      mode: "create",
+      productId: null,
+    });
+  }, []);
+
+  const handleProductSaved = useCallback(
+    (_product, { mode: resultMode } = {}) => {
+      const finalMode = resultMode ?? drawerState.mode ?? "create";
+
+      setActionNotice({
+        type: "success",
+        message:
+          finalMode === "edit"
+            ? "Product updated successfully."
+            : "Product created successfully.",
+      });
+
+      handleDrawerClose();
+      void loadProducts();
+    },
+    [drawerState.mode, handleDrawerClose, loadProducts]
+  );
 
   return (
     <section className="space-y-6">
@@ -266,7 +394,7 @@ const Products = () => {
 
           <button
             type="button"
-            onClick={() => setShowCreateDrawer(true)}
+            onClick={openCreateDrawer}
             className="inline-flex items-center gap-2 rounded-xl border border-emerald-300/60 bg-white px-4 py-3 font-medium text-emerald-700 shadow-sm transition hover:border-emerald-200 hover:text-emerald-800 hover:shadow"
           >
             <svg
@@ -315,7 +443,22 @@ const Products = () => {
 
       {error ? (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
-          Unable to load products right now. Showing cached data.
+          {resolveErrorMessage(
+            error,
+            "Unable to load products right now. Please try again."
+          )}
+        </div>
+      ) : null}
+
+      {actionNotice?.message ? (
+        <div
+          className={`rounded-2xl border p-4 text-sm shadow-sm ${
+            actionNotice.type === "error"
+              ? "border-rose-200 bg-rose-50 text-rose-700"
+              : "border-emerald-200 bg-emerald-50 text-emerald-700"
+          }`}
+        >
+          {actionNotice.message}
         </div>
       ) : null}
 
@@ -377,9 +520,14 @@ const Products = () => {
         />
       ) : null}
 
-      {showCreateDrawer ? (
-        <CreateDrawer onClose={() => setShowCreateDrawer(false)}>
-          <ProductUpload />
+      {drawerState.open ? (
+        <CreateDrawer mode={drawerState.mode} onClose={handleDrawerClose}>
+          <ProductUpload
+            key={drawerKey}
+            mode={drawerState.mode}
+            productId={drawerState.productId}
+            onSuccess={handleProductSaved}
+          />
         </CreateDrawer>
       ) : null}
     </section>
@@ -826,41 +974,48 @@ const ViewModal = ({ product, onClose, onEdit, onDelete }) => (
   </div>
 );
 
-const CreateDrawer = ({ children, onClose }) => (
-  <div className="fixed inset-0 z-50 flex">
-    <div className="hidden flex-1 bg-black/20 md:block" onClick={onClose} />
-    <div className="relative flex h-full w-full max-w-3xl flex-col overflow-y-auto border-l border-emerald-100 bg-gradient-to-b from-white via-white to-emerald-50 shadow-2xl">
-      <header className="sticky top-0 flex items-center justify-between border-b border-emerald-100 bg-white/90 px-6 py-4 backdrop-blur">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-900">Quick create</h3>
-          <p className="text-sm text-slate-600">
-            Fill out the form below to add a new product without leaving this
-            page.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100"
-        >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+const CreateDrawer = ({ children, mode = "create", onClose }) => {
+  const isEdit = mode === "edit";
+
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <div className="hidden flex-1 bg-black/20 md:block" onClick={onClose} />
+      <div className="relative flex h-full w-full max-w-3xl flex-col overflow-y-auto border-l border-emerald-100 bg-gradient-to-b from-white via-white to-emerald-50 shadow-2xl">
+        <header className="sticky top-0 flex items-center justify-between border-b border-emerald-100 bg-white/90 px-6 py-4 backdrop-blur">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">
+              {isEdit ? "Edit product" : "Quick create"}
+            </h3>
+            <p className="text-sm text-slate-600">
+              {isEdit
+                ? "Update product information without leaving this page."
+                : "Fill out the form below to add a new product without leaving this page."}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </header>
-      <main className="px-6 py-6">{children}</main>
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </header>
+        <main className="px-6 py-6">{children}</main>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default Products;

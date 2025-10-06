@@ -8,7 +8,7 @@ import { fetchWishlist, removeWishlistItem } from "../../api/wishlist.js";
 import { fetchProducts } from "../../api/catalog.js";
 import { addCartItem } from "../../api/cart.js";
 
-const WishlistPage = () => {
+const WishlistPage = ({ isLoggedIn = false }) => {
   const [items, setItems] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,7 +102,7 @@ const WishlistPage = () => {
 
   return (
     <div className="min-h-screen bg-[#07150f] text-emerald-50">
-      <UserNavbar />
+      <UserNavbar isLoggedIn={isLoggedIn} />
       <main className="mx-auto max-w-6xl space-y-12 px-4 py-12">
         <Breadcrumbs
           items={[{ label: "Home", to: "/" }, { label: "Wishlist" }]}

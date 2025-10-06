@@ -1,4 +1,5 @@
 import "./App.css";
+import { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/user/HomePage.jsx";
 import ProductDetailsPage from "./pages/user/ProductDetailsPage.jsx";
@@ -17,9 +18,56 @@ import Products from "./pages/admin/Products.jsx";
 import Customers from "./components/admin/customers/Customers.jsx";
 import Reports from "./components/admin/reports/Reports.jsx";
 import Users from "./components/admin/users/Users.jsx";
+import {
+  AUTH_SESSION_EVENT,
+  AUTH_STORAGE_KEYS,
+  getStoredAuthSession,
+} from "./utils/authStorage";
 
 function App() {
-  const isLoggedIn = !!localStorage.getItem("User1");
+  const [authSession, setAuthSession] = useState(() => getStoredAuthSession());
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const handleSessionEvent = (event) => {
+      const detail = event?.detail ?? {};
+      setAuthSession({
+        token: detail.token ?? null,
+        user: detail.user ?? null,
+      });
+    };
+
+    const handleStorage = (event) => {
+      if (!event) {
+        return;
+      }
+
+      const relevantKeys = [
+        AUTH_STORAGE_KEYS.token,
+        AUTH_STORAGE_KEYS.user,
+        null,
+      ];
+
+      if (!relevantKeys.includes(event.key)) {
+        return;
+      }
+
+      setAuthSession(getStoredAuthSession());
+    };
+
+    window.addEventListener(AUTH_SESSION_EVENT, handleSessionEvent);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener(AUTH_SESSION_EVENT, handleSessionEvent);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
+
+  const isLoggedIn = !!authSession.token;
 
   return (
     <div className="min-h-screen bg-[#07150f]">

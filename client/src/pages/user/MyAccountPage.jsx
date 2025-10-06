@@ -77,7 +77,15 @@ const MyAccountPage = ({ isLoggedIn }) => {
     setPreferenceMessage("");
 
     try {
-      await updateAccountPreferences({ [key]: nextValue });
+      const updatedPreferences = await updateAccountPreferences({
+        [key]: nextValue,
+      });
+      if (updatedPreferences && typeof updatedPreferences === "object") {
+        setPreferences((current) => ({
+          ...current,
+          ...updatedPreferences,
+        }));
+      }
       if (successTimeoutRef.current && typeof window !== "undefined") {
         window.clearTimeout(successTimeoutRef.current);
       }

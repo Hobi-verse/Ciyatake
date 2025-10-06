@@ -4,32 +4,42 @@ import Breadcrumbs from "../../components/common/Breadcrumbs.jsx";
 import CartItem from "../../components/user/cart/CartItem.jsx";
 import SavedItem from "../../components/user/cart/SavedItem.jsx";
 import OrderSummary from "../../components/user/cart/OrderSummary.jsx";
-import { fetchCart, removeCartItem, updateCartItem } from "../../api/cart.js";
+import {
+  fetchCart,
+  removeCartItem,
+  updateCartItem,
+  saveCartItemForLater,
+  moveCartItemToCart,
+  emptyCart,
+} from "../../api/cart.js";
 
 const TAX_RATE = 0.1;
 
-const CartPage = () => {
-  const [items, setItems] = useState([]);
+const CartPage = ({ isLoggedIn = false }) => {
+  const [cart, setCart] = useState(() => emptyCart());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState("");
 
   const refreshCart = useCallback(async ({ signal } = {}) => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetchCart({ signal });
+      const nextCart = await fetchCart({ signal });
       if (signal?.aborted) {
         return;
       }
 
-      setItems(Array.isArray(response) ? response : response?.items ?? []);
+      setCart(nextCart);
+      setActionError("");
     } catch (apiError) {
       if (signal?.aborted) {
         return;
       }
 
       setError(apiError);
+      setCart(emptyCart());
     } finally {
       if (!signal?.aborted) {
         setLoading(false);
@@ -45,71 +55,83 @@ const CartPage = () => {
   }, [refreshCart]);
 
   const cartItems = useMemo(
-    () => items.filter((item) => !item.savedForLater),
-    [items]
+    () => cart.items.filter((item) => !item.savedForLater),
+    [cart.items]
   );
 
   const savedItems = useMemo(
-    () => items.filter((item) => item.savedForLater),
-    [items]
+    () => cart.items.filter((item) => item.savedForLater),
+    [cart.items]
   );
 
   const totals = useMemo(() => {
-    const subtotal = cartItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
+    const subtotal = Number.isFinite(cart.totals.subtotal)
+      ? cart.totals.subtotal
+      : cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const estimatedTax = Math.round(subtotal * TAX_RATE);
     return {
       subtotal,
       estimatedTax,
     };
-  }, [cartItems]);
+  }, [cart.totals.subtotal, cartItems]);
 
-  const handleQuantityChange = (itemId, quantity) => {
+  const handleQuantityChange = async (itemId, quantity) => {
     const nextQuantity = Math.max(1, quantity);
+    setActionError("");
 
-    setItems((current) =>
-      current.map((item) =>
-        item.id === itemId ? { ...item, quantity: nextQuantity } : item
-      )
-    );
-
-    updateCartItem(itemId, { quantity: nextQuantity }).catch(() => {
+    try {
+      const updatedCart = await updateCartItem(itemId, {
+        quantity: nextQuantity,
+      });
+      setCart(updatedCart);
+    } catch (apiError) {
+      setActionError(
+        apiError?.message || "We couldn't update the quantity. Please retry."
+      );
       refreshCart().catch(() => {});
-    });
+    }
   };
 
-  const handleRemove = (itemId) => {
-    setItems((current) => current.filter((item) => item.id !== itemId));
+  const handleRemove = async (itemId) => {
+    setActionError("");
 
-    removeCartItem(itemId).catch(() => {
+    try {
+      const updatedCart = await removeCartItem(itemId);
+      setCart(updatedCart);
+    } catch (apiError) {
+      setActionError(
+        apiError?.message || "We couldn't remove that item just yet."
+      );
       refreshCart().catch(() => {});
-    });
+    }
   };
 
-  const handleSaveForLater = (itemId) => {
-    setItems((current) =>
-      current.map((item) =>
-        item.id === itemId ? { ...item, savedForLater: true } : item
-      )
-    );
+  const handleSaveForLater = async (itemId) => {
+    setActionError("");
 
-    updateCartItem(itemId, { savedForLater: true }).catch(() => {
+    try {
+      const updatedCart = await saveCartItemForLater(itemId);
+      setCart(updatedCart);
+    } catch (apiError) {
+      setActionError(
+        apiError?.message || "We couldn't save that item for later."
+      );
       refreshCart().catch(() => {});
-    });
+    }
   };
 
-  const handleMoveToCart = (itemId) => {
-    setItems((current) =>
-      current.map((item) =>
-        item.id === itemId ? { ...item, savedForLater: false } : item
-      )
-    );
+  const handleMoveToCart = async (itemId) => {
+    setActionError("");
 
-    updateCartItem(itemId, { savedForLater: false }).catch(() => {
+    try {
+      const updatedCart = await moveCartItemToCart(itemId);
+      setCart(updatedCart);
+    } catch (apiError) {
+      setActionError(
+        apiError?.message || "We couldn't move that item back to your cart."
+      );
       refreshCart().catch(() => {});
-    });
+    }
   };
 
   const handleRemoveSaved = (itemId) => {
@@ -118,7 +140,7 @@ const CartPage = () => {
 
   return (
     <div className="min-h-screen bg-[#07150f] text-emerald-50">
-      <UserNavbar />
+      <UserNavbar isLoggedIn={isLoggedIn} />
       <main className="mx-auto max-w-6xl space-y-10 px-4 py-12">
         <Breadcrumbs
           items={[{ label: "Home", to: "/" }, { label: "Shopping Cart" }]}
@@ -173,6 +195,12 @@ const CartPage = () => {
             shippingLabel="Free"
           />
         </section>
+
+        {actionError ? (
+          <div className="rounded-3xl border border-rose-300/40 bg-rose-500/10 p-6 text-sm text-rose-100">
+            {actionError}
+          </div>
+        ) : null}
 
         <section className="rounded-3xl border border-white/5 bg-white/5 p-6 shadow-[0_16px_40px_rgba(8,35,25,0.25)]">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

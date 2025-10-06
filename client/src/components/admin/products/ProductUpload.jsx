@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Button from "../../common/Button.jsx";
 import FormField from "./FormField.jsx";
 import FormSection from "./FormSection.jsx";
@@ -7,6 +7,8 @@ import VideoUploader from "./VideoUploader.jsx";
 import ColorPicker from "./ColorPicker.jsx";
 import MultiSelectTags from "./MultiSelectTags.jsx";
 import RichTextEditor from "./RichTextEditor.jsx";
+import { createProduct, updateProduct } from "../../../api/admin.js";
+import { fetchProductById } from "../../../api/catalog.js";
 import {
   categoryStructure,
   sizeOptions,
@@ -61,8 +63,339 @@ const commonTags = [
   "Trending",
 ];
 
-const ProductUpload = () => {
-  const [form, setForm] = useState(DEFAULT_FORM);
+const deepClone = (value) => {
+  if (typeof structuredClone === "function") {
+    return structuredClone(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => deepClone(item));
+  }
+
+  if (value && typeof value === "object") {
+    const FileCtor = typeof File !== "undefined" ? File : null;
+    const BlobCtor = typeof Blob !== "undefined" ? Blob : null;
+
+    if (
+      (FileCtor && value instanceof FileCtor) ||
+      (BlobCtor && value instanceof BlobCtor)
+    ) {
+      return value;
+    }
+
+    return Object.keys(value).reduce((accumulator, key) => {
+      accumulator[key] = deepClone(value[key]);
+      return accumulator;
+    }, {});
+  }
+
+  return value;
+};
+
+const createInitialForm = () => deepClone(DEFAULT_FORM);
+
+const generateId = () =>
+  typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `id-${Math.random().toString(36).slice(2, 11)}`;
+
+const slugify = (value = "") =>
+  value
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "") || generateId();
+
+const toTitleCase = (value = "") =>
+  value
+    .split(/[\s-_]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+const ensureArray = (value) =>
+  Array.isArray(value) ? value : value ? [value] : [];
+
+const splitMultiline = (value) =>
+  value
+    ?.split(/\r?\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean) ?? [];
+
+const resolveErrorMessage = (error, fallback) => {
+  if (!error) {
+    return fallback;
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  if (error?.payload?.message) {
+    return error.payload.message;
+  }
+
+  if (error?.response?.data?.message) {
+    return error.response.data.message;
+  }
+
+  if (error?.message) {
+    return error.message;
+  }
+
+  return fallback;
+};
+
+const buildMediaPayload = (form) => {
+  const images = ensureArray(form.images).map((image, index) => {
+    const url = image?.url || image?.preview || "";
+    if (!url) {
+      return null;
+    }
+
+    const primaryIndex =
+      typeof form.primaryImageIndex === "number" ? form.primaryImageIndex : 0;
+    const isVideo =
+      typeof image?.type === "string" && image.type.startsWith("video");
+
+    return {
+      url,
+      alt: image?.name || `${form.title || "Product"} image ${index + 1}`,
+      isPrimary: !isVideo && index === primaryIndex,
+      type: isVideo ? "video" : "image",
+    };
+  });
+
+  const video =
+    form.video && (form.video.url || form.video.preview)
+      ? [
+          {
+            url: form.video.url ?? form.video.preview,
+            alt: form.video.name ?? `${form.title || "Product"} video`,
+            isPrimary: false,
+            type: "video",
+          },
+        ]
+      : [];
+
+  return [...images.filter(Boolean), ...video];
+};
+
+const buildDetails = (form) => ({
+  title: form.title ?? "",
+  description: form.description ?? "",
+  features: splitMultiline(form.careInstructions),
+});
+
+const buildSpecifications = (form) => {
+  const specs = [
+    form.material ? { label: "Material", value: form.material } : null,
+    form.fitType ? { label: "Fit", value: form.fitType } : null,
+    form.madeIn ? { label: "Made in", value: form.madeIn } : null,
+    form.warranty ? { label: "Warranty", value: form.warranty } : null,
+    form.shippingTime
+      ? { label: "Shipping time", value: form.shippingTime }
+      : null,
+  ];
+
+  if (typeof form.returnPolicy === "boolean") {
+    specs.push({
+      label: "Return policy",
+      value: form.returnPolicy ? "Eligible for easy returns" : "Final sale",
+    });
+  }
+
+  return specs.filter(Boolean);
+};
+
+const buildSeo = (form, tags) => {
+  const stripHtml = (value = "") => value.replace(/<[^>]*>/g, "");
+  const description =
+    form.metaDescription?.trim() ||
+    stripHtml(form.description ?? "").slice(0, 160);
+
+  return {
+    metaTitle: form.metaTitle?.trim() || form.title?.trim() || "",
+    metaDescription: description,
+    keywords: tags,
+  };
+};
+
+const buildVariants = (form, slug) => {
+  const sizes = ensureArray(form.availableSizes).length
+    ? ensureArray(form.availableSizes)
+    : ["standard"];
+
+  const colors = ensureArray(form.colors).length
+    ? ensureArray(form.colors)
+    : [
+        {
+          value: "default",
+          name: "Default",
+          hex: "#000000",
+        },
+      ];
+
+  const combinations = [];
+  colors.forEach((color) => {
+    sizes.forEach((size) => {
+      combinations.push({ size, color });
+    });
+  });
+
+  const totalStock = Math.max(0, Number.parseInt(form.stockQuantity, 10) || 0);
+
+  const baseSku = (form.sku || slug || generateId())
+    .toString()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 48);
+
+  const imageUrls = buildMediaPayload(form)
+    .filter((media) => media.type === "image")
+    .map((media) => media.url);
+
+  if (!combinations.length) {
+    return [
+      {
+        sku: `${baseSku}-default`.slice(0, 64),
+        size: "standard",
+        color: {
+          name: "default",
+          hex: "",
+        },
+        stockLevel: totalStock,
+        isActive: form.visibility !== "archived",
+      },
+    ];
+  }
+
+  const variants = combinations.map(({ size, color }, index) => {
+    const allocation =
+      Math.floor(totalStock / combinations.length) +
+      (index < totalStock % combinations.length ? 1 : 0);
+
+    const colorValue = color.value ?? color.name ?? `color-${index + 1}`;
+
+    return {
+      sku: `${baseSku}-${size}-${colorValue}`.replace(/-+/g, "-").slice(0, 64),
+      size,
+      color: {
+        name: colorValue,
+        hex: color.hex ?? "",
+      },
+      stockLevel: allocation,
+      isActive: form.visibility !== "archived",
+      images: imageUrls,
+    };
+  });
+
+  return variants;
+};
+
+const prepareProductPayload = (form) => {
+  const title = form.title?.trim();
+  const slug = slugify(title || form.sku || generateId());
+  const tags = ensureArray(form.tags)
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+
+  const variants = buildVariants(form, slug);
+  const totalStock = variants.reduce(
+    (sum, variant) => sum + Math.max(0, Number(variant.stockLevel) || 0),
+    0
+  );
+
+  return {
+    slug,
+    title,
+    description: form.description ?? "",
+    category: slugify(form.category || "general"),
+    basePrice: Math.max(0, Number(form.price) || 0),
+    media: buildMediaPayload(form),
+    benefits: tags.slice(0, 4),
+    details: buildDetails(form),
+    specifications: buildSpecifications(form),
+    reviewHighlights: [],
+    variants,
+    tags,
+    seo: buildSeo(form, tags),
+    isActive: form.visibility !== "draft",
+    totalStock,
+    featured: Boolean(form.featured),
+  };
+};
+
+const mapProductToForm = (product) => {
+  const next = createInitialForm();
+
+  next.title = product.title ?? next.title;
+  next.description = product.description ?? next.description;
+  next.category = toTitleCase(product.category ?? next.category);
+  next.price = product.basePrice ?? product.price ?? next.price;
+  next.stockQuantity = product.totalStock ?? next.stockQuantity;
+  next.sku = product.variants?.[0]?.sku ?? product.id ?? next.sku;
+  next.tags = ensureArray(product.tags);
+  next.availableSizes = ensureArray(product.sizes);
+  next.colors = ensureArray(product.colors).map((color) => ({
+    id: generateId(),
+    name: color.label ?? color.name ?? color.value ?? "Color",
+    hex: color.hex ?? "",
+    value:
+      color.value ??
+      color.name ??
+      slugify(color.label ?? color.name ?? "color"),
+  }));
+  next.images = ensureArray(product.media).map((media, index) => ({
+    id: media._id ?? generateId(),
+    name: media.alt || `${product.title || "Product"} image ${index + 1}`,
+    preview: media.url,
+    url: media.url,
+    type: media.type ?? "image",
+    size: 0,
+  }));
+  const primaryIndex = product.media?.findIndex((media) => media.isPrimary);
+  next.primaryImageIndex =
+    typeof primaryIndex === "number" && primaryIndex >= 0 ? primaryIndex : 0;
+  next.metaTitle = product.seo?.metaTitle ?? next.metaTitle;
+  next.metaDescription = product.seo?.metaDescription ?? next.metaDescription;
+  next.visibility = product.isAvailable ? "published" : "draft";
+  next.careInstructions = product.details?.features?.length
+    ? product.details.features.join("\n")
+    : next.careInstructions;
+  if (product.details?.description) {
+    next.description = product.details.description;
+  }
+
+  const findSpec = (keyword) =>
+    product.specifications?.find((spec) =>
+      spec.label?.toLowerCase().includes(keyword)
+    )?.value;
+
+  next.material = findSpec("material") ?? next.material;
+  next.fitType = findSpec("fit") ?? next.fitType;
+  next.madeIn = findSpec("made") ?? next.madeIn;
+  next.warranty = findSpec("warranty") ?? next.warranty;
+
+  const shipping = findSpec("shipping");
+  if (shipping) {
+    next.shippingTime = shipping;
+  }
+
+  const returnPolicy = findSpec("return");
+  if (returnPolicy) {
+    next.returnPolicy = !/final/i.test(returnPolicy);
+  }
+
+  return next;
+};
+
+const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
+  const initialFormRef = useRef(createInitialForm());
+  const [form, setForm] = useState(() => createInitialForm());
   const [sections, setSections] = useState({
     basic: true,
     media: true,
@@ -74,16 +407,38 @@ const ProductUpload = () => {
   });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
+  const [feedback, setFeedback] = useState(null);
+  const [loadingExisting, setLoadingExisting] = useState(false);
+  const [loadError, setLoadError] = useState(null);
+  const [existingProductId, setExistingProductId] = useState(null);
 
   const availableCategories = useMemo(() => {
-    if (!form.gender) return [];
-    return Object.keys(categoryStructure[form.gender] ?? {});
+    if (form.gender && categoryStructure[form.gender]) {
+      return Object.keys(categoryStructure[form.gender] ?? {});
+    }
+
+    const allCategories = new Set();
+    Object.values(categoryStructure).forEach((group) => {
+      Object.keys(group ?? {}).forEach((category) =>
+        allCategories.add(category)
+      );
+    });
+
+    return Array.from(allCategories);
   }, [form.gender]);
 
   const availableSubCategories = useMemo(() => {
-    if (!form.gender || !form.category) return [];
-    return categoryStructure[form.gender]?.[form.category] ?? [];
+    if (form.gender && form.category) {
+      return categoryStructure[form.gender]?.[form.category] ?? [];
+    }
+
+    if (form.category) {
+      return Object.values(categoryStructure).flatMap(
+        (group) => group[form.category] ?? []
+      );
+    }
+
+    return [];
   }, [form.gender, form.category]);
 
   const availableSizes = useMemo(() => {
@@ -98,25 +453,91 @@ const ProductUpload = () => {
     setSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const updateForm = useCallback((key, value) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => {
-      if (!prev[key]) return prev;
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
-  }, []);
+  const updateForm = useCallback(
+    (keyOrUpdates, value) => {
+      setForm((prev) => {
+        if (typeof keyOrUpdates === "function") {
+          return keyOrUpdates(prev);
+        }
+
+        const next = { ...prev };
+
+        if (typeof keyOrUpdates === "string") {
+          next[keyOrUpdates] =
+            typeof value === "function" ? value(prev[keyOrUpdates]) : value;
+        } else if (
+          keyOrUpdates &&
+          typeof keyOrUpdates === "object" &&
+          !Array.isArray(keyOrUpdates)
+        ) {
+          Object.entries(keyOrUpdates).forEach(([key, val]) => {
+            next[key] = typeof val === "function" ? val(prev[key]) : val;
+          });
+        }
+
+        return next;
+      });
+
+      if (typeof keyOrUpdates === "string") {
+        setErrors((prevErrors) => {
+          if (!prevErrors[keyOrUpdates]) {
+            return prevErrors;
+          }
+          const nextErrors = { ...prevErrors };
+          delete nextErrors[keyOrUpdates];
+          return nextErrors;
+        });
+      } else if (
+        keyOrUpdates &&
+        typeof keyOrUpdates === "object" &&
+        !Array.isArray(keyOrUpdates)
+      ) {
+        const keys = Object.keys(keyOrUpdates);
+        if (keys.length) {
+          setErrors((prevErrors) => {
+            const nextErrors = { ...prevErrors };
+            keys.forEach((key) => {
+              if (nextErrors[key]) {
+                delete nextErrors[key];
+              }
+            });
+            return nextErrors;
+          });
+        }
+      }
+
+      if (feedback) {
+        setFeedback(null);
+      }
+    },
+    [feedback]
+  );
 
   const selectGender = (gender) => {
-    updateForm("gender", gender);
-    updateForm("category", "");
-    updateForm("subCategory", "");
+    updateForm({
+      gender,
+      category: "",
+      subCategory: "",
+    });
   };
 
   const selectCategory = (category) => {
-    updateForm("category", category);
-    updateForm("subCategory", "");
+    const updates = {
+      category,
+      subCategory: "",
+    };
+
+    if (!form.gender) {
+      const match = Object.entries(categoryStructure).find(([, groups]) =>
+        Object.prototype.hasOwnProperty.call(groups, category)
+      );
+
+      if (match) {
+        updates.gender = match[0];
+      }
+    }
+
+    updateForm(updates);
   };
 
   const toggleSize = (size) => {
@@ -128,23 +549,78 @@ const ProductUpload = () => {
     );
   };
 
+  useEffect(() => {
+    if (mode !== "edit") {
+      const emptyForm = createInitialForm();
+      initialFormRef.current = deepClone(emptyForm);
+      setForm(emptyForm);
+      setExistingProductId(null);
+      setLoadError(null);
+      return;
+    }
+
+    if (!productId) {
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingExisting(true);
+    setLoadError(null);
+
+    fetchProductById(productId)
+      .then((detail) => {
+        if (cancelled) {
+          return;
+        }
+
+        if (!detail) {
+          setLoadError("Product not found.");
+          return;
+        }
+
+        const mapped = mapProductToForm(detail);
+        initialFormRef.current = deepClone(mapped);
+        setForm(mapped);
+        setExistingProductId(detail.id ?? productId);
+      })
+      .catch((error) => {
+        if (cancelled) {
+          return;
+        }
+
+        setLoadError(
+          resolveErrorMessage(error, "Unable to load product details.")
+        );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoadingExisting(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, productId]);
+
   const validate = () => {
     const nextErrors = {};
 
     if (!form.title.trim()) nextErrors.title = "Product title is required";
     if (!form.description.trim())
       nextErrors.description = "Product description is required";
-    if (!form.brand.trim()) nextErrors.brand = "Brand is required";
-    if (!form.gender) nextErrors.gender = "Select a target gender";
     if (!form.category) nextErrors.category = "Select a category";
-    if (!form.price) nextErrors.price = "Price is required";
-    if (form.price && Number(form.price) <= 0)
+
+    if (!form.price || Number(form.price) <= 0) {
       nextErrors.price = "Price must be positive";
-    if (!form.stockQuantity)
+    }
+
+    if (form.stockQuantity === "" || form.stockQuantity === null) {
       nextErrors.stockQuantity = "Stock quantity is required";
-    if (form.stockQuantity && Number(form.stockQuantity) < 0) {
+    } else if (Number(form.stockQuantity) < 0) {
       nextErrors.stockQuantity = "Stock cannot be negative";
     }
+
     if (!form.sku.trim()) nextErrors.sku = "SKU is required";
     if (!form.images.length)
       nextErrors.images = "Upload at least one product image";
@@ -168,27 +644,60 @@ const ProductUpload = () => {
     }
 
     setSaving(true);
-    setMessage("");
+    setFeedback(null);
+
+    const payload = prepareProductPayload(form);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      setMessage(
-        "Product saved as draft. Connect the backend to persist the data."
-      );
-      // Keep form data for subsequent edits.
+      if (mode === "edit") {
+        const targetId = existingProductId ?? productId;
+        if (!targetId) {
+          throw new Error("Product identifier is missing.");
+        }
+
+        const updatedProduct = await updateProduct(targetId, payload);
+
+        setFeedback({
+          type: "success",
+          text: "Product updated successfully.",
+        });
+
+        setExistingProductId(payload.slug);
+        initialFormRef.current = deepClone(form);
+        onSuccess?.(updatedProduct ?? null, { mode: "edit" });
+      } else {
+        const createdProduct = await createProduct(payload);
+
+        setFeedback({
+          type: "success",
+          text: "Product created successfully.",
+        });
+
+        const resetFormState = createInitialForm();
+        initialFormRef.current = deepClone(resetFormState);
+        setForm(resetFormState);
+        onSuccess?.(createdProduct ?? null, { mode: "create" });
+      }
     } catch (error) {
-      console.error(error);
-      setMessage("Something went wrong while saving the product.");
+      setFeedback({
+        type: "error",
+        text: resolveErrorMessage(
+          error,
+          mode === "edit"
+            ? "Unable to update product. Please try again."
+            : "Unable to create product. Please try again."
+        ),
+      });
     } finally {
       setSaving(false);
     }
   };
 
-  const resetForm = () => {
-    setForm(DEFAULT_FORM);
+  const resetForm = useCallback(() => {
+    setForm(() => deepClone(initialFormRef.current));
     setErrors({});
-    setMessage("");
-  };
+    setFeedback(null);
+  }, []);
 
   const discountedPrice = useMemo(() => {
     const price = Number(form.price) || 0;
@@ -206,20 +715,31 @@ const ProductUpload = () => {
               Catalog
             </p>
             <h1 className="mt-2 text-3xl font-bold text-slate-900">
-              Add new product
+              {mode === "edit" ? "Edit product" : "Add new product"}
             </h1>
             <p className="text-sm text-slate-600">
-              Provide detailed information so shoppers understand the product
-              instantly.
+              {mode === "edit"
+                ? "Update catalog information and publish changes instantly."
+                : "Provide detailed information so shoppers understand the product instantly."}
             </p>
+            {mode === "edit" && (existingProductId || productId) ? (
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500">
+                Editing {existingProductId || productId}
+              </p>
+            ) : null}
           </div>
           <div className="flex items-center gap-3">
             <Button
               type="button"
               className="border border-emerald-200 bg-white text-emerald-700"
               onClick={resetForm}
+              disabled={
+                saving ||
+                loadingExisting ||
+                (mode === "edit" && Boolean(loadError))
+              }
             >
-              Reset form
+              {mode === "edit" ? "Revert changes" : "Reset form"}
             </Button>
             <Button
               type="button"
@@ -228,6 +748,11 @@ const ProductUpload = () => {
                   ? "bg-white text-emerald-700"
                   : "bg-emerald-600 text-white"
               }`}
+              disabled={
+                saving ||
+                loadingExisting ||
+                (mode === "edit" && Boolean(loadError))
+              }
               onClick={() =>
                 updateForm(
                   "visibility",
@@ -240,9 +765,27 @@ const ProductUpload = () => {
           </div>
         </div>
 
-        {message ? (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-100/60 px-4 py-3 text-sm text-emerald-800">
-            {message}
+        {mode === "edit" && loadingExisting ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            Loading product details…
+          </div>
+        ) : null}
+
+        {loadError ? (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {loadError}
+          </div>
+        ) : null}
+
+        {feedback?.text ? (
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm ${
+              feedback.type === "error"
+                ? "border-rose-200 bg-rose-50 text-rose-700"
+                : "border-emerald-200 bg-emerald-50 text-emerald-700"
+            }`}
+          >
+            {feedback.text}
           </div>
         ) : null}
 
@@ -714,11 +1257,12 @@ const ProductUpload = () => {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-slate-800">
-                  Unsaved changes
+                  {mode === "edit" ? "Review and publish" : "Ready to publish"}
                 </p>
                 <p className="text-xs text-slate-500">
-                  Don’t worry, you can publish after connecting the backend
-                  service.
+                  {mode === "edit"
+                    ? "Save updates to sync with the live catalog."
+                    : "Publish the product to make it available in the store."}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -726,16 +1270,28 @@ const ProductUpload = () => {
                   type="button"
                   onClick={resetForm}
                   className="border border-slate-200 bg-white text-slate-600"
-                  disabled={saving}
+                  disabled={
+                    saving ||
+                    loadingExisting ||
+                    (mode === "edit" && Boolean(loadError))
+                  }
                 >
-                  Discard
+                  {mode === "edit" ? "Revert" : "Reset"}
                 </Button>
                 <Button
                   type="submit"
                   className="bg-emerald-600 px-6 py-2 text-white shadow-lg hover:bg-emerald-700"
-                  disabled={saving}
+                  disabled={
+                    saving ||
+                    loadingExisting ||
+                    (mode === "edit" && Boolean(loadError))
+                  }
                 >
-                  {saving ? "Saving…" : "Save product"}
+                  {saving
+                    ? "Saving…"
+                    : mode === "edit"
+                    ? "Save changes"
+                    : "Save product"}
                 </Button>
               </div>
             </div>

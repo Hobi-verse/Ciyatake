@@ -1,10 +1,15 @@
 // this is just for refrence that how we have to use common components as much as possible main common in single folder named common and then use it in other components we will delete the navbar later as we can use the tarnary operator for the navbar so we will chnage it later
 
+import { useState } from "react";
 import Navbar from "../../common/Navbar.jsx";
 import searchIcon from "../../../assets/icons/search.svg";
 import heartIcon from "../../../assets/icons/heart.svg";
 import bagIcon from "../../../assets/icons/bag.svg";
 import userIcon from "../../../assets/icons/user.svg";
+import loginIcon from "../../../assets/icons/log-in.svg";
+import logoutIcon from "../../../assets/icons/log-out.svg";
+import { logoutUser } from "../../../api/auth";
+import { clearAuthSession } from "../../../utils/authStorage";
 
 const userLinks = [
   { label: "New Arrivals", to: "/new" },
@@ -24,8 +29,54 @@ const UserNavbar = ({
   onSearchChange,
   onSearchSubmit,
   isLoggedIn = false,
+  onLogout,
 }) => {
-  const actions = [
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const performLogout = async () => {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+
+    try {
+      try {
+        await logoutUser();
+      } catch (apiError) {
+        console.error("Logout request failed", apiError);
+      } finally {
+        clearAuthSession();
+
+        if (typeof window !== "undefined" && window.localStorage) {
+          try {
+            window.localStorage.removeItem("User1");
+          } catch (storageError) {
+            console.warn("Unable to clear legacy auth key", storageError);
+          }
+        }
+      }
+
+      if (typeof onLogout === "function") {
+        try {
+          const result = await onLogout();
+          if (result === false) {
+            return;
+          }
+        } catch (handlerError) {
+          console.error("Logout handler threw an error", handlerError);
+        }
+      }
+
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  const commonActions = [
     {
       label: "Wishlist",
       to: "/wishlist",
@@ -36,19 +87,30 @@ const UserNavbar = ({
       to: "/cart",
       icon: createIconRenderer(bagIcon),
     },
+  ];
 
-    isLoggedIn
-      ? {
+  const authActions = isLoggedIn
+    ? [
+        {
           label: "Account",
           to: "/account",
           icon: createIconRenderer(userIcon),
-        }
-      : {
-          label: "Login",
-          to: "/login",
-          variant: "button",
         },
-  ];
+        {
+          label: "Log out",
+          icon: createIconRenderer(logoutIcon),
+          onClick: performLogout,
+        },
+      ]
+    : [
+        {
+          label: "Log in",
+          to: "/login",
+          icon: createIconRenderer(loginIcon),
+        },
+      ];
+
+  const actions = [...commonActions, ...authActions];
 
   return (
     <Navbar

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const TokenBlacklist = require("../models/TokenBlacklist");
 
 // Protect routes - verify JWT token
 exports.protect = async (req, res, next) => {
@@ -28,6 +29,13 @@ exports.protect = async (req, res, next) => {
     }
 
     try {
+      if (await TokenBlacklist.hasToken(token)) {
+        return res.status(401).json({
+          success: false,
+          message: "Your session has ended. Please log in again.",
+        });
+      }
+
       // Verify token
       const decoded = jwt.verify(
         token,
@@ -54,6 +62,7 @@ exports.protect = async (req, res, next) => {
 
       // Attach user to request object
       req.user = user;
+      req.token = token;
       next();
     } catch (error) {
       return res.status(401).json({
