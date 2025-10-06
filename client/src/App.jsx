@@ -13,7 +13,7 @@ import ForgetPass from "./pages/auth/ForgetPass.jsx";
 import AdminDashboardLayout from "./components/admin/common/AdminDashboardLayout.jsx";
 import Dashboard from "./components/admin/dashboard.jsx";
 import Orders from "./components/admin/orders/Orders.jsx";
-import Products from "./components/admin/products/Products.jsx";
+import Products from "./pages/admin/Products.jsx";
 import Customers from "./components/admin/customers/Customers.jsx";
 import Reports from "./components/admin/reports/Reports.jsx";
 import Users from "./components/admin/users/Users.jsx";

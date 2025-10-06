@@ -1,0 +1,855 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { fetchProductsSummary } from "../../api/admin.js";
+import ProductUpload from "../../components/admin/products/ProductUpload.jsx";
+
+const DEFAULT_PRODUCTS = [
+  {
+    id: 1,
+    name: "Classic Cotton T-Shirt",
+    price: 1299,
+    stock: 45,
+    category: "Men's Topwear",
+    status: "Active",
+    image:
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop",
+  },
+  {
+    id: 2,
+    name: "Women's Summer Dress",
+    price: 2499,
+    stock: 23,
+    category: "Women's Dresses",
+    status: "Active",
+    image:
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300&h=300&fit=crop",
+  },
+  {
+    id: 3,
+    name: "Kids Casual Jeans",
+    price: 899,
+    stock: 67,
+    category: "Kids Bottomwear",
+    status: "Active",
+    image:
+      "https://images.unsplash.com/photo-1582787845328-ec93e8b6e062?w=300&h=300&fit=crop",
+  },
+  {
+    id: 4,
+    name: "Premium Leather Jacket",
+    price: 4999,
+    stock: 12,
+    category: "Men's Jackets",
+    status: "Active",
+    image:
+      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=300&h=300&fit=crop",
+  },
+  {
+    id: 5,
+    name: "Formal Shirt",
+    price: 1899,
+    stock: 34,
+    category: "Men's Formal",
+    status: "Active",
+    image:
+      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=300&h=300&fit=crop",
+  },
+  {
+    id: 6,
+    name: "Casual Sneakers",
+    price: 3299,
+    stock: 28,
+    category: "Footwear",
+    status: "Active",
+    image:
+      "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop",
+  },
+];
+
+const FALLBACK_IMAGE =
+  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMiA5QzEzLjEwNDYgOSAxNCA5Ljg5NTQzIDE0IDExQzE0IDEyLjEwNDYgMTMuMTA0NiAxMyAxMiAxM0MxMC44OTU0IDEzIDEwIDEyLjEwNDYgMTAgMTFDMTAgOS44OTU0MyAxMC44OTU0IDkgMTIgOVoiIGZpbGw9IiM5Q0E0QUYiLz4KPHBhdGggZD0iTTMgNkMzIDQuMzQzMTUgNC4zNDMxNSAzIDYgM0gxOEMxOS42NTY5IDMgMjEgNC4zNDMxNSAyMSA2VjE4QzIxIDE5LjY1NjkgMTkuNjU2OSAyMSAxOCAyMUg2QzQuMzQzMTUgMjEgMyAxOS42NTY5IDMgMThWNlpNNiA1QzUuNDQ3NzIgNSA1IDUuNDQ3NzIgNSA2VjE0LjU4NThMNy4yOTI4OSAxMi4yOTI5QzcuNjgzNDIgMTEuOTAyNCA4LjMxNjU4IDExLjkwMjQgOC43MDcxMSAxMi4yOTI5TDEzIDEzLjU4NThMMTYuMjkyOSA5LjI5Mjg5QzE2LjY4MzQgOC45MDIzNyAxNy4zMTY2IDguOTAyMzcgMTcuNzA3MSA5LjI5Mjg5TDE5IDE0LjU4NThWNkMxOSA1LjQ0NzcyIDE4LjU1MjMgNSAxOCA1SDZaIiBmaWxsPSIjOUNBNEFGIi8+Cjwvc3ZnPgo=";
+
+const formatPrice = (value) => {
+  const amount = Number(value ?? 0);
+  if (Number.isNaN(amount)) {
+    return "₹0";
+  }
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
+const Products = () => {
+  const [products, setProducts] = useState(DEFAULT_PRODUCTS);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState({});
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [productToView, setProductToView] = useState(null);
+  const [showCreateDrawer, setShowCreateDrawer] = useState(false);
+
+  const loadProducts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetchProductsSummary();
+      if (Array.isArray(response) && response.length) {
+        setProducts(
+          response.map((product, index) => ({
+            id: product.id ?? index + 1,
+            name: product.name ?? "Untitled product",
+            price: product.price
+              ? Number(String(product.price).replace(/[^0-9]/g, ""))
+              : 0,
+            stock: product.stock ?? 0,
+            category: product.category ?? "Uncategorised",
+            status: product.status ?? "Active",
+            image: product.image,
+          }))
+        );
+      } else {
+        setProducts(DEFAULT_PRODUCTS);
+      }
+    } catch (requestError) {
+      console.warn("Falling back to mock products", requestError);
+      setError(requestError);
+      setProducts(DEFAULT_PRODUCTS);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  const metrics = useMemo(() => {
+    const total = products.length;
+    const active = products.filter(
+      (product) => product.status === "Active"
+    ).length;
+    const lowStock = products.filter(
+      (product) => (product.stock ?? 0) < 20
+    ).length;
+    const categories = new Set(products.map((product) => product.category))
+      .size;
+
+    return {
+      total,
+      active,
+      lowStock,
+      categories,
+    };
+  }, [products]);
+
+  const setRowAction = (productId, status) => {
+    setActionLoading((current) => ({
+      ...current,
+      [productId]: status,
+    }));
+  };
+
+  const clearRowAction = (productId) => {
+    setActionLoading((current) => {
+      const next = { ...current };
+      delete next[productId];
+      return next;
+    });
+  };
+
+  const handleToggleStatus = async (productId) => {
+    setRowAction(productId, "toggling");
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      setProducts((current) =>
+        current.map((product) =>
+          product.id === productId
+            ? {
+                ...product,
+                status: product.status === "Active" ? "Inactive" : "Active",
+              }
+            : product
+        )
+      );
+    } finally {
+      clearRowAction(productId);
+    }
+  };
+
+  const handleDeleteProduct = (product) => {
+    setProductToDelete(product);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) {
+      return;
+    }
+
+    const productId = productToDelete.id;
+    setRowAction(productId, "deleting");
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      setProducts((current) =>
+        current.filter((product) => product.id !== productId)
+      );
+      setShowDeleteModal(false);
+      setProductToDelete(null);
+    } finally {
+      clearRowAction(productId);
+    }
+  };
+
+  const handleViewProduct = (product) => {
+    setProductToView(product);
+    setShowViewModal(true);
+  };
+
+  const handleEditProduct = (productId) => {
+    setRowAction(productId, "editing");
+
+    window.setTimeout(() => {
+      window.alert(`Edit flow for product #${productId} coming soon.`);
+      clearRowAction(productId);
+    }, 500);
+  };
+
+  return (
+    <section className="space-y-6">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold text-slate-900">Products</h2>
+          <p className="mt-1 text-slate-600">
+            Manage your catalog, inventory, and merchandising from a single
+            place.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <Link
+            to="/admin/products/upload"
+            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-medium text-white shadow-lg transition hover:bg-emerald-700 hover:shadow-xl"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Go to uploader
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setShowCreateDrawer(true)}
+            className="inline-flex items-center gap-2 rounded-xl border border-emerald-300/60 bg-white px-4 py-3 font-medium text-emerald-700 shadow-sm transition hover:border-emerald-200 hover:text-emerald-800 hover:shadow"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+            Quick create
+          </button>
+        </div>
+      </header>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Total products"
+          value={loading ? "…" : metrics.total}
+          tone="emerald"
+        />
+        <MetricCard
+          label="Active"
+          value={loading ? "…" : metrics.active}
+          tone="blue"
+          icon="check"
+        />
+        <MetricCard
+          label="Low stock"
+          value={loading ? "…" : metrics.lowStock}
+          tone="amber"
+          icon="alert"
+        />
+        <MetricCard
+          label="Categories"
+          value={loading ? "…" : metrics.categories}
+          tone="purple"
+          icon="grid"
+        />
+      </div>
+
+      {error ? (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
+          Unable to load products right now. Showing cached data.
+        </div>
+      ) : null}
+
+      <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-sm">
+        <div className="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-emerald-100/30 px-6 py-4">
+          <h3 className="text-lg font-semibold text-emerald-900">
+            Product catalog
+          </h3>
+        </div>
+
+        <div className="grid gap-6 p-6 md:grid-cols-2 xl:grid-cols-3">
+          {(loading ? Array.from({ length: 6 }) : products).map(
+            (product, index) => (
+              <ProductCard
+                key={product?.id ?? index}
+                loading={loading}
+                product={product}
+                isBusy={Boolean(product && actionLoading[product.id])}
+                busyState={product ? actionLoading[product.id] : undefined}
+                onView={() => product && handleViewProduct(product)}
+                onEdit={() => product && handleEditProduct(product.id)}
+                onToggle={() => product && handleToggleStatus(product.id)}
+                onDelete={() => product && handleDeleteProduct(product)}
+              />
+            )
+          )}
+        </div>
+      </div>
+
+      {showDeleteModal && productToDelete ? (
+        <DeleteModal
+          product={productToDelete}
+          busy={Boolean(actionLoading[productToDelete.id])}
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setProductToDelete(null);
+          }}
+          onConfirm={handleConfirmDelete}
+        />
+      ) : null}
+
+      {showViewModal && productToView ? (
+        <ViewModal
+          product={productToView}
+          onClose={() => {
+            setShowViewModal(false);
+            setProductToView(null);
+          }}
+          onEdit={() => {
+            setShowViewModal(false);
+            setProductToView(null);
+            handleEditProduct(productToView.id);
+          }}
+          onDelete={() => {
+            setShowViewModal(false);
+            setProductToView(null);
+            handleDeleteProduct(productToView);
+          }}
+        />
+      ) : null}
+
+      {showCreateDrawer ? (
+        <CreateDrawer onClose={() => setShowCreateDrawer(false)}>
+          <ProductUpload />
+        </CreateDrawer>
+      ) : null}
+    </section>
+  );
+};
+
+const MetricCard = ({ label, value, tone = "emerald", icon = "box" }) => {
+  const tones = {
+    emerald: {
+      background: "from-emerald-50 to-emerald-100/50",
+      border: "border-emerald-200",
+      icon: "text-emerald-700",
+      badge: "bg-emerald-200",
+    },
+    blue: {
+      background: "from-blue-50 to-blue-100/50",
+      border: "border-blue-200",
+      icon: "text-blue-700",
+      badge: "bg-blue-200",
+    },
+    amber: {
+      background: "from-amber-50 to-amber-100/50",
+      border: "border-amber-200",
+      icon: "text-amber-700",
+      badge: "bg-amber-200",
+    },
+    purple: {
+      background: "from-purple-50 to-purple-100/50",
+      border: "border-purple-200",
+      icon: "text-purple-700",
+      badge: "bg-purple-200",
+    },
+  };
+
+  const toneStyles = tones[tone] ?? tones.emerald;
+
+  const iconPath = {
+    box: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4",
+    check: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+    alert:
+      "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z",
+    grid: "M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10",
+  };
+
+  return (
+    <div
+      className={`rounded-xl border ${toneStyles.border} bg-gradient-to-r ${toneStyles.background} p-4 shadow-sm transition hover:shadow-md`}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-slate-600">{label}</p>
+          <p className="text-2xl font-bold text-slate-900">{value}</p>
+        </div>
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-lg ${toneStyles.badge}`}
+        >
+          <svg
+            className={`h-5 w-5 ${toneStyles.icon}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d={iconPath[icon] ?? iconPath.box}
+            />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ProductCard = ({
+  loading,
+  product,
+  isBusy,
+  busyState,
+  onView,
+  onEdit,
+  onToggle,
+  onDelete,
+}) => {
+  if (loading) {
+    return (
+      <div className="animate-pulse rounded-xl border border-emerald-100/50 bg-gradient-to-br from-white to-emerald-50/20 p-5">
+        <div className="mb-4 h-32 w-full rounded-lg bg-slate-200" />
+        <div className="mb-2 h-4 rounded bg-slate-200" />
+        <div className="mb-4 h-3 w-3/5 rounded bg-slate-200" />
+        <div className="mb-4 flex justify-between">
+          <div className="h-3 w-1/3 rounded bg-slate-200" />
+          <div className="h-3 w-1/4 rounded bg-slate-200" />
+        </div>
+        <div className="h-9 rounded bg-slate-200" />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return null;
+  }
+
+  const statusIsActive = product.status === "Active";
+
+  return (
+    <div className="group rounded-xl border border-emerald-100/60 bg-gradient-to-br from-white to-emerald-50/30 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+      <div className="relative mb-4 overflow-hidden rounded-lg bg-slate-100">
+        <div className="aspect-square">
+          <img
+            src={product.image ?? FALLBACK_IMAGE}
+            alt={product.name}
+            className="h-full w-full object-cover transition duration-200 group-hover:scale-105"
+            onError={(event) => {
+              event.currentTarget.src = FALLBACK_IMAGE;
+            }}
+          />
+        </div>
+        <span
+          className={`absolute left-4 top-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold text-white shadow ${
+            statusIsActive ? "bg-emerald-500" : "bg-slate-500"
+          }`}
+        >
+          <span
+            className={`h-2 w-2 rounded-full ${
+              statusIsActive ? "bg-emerald-200" : "bg-slate-200"
+            }`}
+          />
+          {product.status}
+        </span>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <h3 className="text-lg font-semibold text-slate-900">
+            {product.name}
+          </h3>
+          <p className="text-sm text-emerald-600">{product.category}</p>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div>
+              <p className="text-xs text-slate-500">Price</p>
+              <p className="font-semibold text-emerald-700">
+                {formatPrice(product.price)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Stock</p>
+              <p
+                className={`font-semibold ${
+                  (product.stock ?? 0) < 20
+                    ? "text-amber-600"
+                    : "text-slate-700"
+                }`}
+              >
+                {product.stock ?? 0}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onToggle}
+            disabled={isBusy}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
+              statusIsActive ? "bg-emerald-600" : "bg-slate-300"
+            } ${isBusy ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                statusIsActive ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 pt-3">
+          <ActionButton label="View" onClick={onView} />
+          <ActionButton
+            label="Edit"
+            variant="primary"
+            onClick={onEdit}
+            busy={busyState === "editing"}
+          />
+          <ActionButton
+            label="Delete"
+            variant="danger"
+            onClick={onDelete}
+            busy={busyState === "deleting"}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ActionButton = ({
+  label,
+  variant = "default",
+  onClick,
+  busy = false,
+}) => {
+  const variants = {
+    default: "border border-emerald-200 text-emerald-700 hover:bg-emerald-50",
+    primary: "bg-emerald-600 text-white hover:bg-emerald-700",
+    danger: "border border-red-200 text-red-600 hover:bg-red-50",
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={busy}
+      className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+        busy ? "cursor-not-allowed opacity-60" : ""
+      } ${variants[variant] ?? variants.default}`}
+    >
+      {busy ? <Spinner /> : null}
+      {label}
+    </button>
+  );
+};
+
+const Spinner = () => (
+  <span className="inline-block h-4 w-4 animate-spin rounded-full border border-current border-t-transparent" />
+);
+
+const DeleteModal = ({ product, busy, onCancel, onConfirm }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+          <svg
+            className="h-6 w-6 text-red-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
+          </svg>
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-slate-900">
+            Delete product
+          </h3>
+          <p className="text-sm text-slate-600">
+            This action cannot be undone.
+          </p>
+        </div>
+      </div>
+
+      <div className="mb-6 rounded-xl bg-slate-50 p-4">
+        <div className="flex items-center gap-3">
+          <img
+            src={product.image ?? FALLBACK_IMAGE}
+            alt={product.name}
+            className="h-12 w-12 rounded-lg object-cover"
+            onError={(event) => {
+              event.currentTarget.src = FALLBACK_IMAGE;
+            }}
+          />
+          <div>
+            <p className="font-medium text-slate-900">{product.name}</p>
+            <p className="text-sm text-slate-500">{product.category}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={busy}
+          className="flex-1 rounded-lg border border-slate-200 px-4 py-2 font-medium text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={busy}
+          className="flex-1 rounded-lg bg-red-600 px-4 py-2 font-medium text-white shadow-md transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {busy ? (
+            <span className="flex items-center justify-center gap-2">
+              <Spinner />
+              Deleting…
+            </span>
+          ) : (
+            "Delete product"
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+const ViewModal = ({ product, onClose, onEdit, onDelete }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+      <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
+        <h3 className="text-xl font-semibold text-slate-900">
+          Product details
+        </h3>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100"
+        >
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </header>
+
+      <div className="grid gap-6 p-6 md:grid-cols-2">
+        <div className="space-y-4">
+          <div className="overflow-hidden rounded-xl bg-slate-100">
+            <img
+              src={product.image ?? FALLBACK_IMAGE}
+              alt={product.name}
+              className="h-full w-full object-cover"
+              onError={(event) => {
+                event.currentTarget.src = FALLBACK_IMAGE;
+              }}
+            />
+          </div>
+          <span
+            className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium ${
+              product.status === "Active"
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-slate-100 text-slate-600"
+            }`}
+          >
+            <span
+              className={`h-2 w-2 rounded-full ${
+                product.status === "Active" ? "bg-emerald-400" : "bg-slate-400"
+              }`}
+            />
+            {product.status}
+          </span>
+        </div>
+
+        <div className="space-y-6">
+          <div>
+            <h4 className="text-2xl font-bold text-slate-900">
+              {product.name}
+            </h4>
+            <p className="text-emerald-600">{product.category}</p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-lg bg-emerald-50 p-4">
+              <p className="text-sm font-medium text-emerald-600">Price</p>
+              <p className="text-2xl font-bold text-emerald-800">
+                {formatPrice(product.price)}
+              </p>
+            </div>
+            <div
+              className={`${
+                (product.stock ?? 0) < 20 ? "bg-amber-50" : "bg-slate-50"
+              } rounded-lg p-4`}
+            >
+              <p
+                className={`text-sm font-medium ${
+                  (product.stock ?? 0) < 20
+                    ? "text-amber-600"
+                    : "text-slate-600"
+                }`}
+              >
+                Stock remaining
+              </p>
+              <p
+                className={`text-2xl font-bold ${
+                  (product.stock ?? 0) < 20
+                    ? "text-amber-800"
+                    : "text-slate-800"
+                }`}
+              >
+                {product.stock ?? 0}
+              </p>
+            </div>
+          </div>
+
+          <dl className="space-y-3 text-sm text-slate-600">
+            <div className="flex justify-between">
+              <dt>SKU</dt>
+              <dd className="font-medium">#{product.id}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt>Status</dt>
+              <dd className="font-medium">{product.status}</dd>
+            </div>
+          </dl>
+
+          <div className="rounded-lg bg-slate-50 p-4">
+            <h5 className="mb-2 font-medium text-slate-900">
+              Quick description
+            </h5>
+            <p className="text-sm text-slate-600">
+              High-quality {product.name.toLowerCase()} from our curated
+              selection. Crafted for everyday wear with attention to detail and
+              durability.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3 border-t border-slate-200 pt-4">
+            <button
+              type="button"
+              onClick={onEdit}
+              className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white shadow-md transition hover:bg-emerald-700"
+            >
+              Edit product
+            </button>
+            <button
+              type="button"
+              onClick={onDelete}
+              className="rounded-lg border border-red-200 px-4 py-2 font-medium text-red-600 transition hover:bg-red-50"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const CreateDrawer = ({ children, onClose }) => (
+  <div className="fixed inset-0 z-50 flex">
+    <div className="hidden flex-1 bg-black/20 md:block" onClick={onClose} />
+    <div className="relative flex h-full w-full max-w-3xl flex-col overflow-y-auto border-l border-emerald-100 bg-gradient-to-b from-white via-white to-emerald-50 shadow-2xl">
+      <header className="sticky top-0 flex items-center justify-between border-b border-emerald-100 bg-white/90 px-6 py-4 backdrop-blur">
+        <div>
+          <h3 className="text-lg font-semibold text-slate-900">Quick create</h3>
+          <p className="text-sm text-slate-600">
+            Fill out the form below to add a new product without leaving this
+            page.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100"
+        >
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </header>
+      <main className="px-6 py-6">{children}</main>
+    </div>
+  </div>
+);
+
+export default Products;
