@@ -1,15 +1,21 @@
 const mongoose = require("mongoose");
 // require("dotenv").config();
 
-exports.connect = ()=>{
-    mongoose.connect(process.env.MONGODB_URL)
+exports.connect = () => {
+    const mongoUri = process.env.MONGODB_URI;
 
-    .then(()=> console.log("DB connected successfully"))
-
-    .catch((error)=>{
-        console.log("Db connection Failed");
-        console.log(error);
-        console.error(error);
+    if (!mongoUri || typeof mongoUri !== "string") {
+        console.error("Db connection Failed");
+        console.error(new Error("MONGODB_URI environment variable is missing"));
         process.exit(1);
-    });
+    }
+
+    mongoose
+        .connect(mongoUri)
+        .then(() => console.log("DB connected successfully"))
+        .catch((error) => {
+            console.log("Db connection Failed");
+            console.error(error);
+            process.exit(1);
+        });
 };

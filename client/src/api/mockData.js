@@ -1,9 +1,7 @@
 import cartJson from "../data/cart.json";
 import checkoutJson from "../data/checkout.json";
 import confirmationJson from "../data/confirmation.json";
-import productsJson from "../data/products.json";
 import wishlistJson from "../data/wishlist.json";
-import { getProductDetailById } from "../data/productDetail.js";
 
 const clone = (value) => {
   if (typeof structuredClone === "function") {
@@ -12,11 +10,6 @@ const clone = (value) => {
 
   return JSON.parse(JSON.stringify(value));
 };
-
-export const getMockProducts = async () => clone(productsJson);
-
-export const getMockProductDetail = async (productId) =>
-  clone(getProductDetailById(productId));
 
 export const getMockCart = async () => clone(cartJson);
 
@@ -68,12 +61,6 @@ export const getMockRecentActivities = async () => [
     message: "New order #1005 was placed.",
     timestamp: "Yesterday",
   },
-];
-
-export const getMockProductSummaries = async () => [
-  { id: 1, name: "Eco-Friendly Water Bottle", price: "$25.00", stock: 120 },
-  { id: 2, name: "Reusable Bamboo Cutlery", price: "$15.00", stock: 80 },
-  { id: 3, name: "Organic Cotton Tote Bag", price: "$18.00", stock: 45 },
 ];
 
 export const getMockCustomers = async () => [

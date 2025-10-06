@@ -29,16 +29,22 @@ const WishlistPage = () => {
         return;
       }
 
-      setItems(
-        Array.isArray(wishlistResponse)
-          ? wishlistResponse
-          : wishlistResponse?.items ?? []
-      );
-      setAllProducts(
-        Array.isArray(productsResponse)
-          ? productsResponse
-          : productsResponse?.items ?? []
-      );
+      const wishlistItems = Array.isArray(wishlistResponse?.items)
+        ? wishlistResponse.items
+        : Array.isArray(wishlistResponse)
+        ? wishlistResponse
+        : [];
+
+      const productItems = Array.isArray(productsResponse?.items)
+        ? productsResponse.items
+        : Array.isArray(productsResponse?.products)
+        ? productsResponse.products
+        : Array.isArray(productsResponse)
+        ? productsResponse
+        : [];
+
+      setItems(wishlistItems);
+      setAllProducts(productItems);
     } catch (apiError) {
       if (!signal?.aborted) {
         setError(apiError);

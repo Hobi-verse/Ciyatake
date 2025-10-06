@@ -1,27 +1,22 @@
-import { apiRequest, withApiFallback } from "./client";
-import { getMockWishlist } from "./mockData";
+import { apiRequest } from "./client";
 
-export const fetchWishlist = async ({ signal } = {}) =>
-  withApiFallback(
-    () => apiRequest("/wishlist", { signal }),
-    () => getMockWishlist()
-  );
+export const fetchWishlist = async ({ signal } = {}) => {
+  const payload = await apiRequest("/wishlist", { signal });
+  const wishlist = payload?.data?.wishlist;
+
+  return {
+    ...(wishlist ?? {}),
+    items: Array.isArray(wishlist?.items) ? wishlist.items : [],
+  };
+};
 
 export const addWishlistItem = async (payload) =>
-  withApiFallback(
-    () =>
-      apiRequest("/wishlist", {
-        method: "POST",
-        body: payload,
-      }),
-    () => Promise.resolve({ success: true })
-  );
+  apiRequest("/wishlist", {
+    method: "POST",
+    body: payload,
+  });
 
 export const removeWishlistItem = async (itemId) =>
-  withApiFallback(
-    () =>
-      apiRequest(`/wishlist/${itemId}`, {
-        method: "DELETE",
-      }),
-    () => Promise.resolve({ success: true })
-  );
+  apiRequest(`/wishlist/${itemId}`, {
+    method: "DELETE",
+  });

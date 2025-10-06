@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import RatingDisplay from "../../common/RatingDisplay.jsx";
 import SelectionGroup from "../../common/SelectionGroup.jsx";
 import ColorSwatchGroup from "../../common/ColorSwatchGroup.jsx";
@@ -6,11 +6,35 @@ import QuantitySelector from "../../common/QuantitySelector.jsx";
 import { formatINR } from "../../../utils/currency.js";
 
 const ProductSummary = ({ product, onAddToCart, onBuyNow }) => {
-  const [size, setSize] = useState(product.defaultSize ?? product.sizes?.[0]);
-  const [color, setColor] = useState(
-    product.defaultColor ?? product.colors?.[0]?.value ?? product.colors?.[0]
+  const defaultSize = useMemo(
+    () => product.defaultSize ?? product.sizes?.[0] ?? null,
+    [product.defaultSize, product.sizes]
   );
+
+  const defaultColor = useMemo(() => {
+    if (product.defaultColor) {
+      return product.defaultColor;
+    }
+
+    const firstColor = product.colors?.[0];
+    if (!firstColor) {
+      return null;
+    }
+
+    return typeof firstColor === "string"
+      ? firstColor
+      : firstColor.value ?? firstColor.name ?? null;
+  }, [product.colors, product.defaultColor]);
+
+  const [size, setSize] = useState(defaultSize);
+  const [color, setColor] = useState(defaultColor);
   const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    setSize(defaultSize);
+    setColor(defaultColor);
+    setQuantity(1);
+  }, [defaultColor, defaultSize, product.id]);
 
   const sizeOptions = useMemo(
     () =>
@@ -33,6 +57,30 @@ const ProductSummary = ({ product, onAddToCart, onBuyNow }) => {
     );
   }, [product.colors]);
 
+  const ratingValue = useMemo(
+    () => Number(product.rating ?? product.averageRating ?? 0),
+    [product.rating, product.averageRating]
+  );
+
+  const reviewCountValue = product.reviewCount ?? product.reviewsCount ?? 0;
+
+  const summaryText = product.summary ?? product.description ?? "";
+
+  const benefits = useMemo(() => {
+    if (!Array.isArray(product.benefits)) {
+      return [];
+    }
+
+    return product.benefits.map((benefit) =>
+      typeof benefit === "string"
+        ? { title: benefit, description: "" }
+        : {
+            title: benefit.title ?? "Benefit",
+            description: benefit.description ?? benefit.detail ?? "",
+          }
+    );
+  }, [product.benefits]);
+
   const handleAddToCart = () => {
     onAddToCart?.({ product, size, color, quantity });
   };
@@ -50,11 +98,11 @@ const ProductSummary = ({ product, onAddToCart, onBuyNow }) => {
         <h1 className="text-3xl font-semibold text-white sm:text-4xl">
           {product.title}
         </h1>
-        <RatingDisplay rating={product.rating} count={product.reviewCount} />
+        <RatingDisplay rating={ratingValue} count={reviewCountValue} />
       </header>
 
       <p className="text-sm leading-relaxed text-emerald-100/80">
-        {product.summary}
+        {summaryText}
       </p>
 
       <div className="rounded-2xl bg-[#0d221c] p-4 text-lg font-semibold text-emerald-100">
@@ -128,19 +176,25 @@ const ProductSummary = ({ product, onAddToCart, onBuyNow }) => {
         </button>
       </div>
 
-      <ul className="space-y-3 rounded-2xl bg-[#0d221c] p-4 text-sm text-emerald-100/80">
-        {product.benefits?.map((benefit) => (
-          <li key={benefit.title} className="flex gap-3">
-            <span aria-hidden className="mt-1 text-emerald-300">
-              •
-            </span>
-            <div>
-              <p className="font-semibold text-emerald-100">{benefit.title}</p>
-              <p className="text-emerald-200/80">{benefit.description}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {benefits.length ? (
+        <ul className="space-y-3 rounded-2xl bg-[#0d221c] p-4 text-sm text-emerald-100/80">
+          {benefits.map((benefit, index) => (
+            <li key={`${benefit.title}-${index}`} className="flex gap-3">
+              <span aria-hidden className="mt-1 text-emerald-300">
+                •
+              </span>
+              <div>
+                <p className="font-semibold text-emerald-100">
+                  {benefit.title}
+                </p>
+                {benefit.description ? (
+                  <p className="text-emerald-200/80">{benefit.description}</p>
+                ) : null}
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </section>
   );
 };

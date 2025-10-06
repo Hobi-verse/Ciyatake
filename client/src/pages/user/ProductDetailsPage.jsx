@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Breadcrumbs from "../../components/common/Breadcrumbs.jsx";
 import SectionHeading from "../../components/common/SectionHeading.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
@@ -10,6 +10,119 @@ import ProductInformation from "../../components/user/product/ProductInformation
 import ProductReviewsSummary from "../../components/user/product/ProductReviewsSummary.jsx";
 import UserNavbar from "../../components/user/common/UserNavbar.jsx";
 import { fetchProductById } from "../../api/catalog.js";
+
+const normalizeMedia = (media = [], fallbackAlt = "") =>
+  media
+    .map((item) => {
+      if (!item) {
+        return null;
+      }
+
+      const src = item.src ?? item.url;
+      const thumbnail = item.thumbnail ?? item.preview ?? src;
+
+      if (!src) {
+        return null;
+      }
+
+      return {
+        src,
+        thumbnail,
+        alt: item.alt ?? fallbackAlt,
+        tag: item.tag,
+      };
+    })
+    .filter(Boolean);
+
+const normalizeBenefits = (benefits = []) =>
+  benefits.map((benefit) =>
+    typeof benefit === "string"
+      ? { title: benefit, description: "" }
+      : {
+          title: benefit.title ?? "Benefit",
+          description: benefit.description ?? benefit.detail ?? "",
+        }
+  );
+
+const normalizeColors = (colors = []) =>
+  colors
+    .map((color) => {
+      if (!color) {
+        return null;
+      }
+
+      if (typeof color === "string") {
+        const formattedLabel = color
+          .split(/[\s-_]+/)
+          .filter(Boolean)
+          .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+          .join(" ");
+
+        return {
+          value: color,
+          label: formattedLabel,
+          hex: undefined,
+        };
+      }
+
+      const value = color.value ?? color.name;
+      if (!value) {
+        return null;
+      }
+
+      return {
+        value,
+        label: color.label ?? color.name ?? value,
+        hex: color.hex,
+      };
+    })
+    .filter(Boolean);
+
+const normalizeRelatedProducts = (relatedProducts = []) =>
+  relatedProducts.map((product) => {
+    const id = product.id ?? product.slug ?? product._id ?? product.productId;
+    return {
+      id,
+      title: product.title ?? product.name ?? "Untitled product",
+      price: product.price ?? product.basePrice ?? 0,
+      imageUrl:
+        product.imageUrl ?? product.media?.[0]?.url ?? product.thumbnail ?? "",
+    };
+  });
+
+const transformProductDetail = (product) => {
+  if (!product) {
+    return null;
+  }
+
+  const price = product.price ?? product.basePrice ?? 0;
+  const rating = Number(product.rating ?? product.averageRating ?? 0);
+  const reviewCount = product.reviewCount ?? product.reviewsCount ?? 0;
+
+  return {
+    ...product,
+    price,
+    summary: product.summary ?? product.description ?? "",
+    rating,
+    reviewCount,
+    colors: normalizeColors(product.colors),
+    media: (() => {
+      const media = normalizeMedia(product.media, product.title);
+      if (!media.length && product.imageUrl) {
+        media.push({
+          src: product.imageUrl,
+          thumbnail: product.imageUrl,
+          alt: product.title,
+        });
+      }
+      return media;
+    })(),
+    benefits: normalizeBenefits(product.benefits),
+    specifications: product.specifications ?? [],
+    details: product.details ?? {},
+    relatedProducts: normalizeRelatedProducts(product.relatedProducts),
+  };
+};
 
 const ProductDetailsPage = () => {
   const { productId } = useParams();
@@ -27,12 +140,12 @@ const ProductDetailsPage = () => {
     setError(null);
 
     try {
-      const response = await fetchProductById(targetProductId, { signal });
+      const product = await fetchProductById(targetProductId, { signal });
       if (signal?.aborted) {
         return;
       }
 
-      setProductDetail(response);
+      setProductDetail(transformProductDetail(product));
     } catch (apiError) {
       if (!signal?.aborted) {
         setError(apiError);
@@ -65,10 +178,6 @@ const ProductDetailsPage = () => {
     );
     window.setTimeout(() => setToastMessage(""), 2800);
   };
-
-  if (productDetail?.isFallback && productId) {
-    return <Navigate to="/" replace />;
-  }
 
   return (
     <div className="min-h-screen bg-[#07150f] text-emerald-50">

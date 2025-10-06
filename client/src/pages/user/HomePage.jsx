@@ -8,39 +8,27 @@ import ColorSwatchGroup from "../../components/common/ColorSwatchGroup.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
 import { fetchProducts } from "../../api/catalog.js";
 
-const categoryOptions = [
-  { label: "All", value: "all" },
-  { label: "Clothing", value: "clothing" },
-  { label: "Shoes", value: "shoes" },
-  { label: "Accessories", value: "accessories" },
-];
-
-const sizeOptions = [
-  { label: "All", value: "all" },
-  { label: "XS", value: "xs" },
-  { label: "S", value: "s" },
-  { label: "M", value: "m" },
-  { label: "L", value: "l" },
-  { label: "XL", value: "xl" },
-];
-
-const colorOptions = [
-  { label: "All", value: "all" },
-  { label: "White", value: "white", hex: "#ffffff" },
-  { label: "Black", value: "black", hex: "#050505" },
-  { label: "Blue", value: "blue", hex: "#1d4ed8" },
-  { label: "Green", value: "green", hex: "#10b981" },
-  { label: "Red", value: "red", hex: "#ef4444" },
-  { label: "Brown", value: "brown", hex: "#9a3412" },
-  { label: "Beige", value: "beige", hex: "#f5f5dc" },
-  { label: "Navy", value: "navy", hex: "#1e3a8a" },
-];
+const toTitleCase = (value = "") =>
+  value
+    .split(/[\s-_]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 
 const HomePage = ({ isLoggedIn }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryOptions, setCategoryOptions] = useState([
+    { label: "All", value: "all" },
+  ]);
+  const [sizeOptions, setSizeOptions] = useState([
+    { label: "All", value: "all" },
+  ]);
+  const [colorOptions, setColorOptions] = useState([
+    { label: "All", value: "all", hex: "#d1fae5" },
+  ]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSize, setSelectedSize] = useState("all");
   const [selectedColor, setSelectedColor] = useState("all");
@@ -71,12 +59,92 @@ const HomePage = ({ isLoggedIn }) => {
     setError(null);
 
     try {
-      const response = await fetchProducts({}, { signal });
+      const { items } = await fetchProducts({ limit: 48 }, { signal });
       if (signal?.aborted) {
         return;
       }
 
-      setProducts(Array.isArray(response) ? response : response?.items ?? []);
+      const nextProducts = Array.isArray(items) ? items : [];
+      setProducts(nextProducts);
+
+      const categorySet = new Map();
+      const sizeSet = new Set();
+      const colorMap = new Map();
+
+      nextProducts.forEach((product) => {
+        if (product.category) {
+          const value = product.category;
+          if (!categorySet.has(value)) {
+            categorySet.set(value, {
+              value,
+              label: toTitleCase(value),
+            });
+          }
+        }
+
+        (product.sizes ?? []).forEach((size) => {
+          if (size) {
+            sizeSet.add(size.toLowerCase());
+          }
+        });
+
+        (product.colors ?? []).forEach((colorOption) => {
+          const value =
+            typeof colorOption === "string"
+              ? colorOption
+              : colorOption.value ?? colorOption.name;
+          if (!value) {
+            return;
+          }
+
+          const label =
+            typeof colorOption === "string"
+              ? toTitleCase(colorOption)
+              : colorOption.label ?? toTitleCase(value);
+          const hex =
+            typeof colorOption === "string"
+              ? undefined
+              : colorOption.hex ?? undefined;
+
+          if (!colorMap.has(value)) {
+            colorMap.set(value, {
+              value,
+              label,
+              hex,
+            });
+          }
+        });
+      });
+
+      const derivedCategories = Array.from(categorySet.values());
+      setCategoryOptions([
+        { label: "All", value: "all" },
+        ...derivedCategories,
+      ]);
+      setSelectedCategory((previous) =>
+        previous === "all" || categorySet.has(previous) ? previous : "all"
+      );
+
+      const derivedSizes = Array.from(sizeSet.values()).sort();
+      setSizeOptions([
+        { label: "All", value: "all" },
+        ...derivedSizes.map((value) => ({
+          value,
+          label: value.toUpperCase(),
+        })),
+      ]);
+      setSelectedSize((previous) =>
+        previous === "all" || sizeSet.has(previous) ? previous : "all"
+      );
+
+      const derivedColors = Array.from(colorMap.values());
+      setColorOptions([
+        { label: "All", value: "all", hex: "#d1fae5" },
+        ...derivedColors,
+      ]);
+      setSelectedColor((previous) =>
+        previous === "all" || colorMap.has(previous) ? previous : "all"
+      );
     } catch (apiError) {
       if (signal?.aborted) {
         return;
@@ -113,7 +181,10 @@ const HomePage = ({ isLoggedIn }) => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
     return products.filter((product) => {
-      if (selectedCategory !== "all" && product.category !== selectedCategory) {
+      if (
+        selectedCategory !== "all" &&
+        (product.category ?? "") !== selectedCategory
+      ) {
         return false;
       }
 
@@ -128,11 +199,12 @@ const HomePage = ({ isLoggedIn }) => {
       }
 
       if (selectedColor !== "all") {
-        const availableColors = product.colors ?? [];
-        if (
-          !availableColors.includes(selectedColor) &&
-          !availableColors.includes("all")
-        ) {
+        const availableColors = (product.colors ?? []).map((colorOption) =>
+          typeof colorOption === "string"
+            ? colorOption
+            : colorOption.value ?? colorOption.name
+        );
+        if (!availableColors.includes(selectedColor)) {
           return false;
         }
       }

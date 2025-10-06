@@ -1,73 +1,41 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchProductsSummary } from "../../api/admin.js";
+import { fetchProductById } from "../../api/catalog.js";
 import ProductUpload from "../../components/admin/products/ProductUpload.jsx";
-
-const DEFAULT_PRODUCTS = [
-  {
-    id: 1,
-    name: "Classic Cotton T-Shirt",
-    price: 1299,
-    stock: 45,
-    category: "Men's Topwear",
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop",
-  },
-  {
-    id: 2,
-    name: "Women's Summer Dress",
-    price: 2499,
-    stock: 23,
-    category: "Women's Dresses",
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=300&h=300&fit=crop",
-  },
-  {
-    id: 3,
-    name: "Kids Casual Jeans",
-    price: 899,
-    stock: 67,
-    category: "Kids Bottomwear",
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1582787845328-ec93e8b6e062?w=300&h=300&fit=crop",
-  },
-  {
-    id: 4,
-    name: "Premium Leather Jacket",
-    price: 4999,
-    stock: 12,
-    category: "Men's Jackets",
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=300&h=300&fit=crop",
-  },
-  {
-    id: 5,
-    name: "Formal Shirt",
-    price: 1899,
-    stock: 34,
-    category: "Men's Formal",
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=300&h=300&fit=crop",
-  },
-  {
-    id: 6,
-    name: "Casual Sneakers",
-    price: 3299,
-    stock: 28,
-    category: "Footwear",
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop",
-  },
-];
 
 const FALLBACK_IMAGE =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMiA5QzEzLjEwNDYgOSAxNCA5Ljg5NTQzIDE0IDExQzE0IDEyLjEwNDYgMTMuMTA0NiAxMyAxMiAxM0MxMC44OTU0IDEzIDEwIDEyLjEwNDYgMTAgMTFDMTAgOS44OTU0MyAxMC44OTU0IDkgMTIgOVoiIGZpbGw9IiM5Q0E0QUYiLz4KPHBhdGggZD0iTTMgNkMzIDQuMzQzMTUgNC4zNDMxNSAzIDYgM0gxOEMxOS42NTY5IDMgMjEgNC4zNDMxNSAyMSA2VjE4QzIxIDE5LjY1NjkgMTkuNjU2OSAyMSAxOCAyMUg2QzQuMzQzMTUgMjEgMyAxOS42NTY5IDMgMThWNlpNNiA1QzUuNDQ3NzIgNSA1IDUuNDQ3NzIgNSA2VjE0LjU4NThMNy4yOTI4OSAxMi4yOTI5QzcuNjgzNDIgMTEuOTAyNCA4LjMxNjU4IDExLjkwMjQgOC43MDcxMSAxMi4yOTI5TDEzIDEzLjU4NThMMTYuMjkyOSA5LjI5Mjg5QzE2LjY4MzQgOC45MDIzNyAxNy4zMTY2IDguOTAyMzcgMTcuNzA3MSA5LjI5Mjg5TDE5IDE0LjU4NThWNkMxOSA1LjQ0NzcyIDE4LjU1MjMgNSAxOCA1SDZaIiBmaWxsPSIjOUNBNEFGIi8+Cjwvc3ZnPgo=";
+
+const toTitleCase = (value = "") =>
+  value
+    .split(/[\s-_]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+const mapProductToAdminCard = (product, index = 0) => {
+  const id = product.id ?? product.slug ?? `product-${index}`;
+  const price = Number(product.price ?? product.basePrice ?? 0);
+  const stock =
+    product.totalStock ??
+    product.stock ??
+    product.inventory ??
+    product.quantity ??
+    0;
+
+  return {
+    id,
+    name: product.title ?? product.name ?? "Untitled product",
+    price,
+    stock,
+    category: product.category
+      ? toTitleCase(product.category)
+      : "Uncategorised",
+    status: product.isAvailable ? "Active" : "Inactive",
+    image: product.imageUrl || FALLBACK_IMAGE,
+  };
+};
 
 const formatPrice = (value) => {
   const amount = Number(value ?? 0);
@@ -82,7 +50,7 @@ const formatPrice = (value) => {
 };
 
 const Products = () => {
-  const [products, setProducts] = useState(DEFAULT_PRODUCTS);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState({});
@@ -97,28 +65,71 @@ const Products = () => {
     setError(null);
 
     try {
-      const response = await fetchProductsSummary();
-      if (Array.isArray(response) && response.length) {
-        setProducts(
-          response.map((product, index) => ({
-            id: product.id ?? index + 1,
-            name: product.name ?? "Untitled product",
-            price: product.price
-              ? Number(String(product.price).replace(/[^0-9]/g, ""))
-              : 0,
-            stock: product.stock ?? 0,
-            category: product.category ?? "Uncategorised",
-            status: product.status ?? "Active",
-            image: product.image,
-          }))
-        );
-      } else {
-        setProducts(DEFAULT_PRODUCTS);
+      const response = await fetchProductsSummary({
+        limit: 50,
+        sort: "-createdAt",
+      });
+      const nextProducts = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.items)
+        ? response.items
+        : [];
+
+      const normalizedProducts = nextProducts.map(mapProductToAdminCard);
+      setProducts(normalizedProducts);
+
+      const idsToEnrich = normalizedProducts
+        .filter((product) => !product.stock)
+        .slice(0, 24)
+        .map((product) => product.id)
+        .filter(Boolean);
+
+      if (idsToEnrich.length) {
+        Promise.all(
+          idsToEnrich.map((productId) =>
+            fetchProductById(productId)
+              .then((detail) =>
+                detail
+                  ? {
+                      id: productId,
+                      stock: detail.totalStock ?? 0,
+                      status: detail.isAvailable ? "Active" : "Inactive",
+                    }
+                  : null
+              )
+              .catch(() => null)
+          )
+        )
+          .then((updates) => {
+            const validUpdates = updates.filter(Boolean);
+            if (!validUpdates.length) {
+              return;
+            }
+
+            setProducts((current) =>
+              current.map((product) => {
+                const update = validUpdates.find(
+                  (entry) => entry.id === product.id
+                );
+                if (!update) {
+                  return product;
+                }
+
+                return {
+                  ...product,
+                  stock: update.stock,
+                  status: update.status ?? product.status,
+                };
+              })
+            );
+          })
+          .catch((enrichError) => {
+            console.warn("Unable to enrich product inventory", enrichError);
+          });
       }
     } catch (requestError) {
-      console.warn("Falling back to mock products", requestError);
       setError(requestError);
-      setProducts(DEFAULT_PRODUCTS);
+      setProducts([]);
     } finally {
       setLoading(false);
     }

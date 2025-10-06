@@ -3,7 +3,6 @@ import {
   getMockAdminUsers,
   getMockCustomers,
   getMockDashboardMetrics,
-  getMockProductSummaries,
   getMockRecentActivities,
   getMockRecentOrders,
   getMockReports,
@@ -27,11 +26,10 @@ export const fetchRecentActivities = async () =>
     () => getMockRecentActivities()
   );
 
-export const fetchProductsSummary = async () =>
-  withApiFallback(
-    () => apiRequest("/admin/products"),
-    () => getMockProductSummaries()
-  );
+export const fetchProductsSummary = async (params = {}) => {
+  const payload = await apiRequest("/products", { query: params });
+  return Array.isArray(payload?.products) ? payload.products : [];
+};
 
 export const fetchCustomers = async () =>
   withApiFallback(
