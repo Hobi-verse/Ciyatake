@@ -1,5 +1,103 @@
+const mongoose = require('mongoose');
 const Wishlist = require('../models/Wishlist');
 const Product = require('../models/Product');
+
+const normalizeProductIdentifier = async (identifier) => {
+  if (!identifier) {
+    return null;
+  }
+
+  let product = null;
+
+  if (mongoose.Types.ObjectId.isValid(identifier)) {
+    product = await Product.findById(identifier);
+  }
+
+  if (!product) {
+    product = await Product.findOne({ slug: identifier });
+  }
+
+  return product;
+};
+
+const resolveVariantPrice = (product, variant) => {
+  const candidateValues = [
+    variant?.priceOverride,
+    variant?.price,
+    product?.salePrice,
+    product?.basePrice,
+    product?.price,
+  ];
+
+  const numeric = candidateValues.find((value) => Number.isFinite(Number(value)));
+  return Number(numeric ?? 0);
+};
+
+const formatWishlistItem = (item) => {
+  if (!item) {
+    return null;
+  }
+
+  let productIdentifier = item.productSlug || null;
+  const rawProduct = item.productId;
+
+  if (!productIdentifier) {
+    if (typeof rawProduct === 'string') {
+      productIdentifier = rawProduct;
+    } else if (rawProduct?.slug) {
+      productIdentifier = rawProduct.slug;
+    } else if (rawProduct?._id) {
+      productIdentifier = rawProduct._id.toString();
+    } else if (typeof rawProduct?.toString === 'function') {
+      productIdentifier = rawProduct.toString();
+    }
+  }
+
+  const normalizedPrice = Number(item.price);
+
+  return {
+    id: item._id?.toString?.() || item.id || productIdentifier || item.variantSku,
+    productId: productIdentifier,
+    title: item.title,
+    price: Number.isFinite(normalizedPrice) ? normalizedPrice : 0,
+    size: item.size ?? null,
+    color: item.color ?? null,
+    imageUrl: item.imageUrl ?? null,
+    inStock: item.inStock !== false,
+    priority: item.priority ?? 'medium',
+    notes: item.notes ?? '',
+    addedAt: item.addedAt ?? null,
+    variantSku: item.variantSku ?? null,
+  };
+};
+
+const formatWishlistResponse = (wishlist) => {
+  if (!wishlist) {
+    return {
+      id: null,
+      name: '',
+      isPublic: false,
+      items: [],
+      itemCount: 0,
+      lastActivityAt: null,
+    };
+  }
+
+  return {
+    id: wishlist._id?.toString?.() || wishlist.id || null,
+    name: wishlist.name || 'My Wishlist',
+    isPublic: Boolean(wishlist.isPublic),
+    items: Array.isArray(wishlist.items)
+      ? wishlist.items.map(formatWishlistItem).filter(Boolean)
+      : [],
+    itemCount: Number.isFinite(Number(wishlist.itemCount))
+      ? Number(wishlist.itemCount)
+      : Array.isArray(wishlist.items)
+        ? wishlist.items.length
+        : 0,
+    lastActivityAt: wishlist.lastActivityAt || null,
+  };
+};
 
 /**
  * @desc    Get user's wishlist
@@ -11,7 +109,7 @@ const getWishlist = async (req, res) => {
     const userId = req.user._id;
 
     // Get or create wishlist
-    let wishlist = await Wishlist.findOne({ userId }).populate('items.productId', 'title slug price salePrice brand category media variants');
+    let wishlist = await Wishlist.findOne({ userId }).populate('items.productId', 'title slug price salePrice brand category media variants totalStock');
 
     if (!wishlist) {
       wishlist = await Wishlist.create({ userId });
@@ -24,27 +122,7 @@ const getWishlist = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        wishlist: {
-          id: wishlist._id,
-          name: wishlist.name,
-          isPublic: wishlist.isPublic,
-          items: wishlist.items.map(item => ({
-            id: item._id,
-            productId: item.productId?.slug || item.productId,
-            title: item.title,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            imageUrl: item.imageUrl,
-            inStock: item.inStock,
-            priority: item.priority,
-            notes: item.notes,
-            addedAt: item.addedAt,
-            variantSku: item.variantSku
-          })),
-          itemCount: wishlist.itemCount,
-          lastActivityAt: wishlist.lastActivityAt
-        }
+        wishlist: formatWishlistResponse(wishlist)
       }
     });
   } catch (error) {
@@ -76,7 +154,7 @@ const addWishlistItem = async (req, res) => {
     }
 
     // Find product
-    const product = await Product.findById(productId);
+    const product = await normalizeProductIdentifier(productId);
     if (!product) {
       return res.status(404).json({
         success: false,
@@ -93,8 +171,9 @@ const addWishlistItem = async (req, res) => {
     // Prepare item data
     let itemData = {
       productId: product._id,
+      productSlug: product.slug,
       title: product.title,
-      price: product.salePrice || product.price,
+      price: resolveVariantPrice(product),
       imageUrl: product.media.find(m => m.isPrimary)?.url || product.media[0]?.url,
       inStock: product.totalStock > 0,
       priority,
@@ -114,7 +193,7 @@ const addWishlistItem = async (req, res) => {
       itemData.variantSku = variant.sku;
       itemData.size = variant.size;
       itemData.color = variant.color.name;
-      itemData.price = variant.price || product.salePrice || product.price;
+      itemData.price = resolveVariantPrice(product, variant);
       itemData.inStock = variant.stockLevel > 0;
     }
 
@@ -134,24 +213,7 @@ const addWishlistItem = async (req, res) => {
       success: true,
       message: 'Item added to wishlist',
       data: {
-        wishlist: {
-          id: wishlist._id,
-          items: wishlist.items.map(item => ({
-            id: item._id,
-            productId: item.productId,
-            title: item.title,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            imageUrl: item.imageUrl,
-            inStock: item.inStock,
-            priority: item.priority,
-            notes: item.notes,
-            addedAt: item.addedAt,
-            variantSku: item.variantSku
-          })),
-          itemCount: wishlist.itemCount
-        }
+        wishlist: formatWishlistResponse(wishlist)
       }
     });
   } catch (error) {
@@ -210,8 +272,9 @@ const updateWishlistItem = async (req, res) => {
           item.variantSku = variant.sku;
           item.size = variant.size;
           item.color = variant.color.name;
-          item.price = variant.price || product.salePrice || product.price;
+          item.price = resolveVariantPrice(product, variant);
           item.inStock = variant.stockLevel > 0;
+          item.productSlug = product.slug || item.productSlug;
         }
       }
     }
@@ -223,24 +286,7 @@ const updateWishlistItem = async (req, res) => {
       success: true,
       message: 'Wishlist item updated',
       data: {
-        wishlist: {
-          id: wishlist._id,
-          items: wishlist.items.map(item => ({
-            id: item._id,
-            productId: item.productId,
-            title: item.title,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            imageUrl: item.imageUrl,
-            inStock: item.inStock,
-            priority: item.priority,
-            notes: item.notes,
-            addedAt: item.addedAt,
-            variantSku: item.variantSku
-          })),
-          itemCount: wishlist.itemCount
-        }
+        wishlist: formatWishlistResponse(wishlist)
       }
     });
   } catch (error) {
@@ -289,24 +335,7 @@ const removeWishlistItem = async (req, res) => {
       success: true,
       message: 'Item removed from wishlist',
       data: {
-        wishlist: {
-          id: wishlist._id,
-          items: wishlist.items.map(item => ({
-            id: item._id,
-            productId: item.productId,
-            title: item.title,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            imageUrl: item.imageUrl,
-            inStock: item.inStock,
-            priority: item.priority,
-            notes: item.notes,
-            addedAt: item.addedAt,
-            variantSku: item.variantSku
-          })),
-          itemCount: wishlist.itemCount
-        }
+        wishlist: formatWishlistResponse(wishlist)
       }
     });
   } catch (error) {
@@ -345,11 +374,7 @@ const clearWishlist = async (req, res) => {
       success: true,
       message: 'Wishlist cleared',
       data: {
-        wishlist: {
-          id: wishlist._id,
-          items: [],
-          itemCount: 0
-        }
+        wishlist: formatWishlistResponse(wishlist)
       }
     });
   } catch (error) {
@@ -436,9 +461,10 @@ const moveToCart = async (req, res) => {
     // Add to cart
     const cartItemData = {
       productId: product._id,
+      productSlug: product.slug,
       variantSku: variant.sku,
       title: product.title,
-      price: variant.price || product.salePrice || product.price,
+      price: resolveVariantPrice(product, variant),
       size: variant.size,
       color: variant.color.name,
       imageUrl: product.media.find(m => m.isPrimary)?.url || product.media[0]?.url,
@@ -458,12 +484,10 @@ const moveToCart = async (req, res) => {
       data: {
         cart: {
           id: cart._id,
-          itemCount: cart.totals.itemCount
+          itemCount: cart.totals?.itemCount ?? 0,
+          totals: cart.totals || { subtotal: 0, itemCount: 0, savedItemCount: 0 }
         },
-        wishlist: {
-          id: wishlist._id,
-          itemCount: wishlist.itemCount
-        }
+        wishlist: formatWishlistResponse(wishlist)
       }
     });
   } catch (error) {
@@ -486,7 +510,6 @@ const checkProductInWishlist = async (req, res) => {
     const userId = req.user._id;
     const { productId } = req.params;
 
-    // Find wishlist
     const wishlist = await Wishlist.findOne({ userId });
 
     if (!wishlist) {
@@ -498,16 +521,38 @@ const checkProductInWishlist = async (req, res) => {
       });
     }
 
-    // Check if product exists in wishlist
-    const item = wishlist.items.find(item =>
-      item.productId.toString() === productId
-    );
+    const normalized = typeof productId === 'string' ? productId.trim() : '';
+    const normalizedLower = normalized.toLowerCase();
+
+    let item = null;
+
+    if (mongoose.Types.ObjectId.isValid(normalized)) {
+      item = wishlist.items.find((wishlistItem) =>
+        wishlistItem.productId?.toString() === normalized
+      );
+    }
+
+    if (!item) {
+      item = wishlist.items.find((wishlistItem) =>
+        wishlistItem.productSlug?.toLowerCase?.() === normalizedLower
+      );
+    }
+
+    if (!item) {
+      const product = await normalizeProductIdentifier(normalized);
+      if (product) {
+        const productIdString = product._id.toString();
+        item = wishlist.items.find((wishlistItem) =>
+          wishlistItem.productId?.toString() === productIdString
+        );
+      }
+    }
 
     res.status(200).json({
       success: true,
       data: {
-        inWishlist: !!item,
-        itemId: item?._id
+        inWishlist: Boolean(item),
+        itemId: item?._id?.toString?.() || null
       }
     });
   } catch (error) {
@@ -583,24 +628,7 @@ const syncWishlist = async (req, res) => {
       success: true,
       message: 'Wishlist synced successfully',
       data: {
-        wishlist: {
-          id: wishlist._id,
-          items: wishlist.items.map(item => ({
-            id: item._id,
-            productId: item.productId,
-            title: item.title,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            imageUrl: item.imageUrl,
-            inStock: item.inStock,
-            priority: item.priority,
-            notes: item.notes,
-            addedAt: item.addedAt,
-            variantSku: item.variantSku
-          })),
-          itemCount: wishlist.itemCount
-        }
+        wishlist: formatWishlistResponse(wishlist)
       }
     });
   } catch (error) {

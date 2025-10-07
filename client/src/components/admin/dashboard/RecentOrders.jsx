@@ -1,12 +1,51 @@
 import { useEffect, useState } from "react";
 import { fetchRecentOrders } from "../../../api/admin.js";
+import formatINR from "../../../utils/currency.js";
 
 const statusClassMap = {
-  Shipped: "bg-emerald-100 text-emerald-700",
-  Processing: "bg-amber-100 text-amber-700",
-  Completed: "bg-slate-200 text-slate-700",
-  Cancelled: "bg-rose-100 text-rose-700",
+  pending: "bg-amber-100 text-amber-700",
+  confirmed: "bg-sky-100 text-sky-700",
+  processing: "bg-amber-100 text-amber-700",
+  packed: "bg-slate-200 text-slate-700",
+  shipped: "bg-blue-100 text-blue-700",
+  "out-for-delivery": "bg-indigo-100 text-indigo-700",
+  delivered: "bg-emerald-100 text-emerald-700",
+  cancelled: "bg-rose-100 text-rose-700",
+  refunded: "bg-slate-200 text-slate-700",
 };
+
+const formatStatusLabel = (status) => {
+  if (!status) {
+    return "Unknown";
+  }
+
+  return status
+    .toString()
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const formatDateLabel = (value) => {
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+};
+
+const formatCurrency = (value) =>
+  typeof value === "number" && Number.isFinite(value) ? formatINR(value) : "—";
 
 const RecentOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -23,7 +62,7 @@ const RecentOrders = () => {
       try {
         const response = await fetchRecentOrders({ limit: 5 });
         if (isMounted) {
-          setOrders(Array.isArray(response) ? response : response?.items ?? []);
+          setOrders(Array.isArray(response?.results) ? response.results : []);
         }
       } catch (apiError) {
         if (isMounted) {
@@ -62,7 +101,7 @@ const RecentOrders = () => {
             <tr>
               <th className="px-6 py-3">Order ID</th>
               <th className="px-6 py-3">Customer</th>
-              <th className="px-6 py-3">Date</th>
+              <th className="px-6 py-3">Placed</th>
               <th className="px-6 py-3">Status</th>
             </tr>
           </thead>
@@ -86,13 +125,32 @@ const RecentOrders = () => {
                 </td>
               </tr>
             ) : orders.length ? (
-              orders.map((order) => (
-                <tr key={order.id} className="hover:bg-emerald-50/60">
+              orders.map((order, index) => (
+                <tr
+                  key={order.id ?? order.orderNumber ?? `recent-order-${index}`}
+                  className="hover:bg-emerald-50/60"
+                >
                   <td className="px-6 py-4 font-semibold text-emerald-700">
-                    {order.id}
+                    {order.orderNumber || order.id || "—"}
+                    {typeof order.grandTotal === "number" && (
+                      <div className="text-xs font-normal text-slate-500">
+                        {formatCurrency(order.grandTotal)}
+                      </div>
+                    )}
                   </td>
-                  <td className="px-6 py-4">{order.customer}</td>
-                  <td className="px-6 py-4">{order.date}</td>
+                  <td className="px-6 py-4">
+                    <div className="font-medium text-slate-700">
+                      {order.customerName || "—"}
+                    </div>
+                    {order.customerEmail && (
+                      <div className="text-xs text-slate-500">
+                        {order.customerEmail}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    {formatDateLabel(order.placedAt)}
+                  </td>
                   <td className="px-6 py-4">
                     <span
                       className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
@@ -100,7 +158,7 @@ const RecentOrders = () => {
                         "bg-slate-200 text-slate-700"
                       }`}
                     >
-                      {order.status}
+                      {formatStatusLabel(order.status)}
                     </span>
                   </td>
                 </tr>

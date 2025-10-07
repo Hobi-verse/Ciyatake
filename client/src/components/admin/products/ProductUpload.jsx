@@ -9,13 +9,7 @@ import MultiSelectTags from "./MultiSelectTags.jsx";
 import RichTextEditor from "./RichTextEditor.jsx";
 import { createProduct, updateProduct } from "../../../api/admin.js";
 import { fetchProductById } from "../../../api/catalog.js";
-import {
-  categoryStructure,
-  sizeOptions,
-  materialOptions,
-  fitTypes,
-  countries,
-} from "../../../data/categories.js";
+import { fetchCategoryTree } from "../../../api/categories.js";
 
 const DEFAULT_FORM = {
   title: "",
@@ -63,6 +57,45 @@ const commonTags = [
   "Trending",
 ];
 
+const SIZE_OPTIONS = {
+  clothing: ["xs", "s", "m", "l", "xl", "xxl"],
+  kids: ["0-3m", "3-6m", "6-12m", "1-2y", "2-4y", "4-6y", "6-8y", "8-10y"],
+  footwear: ["5", "6", "7", "8", "9", "10", "11", "12"],
+  accessories: ["one size"],
+};
+
+const MATERIAL_OPTIONS = [
+  "Organic Cotton",
+  "Cotton Blend",
+  "Linen",
+  "Silk",
+  "Denim",
+  "Polyester",
+  "Rayon",
+  "Leather",
+  "Recycled Fibres",
+];
+
+const FIT_TYPES = [
+  "Slim fit",
+  "Regular fit",
+  "Relaxed fit",
+  "Oversized",
+  "Tailored",
+  "Athletic fit",
+];
+
+const COUNTRY_OPTIONS = [
+  "India",
+  "Bangladesh",
+  "Sri Lanka",
+  "Vietnam",
+  "China",
+  "Portugal",
+  "Italy",
+  "United States",
+];
+
 const deepClone = (value) => {
   if (typeof structuredClone === "function") {
     return structuredClone(value);
@@ -107,13 +140,6 @@ const slugify = (value = "") =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "") || generateId();
-
-const toTitleCase = (value = "") =>
-  value
-    .split(/[\s-_]+/)
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
 
 const ensureArray = (value) =>
   Array.isArray(value) ? value : value ? [value] : [];
@@ -299,9 +325,17 @@ const buildVariants = (form, slug) => {
 const prepareProductPayload = (form) => {
   const title = form.title?.trim();
   const slug = slugify(title || form.sku || generateId());
-  const tags = ensureArray(form.tags)
-    .map((tag) => tag.trim())
-    .filter(Boolean);
+  const tagSet = new Set(
+    ensureArray(form.tags)
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+  );
+
+  if (form.subCategory) {
+    tagSet.add(form.subCategory);
+  }
+
+  const tags = Array.from(tagSet);
 
   const variants = buildVariants(form, slug);
   const totalStock = variants.reduce(
@@ -313,7 +347,7 @@ const prepareProductPayload = (form) => {
     slug,
     title,
     description: form.description ?? "",
-    category: slugify(form.category || "general"),
+    category: form.category || "general",
     basePrice: Math.max(0, Number(form.price) || 0),
     media: buildMediaPayload(form),
     benefits: tags.slice(0, 4),
@@ -334,7 +368,8 @@ const mapProductToForm = (product) => {
 
   next.title = product.title ?? next.title;
   next.description = product.description ?? next.description;
-  next.category = toTitleCase(product.category ?? next.category);
+  next.category = product.category ?? next.category;
+  next.subCategory = product.subCategory ?? next.subCategory;
   next.price = product.basePrice ?? product.price ?? next.price;
   next.stockQuantity = product.totalStock ?? next.stockQuantity;
   next.sku = product.variants?.[0]?.sku ?? product.id ?? next.sku;
@@ -411,43 +446,180 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
   const [loadingExisting, setLoadingExisting] = useState(false);
   const [loadError, setLoadError] = useState(null);
   const [existingProductId, setExistingProductId] = useState(null);
+  const [categoryTree, setCategoryTree] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [categoryError, setCategoryError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoadingCategories(true);
+    setCategoryError(null);
+
+    fetchCategoryTree()
+      .then(({ categories }) => {
+        if (cancelled) {
+          return;
+        }
+
+        setCategoryTree(Array.isArray(categories) ? categories : []);
+      })
+      .catch((error) => {
+        if (cancelled) {
+          return;
+        }
+
+        setCategoryTree([]);
+        setCategoryError(
+          resolveErrorMessage(error, "Unable to load category list.")
+        );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoadingCategories(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const categoryIndex = useMemo(() => {
+    const map = new Map();
+
+    const visit = (nodes, parent = null) => {
+      nodes.forEach((node) => {
+        if (!node?.slug) {
+          return;
+        }
+
+        const entry = {
+          ...node,
+          parent,
+        };
+
+        map.set(node.slug, entry);
+
+        if (Array.isArray(node.children) && node.children.length) {
+          visit(node.children, entry);
+        }
+      });
+    };
+
+    visit(categoryTree);
+    return map;
+  }, [categoryTree]);
 
   const availableCategories = useMemo(() => {
-    if (form.gender && categoryStructure[form.gender]) {
-      return Object.keys(categoryStructure[form.gender] ?? {});
+    if (!categoryTree.length) {
+      return [];
     }
 
-    const allCategories = new Set();
-    Object.values(categoryStructure).forEach((group) => {
-      Object.keys(group ?? {}).forEach((category) =>
-        allCategories.add(category)
-      );
+    const normalizedGender = form.gender?.toLowerCase().trim() ?? "";
+
+    if (normalizedGender) {
+      const match = categoryTree.find((node) => {
+        const name = node.name?.toLowerCase() ?? "";
+        const slug = node.slug?.toLowerCase() ?? "";
+        return name === normalizedGender || slug === normalizedGender;
+      });
+
+      if (match?.children?.length) {
+        return match.children.map((child) => ({
+          value: child.slug,
+          label: child.name,
+          productCount: child.productCount ?? null,
+        }));
+      }
+    }
+
+    const flattened = [];
+    categoryTree.forEach((node) => {
+      if (Array.isArray(node.children) && node.children.length) {
+        node.children.forEach((child) => {
+          flattened.push({
+            value: child.slug,
+            label: child.name,
+            productCount: child.productCount ?? null,
+          });
+        });
+      } else {
+        flattened.push({
+          value: node.slug,
+          label: node.name,
+          productCount: node.productCount ?? null,
+        });
+      }
     });
 
-    return Array.from(allCategories);
-  }, [form.gender]);
+    return flattened;
+  }, [categoryTree, form.gender]);
 
   const availableSubCategories = useMemo(() => {
-    if (form.gender && form.category) {
-      return categoryStructure[form.gender]?.[form.category] ?? [];
+    if (!form.category) {
+      return [];
     }
 
-    if (form.category) {
-      return Object.values(categoryStructure).flatMap(
-        (group) => group[form.category] ?? []
-      );
+    const parent = categoryIndex.get(form.category);
+    if (!parent || !Array.isArray(parent.children)) {
+      return [];
     }
 
-    return [];
-  }, [form.gender, form.category]);
+    return parent.children.map((child) => ({
+      value: child.slug,
+      label: child.name,
+      productCount: child.productCount ?? null,
+    }));
+  }, [categoryIndex, form.category]);
 
   const availableSizes = useMemo(() => {
-    if (form.gender === "Kids") return sizeOptions.kids;
-    if (form.category?.toLowerCase().includes("footwear")) {
-      return sizeOptions.footwear;
+    if (form.gender === "Kids") return SIZE_OPTIONS.kids;
+
+    const categoryName =
+      categoryIndex.get(form.category)?.name ?? form.category ?? "";
+    const subCategoryName =
+      categoryIndex.get(form.subCategory)?.name ?? form.subCategory ?? "";
+
+    const combined = `${categoryName} ${subCategoryName}`.toLowerCase();
+
+    if (combined.includes("footwear") || combined.includes("shoe")) {
+      return SIZE_OPTIONS.footwear;
     }
-    return sizeOptions.clothing;
-  }, [form.gender, form.category]);
+
+    if (combined.includes("accessor")) {
+      return SIZE_OPTIONS.accessories;
+    }
+
+    return SIZE_OPTIONS.clothing;
+  }, [categoryIndex, form.category, form.subCategory, form.gender]);
+
+  useEffect(() => {
+    if (!form.category || categoryIndex.size === 0) {
+      return;
+    }
+
+    if (!categoryIndex.has(form.category)) {
+      updateForm({ category: "", subCategory: "" });
+    }
+  }, [categoryIndex, form.category, updateForm]);
+
+  useEffect(() => {
+    if (!form.subCategory) {
+      return;
+    }
+
+    const subCategory = categoryIndex.get(form.subCategory);
+    if (!subCategory) {
+      updateForm("subCategory", "");
+      return;
+    }
+
+    const parentSlug = subCategory.parent?.slug;
+    if (parentSlug && parentSlug !== form.category) {
+      updateForm("subCategory", "");
+    }
+  }, [categoryIndex, form.category, form.subCategory, updateForm]);
 
   const toggleSection = (key) => {
     setSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -521,23 +693,11 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
     });
   };
 
-  const selectCategory = (category) => {
-    const updates = {
-      category,
+  const selectCategory = (categorySlug) => {
+    updateForm({
+      category: categorySlug,
       subCategory: "",
-    };
-
-    if (!form.gender) {
-      const match = Object.entries(categoryStructure).find(([, groups]) =>
-        Object.prototype.hasOwnProperty.call(groups, category)
-      );
-
-      if (match) {
-        updates.gender = match[0];
-      }
-    }
-
-    updateForm(updates);
+    });
   };
 
   const toggleSize = (size) => {
@@ -852,20 +1012,30 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
                 <select
                   value={form.category}
                   onChange={(event) => selectCategory(event.target.value)}
-                  disabled={!availableCategories.length}
+                  disabled={loadingCategories || !availableCategories.length}
                   className="w-full rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:cursor-not-allowed disabled:bg-slate-100"
                 >
                   <option value="">
-                    {availableCategories.length
+                    {loadingCategories
+                      ? "Loading categories..."
+                      : availableCategories.length
                       ? "Select category"
-                      : "Choose gender first"}
+                      : categoryError
+                      ? "No categories available"
+                      : "No categories found"}
                   </option>
                   {availableCategories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
+                    <option key={category.value} value={category.value}>
+                      {category.label}
+                      {typeof category.productCount === "number"
+                        ? ` (${category.productCount})`
+                        : ""}
                     </option>
                   ))}
                 </select>
+                {categoryError ? (
+                  <p className="mt-2 text-xs text-rose-600">{categoryError}</p>
+                ) : null}
               </FormField>
 
               <FormField label="Sub-category">
@@ -874,17 +1044,28 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
                   onChange={(event) =>
                     updateForm("subCategory", event.target.value)
                   }
-                  disabled={!availableSubCategories.length}
+                  disabled={
+                    loadingCategories ||
+                    !availableSubCategories.length ||
+                    !form.category
+                  }
                   className="w-full rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:cursor-not-allowed disabled:bg-slate-100"
                 >
                   <option value="">
-                    {availableSubCategories.length
+                    {loadingCategories
+                      ? "Loading sub-categories..."
+                      : availableSubCategories.length
                       ? "Select sub-category"
+                      : form.category
+                      ? "No sub-categories"
                       : "Choose category first"}
                   </option>
                   {availableSubCategories.map((subcategory) => (
-                    <option key={subcategory} value={subcategory}>
-                      {subcategory}
+                    <option key={subcategory.value} value={subcategory.value}>
+                      {subcategory.label}
+                      {typeof subcategory.productCount === "number"
+                        ? ` (${subcategory.productCount})`
+                        : ""}
                     </option>
                   ))}
                 </select>
@@ -1054,7 +1235,7 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 >
                   <option value="">Select material</option>
-                  {materialOptions.map((material) => (
+                  {MATERIAL_OPTIONS.map((material) => (
                     <option key={material} value={material}>
                       {material}
                     </option>
@@ -1071,7 +1252,7 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 >
                   <option value="">Select fit</option>
-                  {fitTypes.map((fit) => (
+                  {FIT_TYPES.map((fit) => (
                     <option key={fit} value={fit}>
                       {fit}
                     </option>
@@ -1097,7 +1278,7 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
                   onChange={(event) => updateForm("madeIn", event.target.value)}
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                 >
-                  {countries.map((country) => (
+                  {COUNTRY_OPTIONS.map((country) => (
                     <option key={country} value={country}>
                       {country}
                     </option>

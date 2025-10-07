@@ -8,6 +8,11 @@ const cartItemSchema = new mongoose.Schema({
     required: true,
   },
 
+  productSlug: {
+    type: String,
+    trim: true,
+  },
+
   // Variant SKU for specific size/color combination
   variantSku: {
     type: String,

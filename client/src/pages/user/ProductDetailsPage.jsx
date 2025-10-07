@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Breadcrumbs from "../../components/common/Breadcrumbs.jsx";
 import SectionHeading from "../../components/common/SectionHeading.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
@@ -10,6 +10,13 @@ import ProductInformation from "../../components/user/product/ProductInformation
 import ProductReviewsSummary from "../../components/user/product/ProductReviewsSummary.jsx";
 import UserNavbar from "../../components/user/common/UserNavbar.jsx";
 import { fetchProductById } from "../../api/catalog.js";
+import { addCartItem } from "../../api/cart.js";
+import { ApiError } from "../../api/client.js";
+import {
+  addWishlistItem,
+  checkProductInWishlist,
+  removeWishlistItem,
+} from "../../api/wishlist.js";
 
 const normalizeMedia = (media = [], fallbackAlt = "") =>
   media
@@ -124,12 +131,53 @@ const transformProductDetail = (product) => {
   };
 };
 
+const resolveErrorMessage = (error, fallbackMessage) => {
+  if (!error) {
+    return fallbackMessage;
+  }
+
+  if (error instanceof ApiError && error.payload) {
+    const payloadMessage =
+      error.payload?.message ??
+      error.payload?.error ??
+      (Array.isArray(error.payload?.errors)
+        ? error.payload.errors[0]?.message
+        : null);
+    if (payloadMessage) {
+      return payloadMessage;
+    }
+  }
+
+  if (typeof error.payload?.message === "string") {
+    return error.payload.message;
+  }
+
+  if (typeof error.message === "string") {
+    return error.message;
+  }
+
+  return fallbackMessage;
+};
+
 const ProductDetailsPage = () => {
   const { productId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [productDetail, setProductDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
+  const [actionNotice, setActionNotice] = useState({
+    status: "idle",
+    message: "",
+    context: "add",
+  });
+  const [wishlistStatus, setWishlistStatus] = useState({
+    inWishlist: false,
+    itemId: null,
+    loading: false,
+    error: "",
+  });
 
   const loadProduct = useCallback(async (targetProductId, { signal } = {}) => {
     if (!targetProductId) {
@@ -165,19 +213,300 @@ const ProductDetailsPage = () => {
     return () => controller.abort();
   }, [loadProduct, productId]);
 
-  const handleAddToCart = ({ quantity }) => {
-    setToastMessage(
-      `Added ${quantity} item${quantity > 1 ? "s" : ""} to your bag.`
-    );
-    window.setTimeout(() => setToastMessage(""), 2800);
-  };
+  useEffect(() => {
+    setActionNotice({ status: "idle", message: "", context: "add" });
+  }, [productDetail]);
 
-  const handleBuyNow = ({ quantity }) => {
-    setToastMessage(
-      `Redirecting to checkout with ${quantity} item${quantity > 1 ? "s" : ""}.`
+  const resetWishlistStatus = useCallback(() => {
+    setWishlistStatus({
+      inWishlist: false,
+      itemId: null,
+      loading: false,
+      error: "",
+    });
+  }, []);
+
+  const productDocumentId = useMemo(() => {
+    if (!productDetail) {
+      return null;
+    }
+
+    return (
+      productDetail.backendId ??
+      productDetail.mongoId ??
+      productDetail._id ??
+      productDetail.productId ??
+      productDetail.id ??
+      null
     );
-    window.setTimeout(() => setToastMessage(""), 2800);
-  };
+  }, [productDetail]);
+
+  const refreshWishlistStatus = useCallback(
+    async (targetProductId, { signal } = {}) => {
+      if (!targetProductId) {
+        resetWishlistStatus();
+        return;
+      }
+
+      setWishlistStatus((previous) => ({
+        ...previous,
+        loading: true,
+        error: "",
+      }));
+
+      try {
+        const result = await checkProductInWishlist(targetProductId, {
+          signal,
+        });
+        if (signal?.aborted) {
+          return;
+        }
+
+        setWishlistStatus({
+          inWishlist: Boolean(result.inWishlist),
+          itemId: result.itemId ?? null,
+          loading: false,
+          error: "",
+        });
+      } catch (apiError) {
+        if (signal?.aborted) {
+          return;
+        }
+
+        setWishlistStatus((previous) => ({
+          ...previous,
+          loading: false,
+          error: resolveErrorMessage(
+            apiError,
+            "We couldn't verify your wishlist status."
+          ),
+        }));
+      }
+    },
+    [resetWishlistStatus]
+  );
+
+  useEffect(() => {
+    if (!productDocumentId) {
+      resetWishlistStatus();
+      return;
+    }
+
+    const controller = new AbortController();
+    refreshWishlistStatus(productDocumentId, { signal: controller.signal });
+
+    return () => controller.abort();
+  }, [productDocumentId, refreshWishlistStatus, resetWishlistStatus]);
+
+  const addToCart = useCallback(
+    async (
+      { product, quantity, variant, size, color },
+      { context = "add", skipToast } = {}
+    ) => {
+      if (!product || !variant) {
+        setActionNotice({
+          status: "error",
+          message:
+            "Please choose a size and color combination before adding to cart.",
+          context,
+        });
+        return { success: false };
+      }
+
+      const identifier =
+        product.backendId ??
+        product.mongoId ??
+        product._id ??
+        product.productId ??
+        product.id ??
+        product.slug ??
+        null;
+
+      if (!identifier) {
+        setActionNotice({
+          status: "error",
+          message:
+            "This product is missing a reference ID. Please contact support.",
+          context,
+        });
+        return { success: false };
+      }
+
+      setActionNotice({ status: "loading", message: "", context });
+
+      try {
+        await addCartItem({
+          productId: identifier,
+          variantSku: variant.sku,
+          quantity,
+          size,
+          color,
+        });
+
+        const successMessage =
+          context === "buy"
+            ? "Added to your bag. Redirecting to checkout…"
+            : `Added ${quantity} item${quantity > 1 ? "s" : ""} to your bag.`;
+
+        setActionNotice({
+          status: "success",
+          message: successMessage,
+          context,
+        });
+
+        if (!skipToast) {
+          setToastMessage(successMessage);
+          window.setTimeout(() => setToastMessage(""), 2800);
+        }
+
+        return { success: true };
+      } catch (cartError) {
+        const fallbackMessage =
+          cartError instanceof ApiError && cartError.status === 401
+            ? "Please sign in to manage your cart."
+            : "We couldn't add this product to your cart. Please try again.";
+
+        const message = resolveErrorMessage(cartError, fallbackMessage);
+
+        setActionNotice({
+          status: "error",
+          message,
+          context,
+        });
+
+        if (cartError instanceof ApiError && cartError.status === 401) {
+          window.setTimeout(() => {
+            navigate("/login", {
+              replace: true,
+              state: { redirectTo: location.pathname },
+            });
+          }, 1200);
+        }
+
+        return { success: false, error: message };
+      }
+    },
+    [location.pathname, navigate]
+  );
+
+  const handleAddToCart = useCallback(
+    (payload) => {
+      void addToCart(payload, { context: "add" });
+    },
+    [addToCart]
+  );
+
+  const handleBuyNow = useCallback(
+    async (payload) => {
+      const result = await addToCart(payload, {
+        context: "buy",
+        skipToast: true,
+      });
+
+      if (result.success) {
+        setToastMessage("Opening checkout…");
+        window.setTimeout(() => {
+          navigate("/checkout");
+        }, 600);
+      }
+    },
+    [addToCart, navigate]
+  );
+
+  const handleToggleWishlist = useCallback(
+    async ({ variant }) => {
+      if (!productDocumentId) {
+        setWishlistStatus((previous) => ({
+          ...previous,
+          error: "This product is missing a reference ID.",
+        }));
+        return;
+      }
+
+      if (wishlistStatus.loading) {
+        return;
+      }
+
+      setWishlistStatus((previous) => ({
+        ...previous,
+        loading: true,
+        error: "",
+      }));
+
+      try {
+        if (wishlistStatus.inWishlist && wishlistStatus.itemId) {
+          await removeWishlistItem(wishlistStatus.itemId);
+          setWishlistStatus({
+            inWishlist: false,
+            itemId: null,
+            loading: false,
+            error: "",
+          });
+          setToastMessage("Removed from wishlist");
+          window.setTimeout(() => setToastMessage(""), 2800);
+          return;
+        }
+
+        const payload = {
+          productId: productDocumentId,
+        };
+
+        if (variant?.sku) {
+          payload.variantSku = variant.sku;
+        }
+
+        await addWishlistItem(payload);
+        const refreshed = await checkProductInWishlist(productDocumentId);
+
+        setWishlistStatus({
+          inWishlist: Boolean(refreshed.inWishlist),
+          itemId: refreshed.itemId ?? null,
+          loading: false,
+          error: "",
+        });
+
+        setToastMessage("Saved to wishlist");
+        window.setTimeout(() => setToastMessage(""), 2800);
+      } catch (wishlistError) {
+        if (wishlistError instanceof ApiError && wishlistError.status === 401) {
+          setWishlistStatus((previous) => ({
+            ...previous,
+            loading: false,
+            error: "Please sign in to manage your wishlist.",
+          }));
+
+          window.setTimeout(() => {
+            navigate("/login", {
+              replace: true,
+              state: { redirectTo: location.pathname },
+            });
+          }, 900);
+          return;
+        }
+
+        const message = resolveErrorMessage(
+          wishlistError,
+          wishlistStatus.inWishlist
+            ? "We couldn't remove this item from your wishlist."
+            : "We couldn't save this item to your wishlist."
+        );
+
+        setWishlistStatus((previous) => ({
+          ...previous,
+          loading: false,
+          error: message,
+        }));
+      }
+    },
+    [
+      location.pathname,
+      navigate,
+      productDocumentId,
+      wishlistStatus.inWishlist,
+      wishlistStatus.itemId,
+      wishlistStatus.loading,
+    ]
+  );
 
   return (
     <div className="min-h-screen bg-[#07150f] text-emerald-50">
@@ -208,9 +537,15 @@ const ProductDetailsPage = () => {
             <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
               <ProductGallery images={productDetail.media} />
               <ProductSummary
-                product={productDetail}
+                product={{
+                  ...productDetail,
+                  backendId: productDocumentId ?? productDetail.backendId,
+                }}
                 onAddToCart={handleAddToCart}
                 onBuyNow={handleBuyNow}
+                actionStatus={actionNotice}
+                onToggleWishlist={handleToggleWishlist}
+                wishlistState={wishlistStatus}
               />
             </div>
 

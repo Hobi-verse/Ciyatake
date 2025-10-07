@@ -4,16 +4,47 @@ import Breadcrumbs from "../../components/common/Breadcrumbs.jsx";
 import WishlistItem from "../../components/user/wishlist/WishlistItem.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
 import heartIcon from "../../assets/icons/heart.svg";
-import { fetchWishlist, removeWishlistItem } from "../../api/wishlist.js";
+import {
+  emptyWishlist,
+  fetchWishlist,
+  moveWishlistItemToCart,
+  removeWishlistItem,
+} from "../../api/wishlist.js";
 import { fetchProducts } from "../../api/catalog.js";
-import { addCartItem } from "../../api/cart.js";
+import { ApiError } from "../../api/client.js";
+
+const getErrorMessage = (error, fallbackMessage) => {
+  if (!error) {
+    return fallbackMessage;
+  }
+
+  if (error instanceof ApiError && error.payload) {
+    const payloadMessage =
+      error.payload?.message ??
+      error.payload?.error ??
+      (Array.isArray(error.payload?.errors)
+        ? error.payload.errors[0]?.message
+        : null);
+
+    if (payloadMessage) {
+      return payloadMessage;
+    }
+  }
+
+  if (typeof error?.message === "string" && error.message.length) {
+    return error.message;
+  }
+
+  return fallbackMessage;
+};
 
 const WishlistPage = ({ isLoggedIn = false }) => {
-  const [items, setItems] = useState([]);
-  const [allProducts, setAllProducts] = useState([]);
+  const [wishlist, setWishlist] = useState(() => emptyWishlist());
+  const [catalogProducts, setCatalogProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
+  const [actionError, setActionError] = useState("");
 
   const loadWishlist = useCallback(async ({ signal } = {}) => {
     setLoading(true);
@@ -29,12 +60,6 @@ const WishlistPage = ({ isLoggedIn = false }) => {
         return;
       }
 
-      const wishlistItems = Array.isArray(wishlistResponse?.items)
-        ? wishlistResponse.items
-        : Array.isArray(wishlistResponse)
-        ? wishlistResponse
-        : [];
-
       const productItems = Array.isArray(productsResponse?.items)
         ? productsResponse.items
         : Array.isArray(productsResponse?.products)
@@ -43,8 +68,9 @@ const WishlistPage = ({ isLoggedIn = false }) => {
         ? productsResponse
         : [];
 
-      setItems(wishlistItems);
-      setAllProducts(productItems);
+      setWishlist(wishlistResponse);
+      setCatalogProducts(productItems);
+      setActionError("");
     } catch (apiError) {
       if (!signal?.aborted) {
         setError(apiError);
@@ -63,42 +89,93 @@ const WishlistPage = ({ isLoggedIn = false }) => {
     return () => controller.abort();
   }, [loadWishlist]);
 
-  const handleRemove = (itemId) => {
-    setItems((current) => current.filter((item) => item.id !== itemId));
-    setToastMessage("Removed from wishlist");
-    window.setTimeout(() => setToastMessage(""), 2500);
+  const items = useMemo(() => wishlist.items ?? [], [wishlist.items]);
 
-    removeWishlistItem(itemId).catch(() => {
-      loadWishlist().catch(() => {});
-    });
-  };
+  const handleRemove = useCallback(
+    async (targetItem) => {
+      const itemId =
+        typeof targetItem === "string" ? targetItem : targetItem?.id ?? null;
 
-  const handleAddToCart = (itemId) => {
-    setItems((current) => current.filter((item) => item.id !== itemId));
-    setToastMessage("Moved to cart");
-    window.setTimeout(() => setToastMessage(""), 2500);
+      if (!itemId) {
+        return;
+      }
 
-    const targetItem = items.find((item) => item.id === itemId);
-    if (targetItem) {
-      addCartItem({
-        productId: targetItem.productId,
-        quantity: 1,
-      }).catch(() => {
+      setActionError("");
+
+      try {
+        const updatedWishlist = await removeWishlistItem(itemId);
+        setWishlist(updatedWishlist);
+        setToastMessage("Removed from wishlist");
+        window.setTimeout(() => setToastMessage(""), 2500);
+      } catch (apiError) {
+        const message = getErrorMessage(
+          apiError,
+          "We couldn't remove that item just yet. Please retry."
+        );
+        setActionError(message);
         loadWishlist().catch(() => {});
-      });
-    }
+      }
+    },
+    [loadWishlist]
+  );
 
-    removeWishlistItem(itemId).catch(() => {
-      loadWishlist().catch(() => {});
-    });
-  };
+  const handleAddToCart = useCallback(
+    async (targetItem) => {
+      const item =
+        typeof targetItem === "object"
+          ? targetItem
+          : items.find((entry) => entry.id === targetItem);
+
+      if (!item?.id) {
+        return;
+      }
+
+      if (!item.variantSku) {
+        setActionError(
+          "Please select a size and color for this item before adding it to your cart."
+        );
+        return;
+      }
+
+      setActionError("");
+
+      try {
+        const { wishlist: updatedWishlist } = await moveWishlistItemToCart(
+          item.id,
+          { quantity: 1 }
+        );
+
+        if (updatedWishlist) {
+          setWishlist(updatedWishlist);
+        } else {
+          await loadWishlist();
+        }
+
+        setToastMessage("Moved to cart");
+        window.setTimeout(() => setToastMessage(""), 2500);
+      } catch (apiError) {
+        if (apiError instanceof ApiError && apiError.status === 401) {
+          setActionError("Please sign in to manage your wishlist.");
+          return;
+        }
+
+        const message = getErrorMessage(
+          apiError,
+          "We couldn't move that item to your cart. Please try again."
+        );
+        setActionError(message);
+        loadWishlist().catch(() => {});
+      }
+    },
+    [items, loadWishlist]
+  );
 
   const recommendedProducts = useMemo(() => {
     const wishlistIds = new Set(items.map((item) => item.productId));
-    return allProducts
+    return catalogProducts
       .filter((product) => !wishlistIds.has(product.id))
       .slice(0, 4);
-  }, [allProducts, items]);
+  }, [catalogProducts, items]);
 
   return (
     <div className="min-h-screen bg-[#07150f] text-emerald-50">
@@ -118,7 +195,7 @@ const WishlistPage = ({ isLoggedIn = false }) => {
           </p>
           <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/80">
             <img src={heartIcon} alt="" className="h-4 w-4" aria-hidden />
-            {items.length} saved
+            {wishlist.itemCount ?? items.length} saved
           </span>
         </header>
 
@@ -169,6 +246,14 @@ const WishlistPage = ({ isLoggedIn = false }) => {
           </section>
         ) : null}
       </main>
+
+      {actionError ? (
+        <div className="fixed inset-x-0 bottom-24 z-40 flex justify-center px-4">
+          <div className="max-w-xl rounded-full border border-rose-300/60 bg-rose-500/20 px-4 py-3 text-center text-sm font-medium text-rose-100 shadow-lg">
+            {actionError}
+          </div>
+        </div>
+      ) : null}
 
       {toastMessage ? (
         <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">

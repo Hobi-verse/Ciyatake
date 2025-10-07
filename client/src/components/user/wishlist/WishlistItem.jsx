@@ -23,6 +23,8 @@ const WishlistBadge = ({ inStock }) => (
 const WishlistItem = ({ item, onAddToCart, onRemove }) => {
   if (!item) return null;
 
+  const canAddToCart = Boolean(item.variantSku && item.inStock !== false);
+
   return (
     <article className="flex flex-col gap-5 rounded-3xl border border-white/5 bg-white/5 p-5 shadow-[0_20px_44px_rgba(8,35,25,0.32)] md:flex-row md:items-center md:justify-between">
       <div className="flex gap-4">
@@ -59,15 +61,16 @@ const WishlistItem = ({ item, onAddToCart, onRemove }) => {
       <div className="flex flex-col gap-3 text-sm font-medium text-emerald-200/80 md:flex-row md:items-center">
         <button
           type="button"
-          onClick={() => onAddToCart?.(item.id)}
-          className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-emerald-950 transition hover:bg-emerald-400"
+          onClick={() => onAddToCart?.(item)}
+          disabled={!canAddToCart}
+          className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-emerald-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-emerald-500/40 disabled:text-emerald-950/60"
         >
           <img src={bagIcon} alt="" aria-hidden className="h-4 w-4" />
-          Add to cart
+          {canAddToCart ? "Add to cart" : "Select variant"}
         </button>
         <button
           type="button"
-          onClick={() => onRemove?.(item.id)}
+          onClick={() => onRemove?.(item)}
           className="inline-flex items-center gap-2 rounded-full border border-transparent px-4 py-2 text-emerald-200/80 transition hover:border-emerald-300/50 hover:text-emerald-100"
         >
           <img src={trashIcon} alt="" aria-hidden className="h-4 w-4" />

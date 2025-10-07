@@ -1,4 +1,5 @@
 const { body, param, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 
 /**
  * Validation middleware for adding item to wishlist
@@ -6,9 +7,23 @@ const { body, param, validationResult } = require('express-validator');
 const validateWishlistItem = [
   body('productId')
     .notEmpty()
-    .withMessage('Product ID is required')
-    .isMongoId()
-    .withMessage('Invalid product ID format'),
+    .withMessage('Product identifier is required')
+    .bail()
+    .isString()
+    .withMessage('Product identifier must be a string')
+    .bail()
+    .trim()
+    .custom((value) => {
+      if (mongoose.Types.ObjectId.isValid(value)) {
+        return true;
+      }
+
+      if (typeof value === 'string' && value.length >= 3) {
+        return true;
+      }
+
+      throw new Error('Invalid product identifier format');
+    }),
 
   body('variantSku')
     .optional()
@@ -122,9 +137,23 @@ const validateItemId = [
 const validateProductId = [
   param('productId')
     .notEmpty()
-    .withMessage('Product ID is required')
-    .isMongoId()
-    .withMessage('Invalid product ID format'),
+    .withMessage('Product identifier is required')
+    .bail()
+    .isString()
+    .withMessage('Product identifier must be a string')
+    .bail()
+    .trim()
+    .custom((value) => {
+      if (mongoose.Types.ObjectId.isValid(value)) {
+        return true;
+      }
+
+      if (typeof value === 'string' && value.length >= 3) {
+        return true;
+      }
+
+      throw new Error('Invalid product identifier format');
+    }),
 
   (req, res, next) => {
     const errors = validationResult(req);

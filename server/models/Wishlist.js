@@ -8,6 +8,11 @@ const wishlistItemSchema = new mongoose.Schema({
     required: true,
   },
 
+  productSlug: {
+    type: String,
+    trim: true,
+  },
+
   // Variant SKU for specific size/color combination (optional)
   variantSku: {
     type: String,
@@ -137,20 +142,30 @@ wishlistSchema.methods.updateItemStock = async function () {
   for (const item of this.items) {
     const product = await Product.findById(item.productId);
     if (product) {
-      if (item.variantSku) {
-        const variant = product.getVariantBySku(item.variantSku);
-        item.inStock = variant ? variant.stockLevel > 0 : false;
-      } else {
-        item.inStock = product.totalStock > 0;
-      }
+      item.title = product.title;
+      item.imageUrl =
+        product.media?.find((m) => m.isPrimary)?.url || product.media?.[0]?.url;
+      item.productSlug = product.slug;
 
-      // Update price if changed
       if (item.variantSku) {
         const variant = product.getVariantBySku(item.variantSku);
-        if (variant && variant.priceOverride) {
-          item.price = variant.priceOverride;
+        if (variant) {
+          item.inStock = variant.stockLevel > 0;
+          item.size = variant.size;
+          item.color = variant.color?.name || item.color;
+          item.price =
+            variant.priceOverride ??
+            variant.price ??
+            product.salePrice ??
+            product.basePrice;
+        } else {
+          item.inStock = false;
         }
-      } else {
+        item.price = variant.priceOverride;
+        item.inStock = product.totalStock > 0;
+        item.size = null;
+        item.color = null;
+        item.price = product.salePrice ?? product.basePrice;
         item.price = product.basePrice;
       }
     } else {

@@ -1,5 +1,171 @@
+const mongoose = require('mongoose');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
+
+const normalizeProductIdentifier = async (identifier) => {
+  if (!identifier) {
+    return null;
+  }
+
+  let product = null;
+
+  if (mongoose.Types.ObjectId.isValid(identifier)) {
+    product = await Product.findById(identifier);
+  }
+
+  if (!product) {
+    product = await Product.findOne({ slug: identifier });
+  }
+
+  return product;
+};
+
+const resolveVariantPrice = (product, variant) => {
+  const candidateValues = [
+    variant?.priceOverride,
+    variant?.price,
+    product?.salePrice,
+    product?.basePrice,
+    product?.price,
+  ];
+
+  const numeric = candidateValues.find((value) =>
+    Number.isFinite(Number(value))
+  );
+
+  return Number(numeric ?? 0);
+};
+
+const formatCartItem = (item) => {
+  if (!item) {
+    return null;
+  }
+
+  let productIdentifier = item.productSlug || null;
+  const rawProduct = item.productId;
+
+  if (!productIdentifier) {
+    if (typeof rawProduct === 'string') {
+      productIdentifier = rawProduct;
+    } else if (rawProduct?.slug) {
+      productIdentifier = rawProduct.slug;
+    } else if (rawProduct?._id) {
+      productIdentifier = rawProduct._id.toString();
+    } else if (typeof rawProduct?.toString === 'function') {
+      productIdentifier = rawProduct.toString();
+    }
+  }
+
+  const itemId = item._id?.toString?.() || item.id || productIdentifier || item.variantSku;
+
+  return {
+    id: itemId,
+    productId: productIdentifier,
+    title: item.title,
+    price: item.price,
+    size: item.size,
+    color: item.color,
+    quantity: item.quantity,
+    imageUrl: item.imageUrl,
+    savedForLater: item.savedForLater,
+    addedAt: item.addedAt,
+    variantSku: item.variantSku
+  };
+};
+
+const formatCartResponse = (cart) => {
+  if (!cart) {
+    return {
+      id: null,
+      items: [],
+      totals: {
+        subtotal: 0,
+        itemCount: 0,
+        savedItemCount: 0
+      },
+      lastActivityAt: null
+    };
+  }
+
+  const totals = {
+    subtotal: Number.isFinite(Number(cart.totals?.subtotal)) ? Number(cart.totals.subtotal) : 0,
+    itemCount: Number.isFinite(Number(cart.totals?.itemCount)) ? Number(cart.totals.itemCount) : 0,
+    savedItemCount: Number.isFinite(Number(cart.totals?.savedItemCount)) ? Number(cart.totals.savedItemCount) : 0
+  };
+
+  return {
+    id: cart._id?.toString?.() || cart.id || null,
+    items: Array.isArray(cart.items)
+      ? cart.items.map(formatCartItem).filter(Boolean)
+      : [],
+    totals,
+    lastActivityAt: cart.lastActivityAt || null
+  };
+};
+
+const resolveCartItemContext = async (cart, identifier) => {
+  if (!cart || !identifier) {
+    return { item: null, product: null };
+  }
+
+  const normalized = identifier.toString().trim();
+  if (!normalized.length) {
+    return { item: null, product: null };
+  }
+
+  const normalizedLower = normalized.toLowerCase();
+  let item = null;
+
+  if (mongoose.Types.ObjectId.isValid(normalized)) {
+    item = cart.items.id(normalized);
+  }
+
+  if (!item && Array.isArray(cart.items)) {
+    item = cart.items.find((cartItem) => {
+      if (!cartItem) {
+        return false;
+      }
+
+      const productIdString = typeof cartItem.productId === 'string'
+        ? cartItem.productId
+        : cartItem.productId?._id?.toString?.() || cartItem.productId?.toString?.();
+
+      const variantSku = cartItem.variantSku?.toLowerCase?.();
+      const productSlug = cartItem.productSlug?.toLowerCase?.();
+
+      return (
+        productIdString === normalized ||
+        variantSku === normalizedLower ||
+        productSlug === normalizedLower
+      );
+    });
+  }
+
+  let product = null;
+
+  if (item) {
+    product = await Product.findById(item.productId);
+  } else {
+    product = await normalizeProductIdentifier(normalized);
+
+    if (product) {
+      item = Array.isArray(cart.items)
+        ? cart.items.find((cartItem) => {
+          const productIdString = cartItem?.productId?._id?.toString?.()
+            || cartItem?.productId?.toString?.()
+            || (typeof cartItem?.productId === 'string' ? cartItem.productId : null);
+
+          return productIdString === product._id.toString();
+        })
+        : null;
+    }
+  }
+
+  return {
+    item: item || null,
+    product: product || null
+  };
+};
 
 /**
  * @desc    Get user's cart
@@ -22,12 +188,15 @@ const getCart = async (req, res) => {
       cart.items.map(async (item) => {
         const product = await Product.findById(item.productId);
         if (product) {
-          const variant = product.variants.find(v => v.sku === item.variantSku);
+          const variant = product.variants.find((v) => v.sku === item.variantSku);
           if (variant) {
             // Update snapshot data
-            item.price = variant.price || product.salePrice || product.price;
+            item.price = resolveVariantPrice(product, variant);
             item.title = product.title;
-            item.imageUrl = product.media.find(m => m.isPrimary)?.url || product.media[0]?.url;
+            item.imageUrl = product.media.find((m) => m.isPrimary)?.url || product.media[0]?.url;
+            item.size = variant.size;
+            item.color = variant.color?.name || item.color;
+            item.productSlug = product.slug;
           }
         }
         return item;
@@ -40,24 +209,7 @@ const getCart = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        cart: {
-          id: cart._id,
-          items: cart.items.map(item => ({
-            id: item._id,
-            productId: item.productId?.slug || item.productId,
-            title: item.title,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            quantity: item.quantity,
-            imageUrl: item.imageUrl,
-            savedForLater: item.savedForLater,
-            addedAt: item.addedAt,
-            variantSku: item.variantSku
-          })),
-          totals: cart.totals,
-          lastActivityAt: cart.lastActivityAt
-        }
+        cart: formatCartResponse(cart)
       }
     });
   } catch (error) {
@@ -89,7 +241,7 @@ const addCartItem = async (req, res) => {
     }
 
     // Find product and variant
-    const product = await Product.findById(productId);
+    const product = await normalizeProductIdentifier(productId);
     if (!product) {
       return res.status(404).json({
         success: false,
@@ -122,13 +274,14 @@ const addCartItem = async (req, res) => {
     // Prepare item data
     const itemData = {
       productId: product._id,
+      productSlug: product.slug,
       variantSku: variant.sku,
       title: product.title,
-      price: variant.price || product.salePrice || product.price,
+      price: resolveVariantPrice(product, variant),
       size: variant.size,
-      color: variant.color.name,
-      imageUrl: product.media.find(m => m.isPrimary)?.url || product.media[0]?.url,
-      quantity: quantity,
+      color: variant.color?.name || variant.color,
+      imageUrl: product.media.find((m) => m.isPrimary)?.url || product.media[0]?.url,
+      quantity,
       savedForLater: false
     };
 
@@ -140,22 +293,7 @@ const addCartItem = async (req, res) => {
       success: true,
       message: 'Item added to cart',
       data: {
-        cart: {
-          id: cart._id,
-          items: cart.items.map(item => ({
-            id: item._id,
-            productId: item.productId,
-            title: item.title,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            quantity: item.quantity,
-            imageUrl: item.imageUrl,
-            savedForLater: item.savedForLater,
-            variantSku: item.variantSku
-          })),
-          totals: cart.totals
-        }
+        cart: formatCartResponse(cart)
       }
     });
   } catch (error) {
@@ -196,8 +334,9 @@ const updateCartItem = async (req, res) => {
       });
     }
 
-    // Find item
-    const item = cart.items.id(itemId);
+    // Find item with flexible identifier support
+    const { item, product } = await resolveCartItemContext(cart, itemId);
+
     if (!item) {
       return res.status(404).json({
         success: false,
@@ -205,42 +344,43 @@ const updateCartItem = async (req, res) => {
       });
     }
 
-    // Check stock availability
-    const product = await Product.findById(item.productId);
-    if (product) {
-      const variant = product.variants.find(v => v.sku === item.variantSku);
-      if (variant && variant.stockLevel < quantity) {
-        return res.status(400).json({
-          success: false,
-          message: `Only ${variant.stockLevel} items available in stock`
-        });
+    let productDoc = product;
+
+    if (!productDoc && item.productId) {
+      productDoc = await Product.findById(item.productId);
+    }
+
+    if (!productDoc && item.variantSku) {
+      productDoc = await Product.findOne({ 'variants.sku': item.variantSku });
+    }
+
+    if (productDoc) {
+      const variant = productDoc.variants.find((v) => v.sku === item.variantSku);
+
+      if (variant) {
+        if (variant.stockLevel < quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `Only ${variant.stockLevel} items available in stock`
+          });
+        }
+
+        item.price = resolveVariantPrice(productDoc, variant);
+        item.size = variant.size;
+        item.color = variant.color?.name || item.color;
+        item.productSlug = productDoc.slug || item.productSlug;
       }
     }
 
-    // Update quantity
-    cart.updateItemQuantity(itemId, quantity);
+    // Update quantity using canonical identifier
+    cart.updateItemQuantity(item._id, quantity);
     await cart.save();
 
     res.status(200).json({
       success: true,
       message: 'Cart item updated',
       data: {
-        cart: {
-          id: cart._id,
-          items: cart.items.map(item => ({
-            id: item._id,
-            productId: item.productId,
-            title: item.title,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            quantity: item.quantity,
-            imageUrl: item.imageUrl,
-            savedForLater: item.savedForLater,
-            variantSku: item.variantSku
-          })),
-          totals: cart.totals
-        }
+        cart: formatCartResponse(cart)
       }
     });
   } catch (error) {
@@ -272,8 +412,7 @@ const removeCartItem = async (req, res) => {
       });
     }
 
-    // Check if item exists
-    const item = cart.items.id(itemId);
+    const { item } = await resolveCartItemContext(cart, itemId);
     if (!item) {
       return res.status(404).json({
         success: false,
@@ -282,29 +421,14 @@ const removeCartItem = async (req, res) => {
     }
 
     // Remove item
-    cart.removeItem(itemId);
+    cart.removeItem(item._id);
     await cart.save();
 
     res.status(200).json({
       success: true,
       message: 'Item removed from cart',
       data: {
-        cart: {
-          id: cart._id,
-          items: cart.items.map(item => ({
-            id: item._id,
-            productId: item.productId,
-            title: item.title,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            quantity: item.quantity,
-            imageUrl: item.imageUrl,
-            savedForLater: item.savedForLater,
-            variantSku: item.variantSku
-          })),
-          totals: cart.totals
-        }
+        cart: formatCartResponse(cart)
       }
     });
   } catch (error) {
@@ -336,8 +460,7 @@ const saveItemForLater = async (req, res) => {
       });
     }
 
-    // Check if item exists
-    const item = cart.items.id(itemId);
+    const { item } = await resolveCartItemContext(cart, itemId);
     if (!item) {
       return res.status(404).json({
         success: false,
@@ -346,29 +469,14 @@ const saveItemForLater = async (req, res) => {
     }
 
     // Save for later
-    cart.saveItemForLater(itemId);
+    cart.saveItemForLater(item._id);
     await cart.save();
 
     res.status(200).json({
       success: true,
       message: 'Item saved for later',
       data: {
-        cart: {
-          id: cart._id,
-          items: cart.items.map(item => ({
-            id: item._id,
-            productId: item.productId,
-            title: item.title,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            quantity: item.quantity,
-            imageUrl: item.imageUrl,
-            savedForLater: item.savedForLater,
-            variantSku: item.variantSku
-          })),
-          totals: cart.totals
-        }
+        cart: formatCartResponse(cart)
       }
     });
   } catch (error) {
@@ -391,7 +499,6 @@ const moveItemToCart = async (req, res) => {
     const userId = req.user._id;
     const { itemId } = req.params;
 
-    // Find cart
     const cart = await Cart.findOne({ userId });
     if (!cart) {
       return res.status(404).json({
@@ -400,58 +507,57 @@ const moveItemToCart = async (req, res) => {
       });
     }
 
-    // Check if item exists
-    const item = cart.items.id(itemId);
+    const { item, product } = await resolveCartItemContext(cart, itemId);
     if (!item) {
       return res.status(404).json({
         success: false,
-        message: 'Item not found'
+        message: 'Item not found in cart'
       });
     }
 
-    // Check stock availability
-    const product = await Product.findById(item.productId);
-    if (product) {
-      const variant = product.variants.find(v => v.sku === item.variantSku);
-      if (variant && variant.stockLevel < item.quantity) {
-        return res.status(400).json({
-          success: false,
-          message: `Only ${variant.stockLevel} items available in stock`
-        });
+    let productDoc = product;
+
+    if (!productDoc && item.productId) {
+      productDoc = await Product.findById(item.productId);
+    }
+
+    if (!productDoc && item.variantSku) {
+      productDoc = await Product.findOne({ 'variants.sku': item.variantSku });
+    }
+
+    if (productDoc) {
+      const variant = productDoc.variants.find((v) => v.sku === item.variantSku);
+
+      if (variant) {
+        if (variant.stockLevel < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `Only ${variant.stockLevel} items available in stock`
+          });
+        }
+
+        item.price = resolveVariantPrice(productDoc, variant);
+        item.size = variant.size;
+        item.color = variant.color?.name || item.color;
+        item.productSlug = productDoc.slug || item.productSlug;
       }
     }
 
-    // Move to cart
-    cart.moveItemToCart(itemId);
+    cart.moveItemToCart(item._id);
     await cart.save();
 
     res.status(200).json({
       success: true,
-      message: 'Item moved to cart',
+      message: 'Item moved back to cart',
       data: {
-        cart: {
-          id: cart._id,
-          items: cart.items.map(item => ({
-            id: item._id,
-            productId: item.productId,
-            title: item.title,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            quantity: item.quantity,
-            imageUrl: item.imageUrl,
-            savedForLater: item.savedForLater,
-            variantSku: item.variantSku
-          })),
-          totals: cart.totals
-        }
+        cart: formatCartResponse(cart)
       }
     });
   } catch (error) {
     console.error('Move item to cart error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to move item to cart',
+      message: 'Failed to move item back to cart',
       error: error.message
     });
   }
@@ -466,7 +572,6 @@ const clearCart = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Find cart
     const cart = await Cart.findOne({ userId });
     if (!cart) {
       return res.status(404).json({
@@ -475,7 +580,6 @@ const clearCart = async (req, res) => {
       });
     }
 
-    // Clear cart
     cart.clearCart();
     await cart.save();
 
@@ -483,11 +587,7 @@ const clearCart = async (req, res) => {
       success: true,
       message: 'Cart cleared',
       data: {
-        cart: {
-          id: cart._id,
-          items: [],
-          totals: cart.totals
-        }
+        cart: formatCartResponse(cart)
       }
     });
   } catch (error) {
@@ -509,7 +609,6 @@ const getCartSummary = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Get cart
     const cart = await Cart.findOne({ userId });
 
     if (!cart) {
@@ -517,7 +616,8 @@ const getCartSummary = async (req, res) => {
         success: true,
         data: {
           itemCount: 0,
-          subtotal: 0
+          subtotal: 0,
+          savedItemCount: 0
         }
       });
     }
@@ -549,7 +649,6 @@ const validateCart = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Find cart
     const cart = await Cart.findOne({ userId });
     if (!cart) {
       return res.status(404).json({
@@ -561,62 +660,66 @@ const validateCart = async (req, res) => {
     const issues = [];
     const updatedItems = [];
 
-    // Check each item
     for (const item of cart.items) {
-      if (item.savedForLater) continue;
+      let product = null;
 
-      const product = await Product.findById(item.productId);
+      if (item.productId) {
+        product = await Product.findById(item.productId);
+      }
+
+      if (!product && item.productSlug) {
+        product = await Product.findOne({ slug: item.productSlug });
+      }
 
       if (!product) {
         issues.push({
-          itemId: item._id,
+          itemId: item._id?.toString?.() || null,
           type: 'product_not_found',
-          message: `Product "${item.title}" is no longer available`
+          message: `"${item.title}" is no longer available.`
         });
         continue;
       }
 
-      const variant = product.variants.find(v => v.sku === item.variantSku);
-
+      const variant = product.variants.find((v) => v.sku === item.variantSku);
       if (!variant) {
         issues.push({
-          itemId: item._id,
+          itemId: item._id?.toString?.() || null,
           type: 'variant_not_found',
-          message: `Size ${item.size} in ${item.color} is no longer available for "${item.title}"`
+          message: `Selected variant for "${item.title}" is no longer available.`
         });
         continue;
       }
 
-      // Check stock
       if (variant.stockLevel < item.quantity) {
         issues.push({
-          itemId: item._id,
+          itemId: item._id?.toString?.() || null,
           type: 'insufficient_stock',
-          message: `Only ${variant.stockLevel} items available for "${item.title}" (${item.size}, ${item.color})`,
-          availableStock: variant.stockLevel,
+          message: `Only ${variant.stockLevel} items available in stock`,
+          availableQuantity: variant.stockLevel,
           requestedQuantity: item.quantity
         });
       }
 
-      // Check price changes
-      const currentPrice = variant.price || product.salePrice || product.price;
-      if (currentPrice !== item.price) {
+      const latestPrice = resolveVariantPrice(product, variant);
+      if (latestPrice !== item.price) {
         issues.push({
-          itemId: item._id,
+          itemId: item._id?.toString?.() || null,
           type: 'price_changed',
           message: `Price for "${item.title}" has changed`,
           oldPrice: item.price,
-          newPrice: currentPrice
+          newPrice: latestPrice
         });
 
-        // Update price in cart
-        item.price = currentPrice;
-        updatedItems.push(item._id);
+        item.price = latestPrice;
+        item.size = variant.size;
+        item.color = variant.color?.name || item.color;
+        item.productSlug = product.slug || item.productSlug;
+        updatedItems.push(item._id?.toString?.() || null);
       }
     }
 
-    // Save if prices were updated
     if (updatedItems.length > 0) {
+      cart.calculateTotals();
       await cart.save();
     }
 
@@ -626,22 +729,7 @@ const validateCart = async (req, res) => {
         valid: issues.length === 0,
         issues,
         updatedItems,
-        cart: {
-          id: cart._id,
-          items: cart.items.map(item => ({
-            id: item._id,
-            productId: item.productId,
-            title: item.title,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            quantity: item.quantity,
-            imageUrl: item.imageUrl,
-            savedForLater: item.savedForLater,
-            variantSku: item.variantSku
-          })),
-          totals: cart.totals
-        }
+        cart: formatCartResponse(cart)
       }
     });
   } catch (error) {
