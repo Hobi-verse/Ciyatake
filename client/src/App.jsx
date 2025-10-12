@@ -19,6 +19,7 @@ import Customers from "./components/admin/customers/Customers.jsx";
 import Reports from "./components/admin/reports/Reports.jsx";
 import Users from "./components/admin/users/Users.jsx";
 import Coupons from "./pages/admin/Coupons.jsx";
+import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import {
   AUTH_SESSION_EVENT,
   AUTH_STORAGE_KEYS,
@@ -93,10 +94,29 @@ function App() {
         />
         <Route
           path="/account"
-          element={<MyAccountPage isLoggedIn={isLoggedIn} />}
+          element={
+            <ProtectedRoute
+              session={authSession}
+              allowedRoles={["customer"]}
+              forbiddenPath="/admin/dashboard"
+            >
+              <MyAccountPage isLoggedIn={isLoggedIn} />
+            </ProtectedRoute>
+          }
         />
 
-        <Route path="/admin" element={<AdminDashboardLayout />}>
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute
+              session={authSession}
+              allowedRoles={["admin"]}
+              forbiddenPath="/account"
+            >
+              <AdminDashboardLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
