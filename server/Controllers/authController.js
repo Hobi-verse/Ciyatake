@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const OTP = require("../models/OTP");
+const CustomerProfile = require("../models/CustomerProfile");
 const TokenBlacklist = require("../models/TokenBlacklist");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -180,6 +181,17 @@ exports.signup = async (req, res) => {
       email: email || "",
       isVerified: true,
     });
+
+    // Create default customer profile for new user if it doesn't exist yet
+    try {
+      await CustomerProfile.findOneAndUpdate(
+        { userId: newUser._id },
+        { userId: newUser._id },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+    } catch (profileError) {
+      console.error("Create customer profile error:", profileError);
+    }
 
     // Generate JWT token for authentication
     const token = jwt.sign(

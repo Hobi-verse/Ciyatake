@@ -31,7 +31,6 @@ const supportTicketSchema = new mongoose.Schema({
   ticketId: {
     type: String,
     required: true,
-    unique: true,
   },
   subject: {
     type: String,
