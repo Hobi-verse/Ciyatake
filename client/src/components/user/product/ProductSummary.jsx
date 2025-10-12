@@ -25,6 +25,8 @@ const ProductSummary = ({
   actionStatus,
   onToggleWishlist,
   wishlistState,
+  onRequestReview,
+  reviewEligibility,
 }) => {
   const variants = useMemo(
     () => (Array.isArray(product?.variants) ? product.variants : []),
@@ -263,6 +265,11 @@ const ProductSummary = ({
     return Number.isFinite(Number(numeric)) ? Number(numeric) : 0;
   }, [product?.basePrice, product?.price, product?.salePrice, selectedVariant]);
 
+  const hasExistingReview = Boolean(reviewEligibility?.existingReview);
+  const reviewButtonLabel = hasExistingReview
+    ? "Edit your review"
+    : "Write a review";
+
   return (
     <section className="space-y-6 rounded-3xl border border-white/5 bg-white/5 p-6 shadow-xl">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -273,7 +280,20 @@ const ProductSummary = ({
           <h1 className="text-3xl font-semibold text-white sm:text-4xl">
             {product.title}
           </h1>
-          <RatingDisplay rating={ratingValue} count={reviewCountValue} />
+          <div className="flex flex-wrap items-center gap-3 text-sm text-emerald-100/80">
+            <RatingDisplay rating={ratingValue} count={reviewCountValue} />
+            {onRequestReview ? (
+              <button
+                type="button"
+                onClick={() =>
+                  onRequestReview(hasExistingReview ? "edit" : "create")
+                }
+                className="rounded-full border border-emerald-300/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-100 transition hover:border-emerald-200"
+              >
+                {reviewButtonLabel}
+              </button>
+            ) : null}
+          </div>
         </header>
 
         {onToggleWishlist ? (

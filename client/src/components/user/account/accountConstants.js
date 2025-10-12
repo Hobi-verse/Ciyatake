@@ -3,6 +3,7 @@ export const accountSections = [
   { id: "orders", label: "Orders & returns" },
   { id: "addresses", label: "Addresses" },
   { id: "payments", label: "Payments & wallet" },
+  { id: "reviews", label: "My reviews" },
   { id: "preferences", label: "Security & preferences" },
 ];
 

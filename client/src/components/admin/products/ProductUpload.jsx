@@ -594,37 +594,6 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
     return SIZE_OPTIONS.clothing;
   }, [categoryIndex, form.category, form.subCategory, form.gender]);
 
-  useEffect(() => {
-    if (!form.category || categoryIndex.size === 0) {
-      return;
-    }
-
-    if (!categoryIndex.has(form.category)) {
-      updateForm({ category: "", subCategory: "" });
-    }
-  }, [categoryIndex, form.category, updateForm]);
-
-  useEffect(() => {
-    if (!form.subCategory) {
-      return;
-    }
-
-    const subCategory = categoryIndex.get(form.subCategory);
-    if (!subCategory) {
-      updateForm("subCategory", "");
-      return;
-    }
-
-    const parentSlug = subCategory.parent?.slug;
-    if (parentSlug && parentSlug !== form.category) {
-      updateForm("subCategory", "");
-    }
-  }, [categoryIndex, form.category, form.subCategory, updateForm]);
-
-  const toggleSection = (key) => {
-    setSections((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
   const updateForm = useCallback(
     (keyOrUpdates, value) => {
       setForm((prev) => {
@@ -684,6 +653,37 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
     },
     [feedback]
   );
+
+  useEffect(() => {
+    if (!form.category || categoryIndex.size === 0) {
+      return;
+    }
+
+    if (!categoryIndex.has(form.category)) {
+      updateForm({ category: "", subCategory: "" });
+    }
+  }, [categoryIndex, form.category, updateForm]);
+
+  useEffect(() => {
+    if (!form.subCategory) {
+      return;
+    }
+
+    const subCategory = categoryIndex.get(form.subCategory);
+    if (!subCategory) {
+      updateForm("subCategory", "");
+      return;
+    }
+
+    const parentSlug = subCategory.parent?.slug;
+    if (parentSlug && parentSlug !== form.category) {
+      updateForm("subCategory", "");
+    }
+  }, [categoryIndex, form.category, form.subCategory, updateForm]);
+
+  const toggleSection = (key) => {
+    setSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
   const selectGender = (gender) => {
     updateForm({

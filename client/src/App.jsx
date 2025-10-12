@@ -18,6 +18,7 @@ import Products from "./pages/admin/Products.jsx";
 import Customers from "./components/admin/customers/Customers.jsx";
 import Reports from "./components/admin/reports/Reports.jsx";
 import Users from "./components/admin/users/Users.jsx";
+import Coupons from "./pages/admin/Coupons.jsx";
 import {
   AUTH_SESSION_EVENT,
   AUTH_STORAGE_KEYS,
@@ -101,6 +102,7 @@ function App() {
           <Route path="orders" element={<Orders />} />
           <Route path="products" element={<Products />} />
           <Route path="customers" element={<Customers />} />
+          <Route path="coupons" element={<Coupons />} />
           <Route path="reports" element={<Reports />} />
           <Route path="users" element={<Users />} />
           <Route path="*" element={<Navigate to="dashboard" replace />} />

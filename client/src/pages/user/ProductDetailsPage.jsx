@@ -17,6 +17,8 @@ import {
   checkProductInWishlist,
   removeWishlistItem,
 } from "../../api/wishlist.js";
+import { checkReviewEligibility } from "../../api/reviews.js";
+import WriteReviewDialog from "../../components/user/reviews/WriteReviewDialog.jsx";
 
 const normalizeMedia = (media = [], fallbackAlt = "") =>
   media
@@ -159,7 +161,7 @@ const resolveErrorMessage = (error, fallbackMessage) => {
   return fallbackMessage;
 };
 
-const ProductDetailsPage = () => {
+const ProductDetailsPage = ({ isLoggedIn = false }) => {
   const { productId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -178,6 +180,27 @@ const ProductDetailsPage = () => {
     loading: false,
     error: "",
   });
+  const [reviewMeta, setReviewMeta] = useState({
+    averageRating: 0,
+    totalReviews: 0,
+  });
+  const [reviewsRefreshToken, setReviewsRefreshToken] = useState(0);
+  const [reviewEligibility, setReviewEligibility] = useState({
+    status: "idle",
+    canReview: false,
+    hasPurchased: false,
+    message: "",
+    reason: "",
+    orderId: null,
+    existingReview: null,
+  });
+  const [reviewDialogState, setReviewDialogState] = useState({
+    open: false,
+    mode: "create",
+    review: null,
+    orderId: null,
+  });
+  const [pendingReviews, setPendingReviews] = useState([]);
 
   const loadProduct = useCallback(async (targetProductId, { signal } = {}) => {
     if (!targetProductId) {
@@ -194,6 +217,10 @@ const ProductDetailsPage = () => {
       }
 
       setProductDetail(transformProductDetail(product));
+      setReviewMeta({
+        averageRating: Number(product.rating ?? product.averageRating ?? 0),
+        totalReviews: Number(product.reviewCount ?? product.reviewsCount ?? 0),
+      });
     } catch (apiError) {
       if (!signal?.aborted) {
         setError(apiError);
@@ -297,6 +324,10 @@ const ProductDetailsPage = () => {
 
     return () => controller.abort();
   }, [productDocumentId, refreshWishlistStatus, resetWishlistStatus]);
+
+  useEffect(() => {
+    setPendingReviews([]);
+  }, [productDocumentId]);
 
   const addToCart = useCallback(
     async (
@@ -508,9 +539,169 @@ const ProductDetailsPage = () => {
     ]
   );
 
+  useEffect(() => {
+    if (!productDocumentId || !isLoggedIn) {
+      setReviewEligibility({
+        status: isLoggedIn ? "ready" : "idle",
+        canReview: false,
+        hasPurchased: false,
+        message: "",
+        reason: "",
+        orderId: null,
+        existingReview: null,
+      });
+      return;
+    }
+
+    const controller = new AbortController();
+    setReviewEligibility((current) => ({
+      ...current,
+      status: "loading",
+      message: "",
+      reason: "",
+    }));
+
+    checkReviewEligibility(productDocumentId, { signal: controller.signal })
+      .then((result) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setReviewEligibility({
+          status: "ready",
+          canReview: Boolean(result.canReview),
+          hasPurchased: Boolean(result.hasPurchased),
+          message: result.message ?? "",
+          reason: result.reason ?? "",
+          orderId: result.orderId ?? null,
+          existingReview: result.existingReview,
+        });
+      })
+      .catch((apiError) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setReviewEligibility({
+          status: "error",
+          canReview: false,
+          hasPurchased: false,
+          message: resolveErrorMessage(
+            apiError,
+            "We couldn't verify your review eligibility right now."
+          ),
+          reason: "",
+          orderId: null,
+          existingReview: null,
+        });
+      });
+
+    return () => controller.abort();
+  }, [productDocumentId, isLoggedIn]);
+
+  const handleReviewSummaryChange = useCallback((summary) => {
+    if (!summary) {
+      return;
+    }
+
+    setReviewMeta({
+      averageRating: Number(summary.averageRating ?? 0),
+      totalReviews: Number(summary.totalReviews ?? 0),
+    });
+  }, []);
+
+  const handleRequestReview = useCallback(
+    (intent = "create") => {
+      if (!isLoggedIn) {
+        navigate("/login", {
+          replace: false,
+          state: { redirectTo: location.pathname },
+        });
+        return;
+      }
+
+      if (intent === "edit" && reviewEligibility.existingReview) {
+        setReviewDialogState({
+          open: true,
+          mode: "edit",
+          review: reviewEligibility.existingReview,
+          orderId: reviewEligibility.orderId,
+        });
+        return;
+      }
+
+      if (!reviewEligibility.canReview) {
+        const message =
+          reviewEligibility.reason ||
+          reviewEligibility.message ||
+          "You can only review products you've purchased.";
+
+        setToastMessage(message);
+        window.setTimeout(() => setToastMessage(""), 2800);
+        return;
+      }
+
+      setReviewDialogState({
+        open: true,
+        mode: "create",
+        review: null,
+        orderId: reviewEligibility.orderId,
+      });
+    },
+    [
+      isLoggedIn,
+      navigate,
+      location.pathname,
+      reviewEligibility.canReview,
+      reviewEligibility.existingReview,
+      reviewEligibility.message,
+      reviewEligibility.orderId,
+      reviewEligibility.reason,
+    ]
+  );
+
+  const handleReviewDialogClose = useCallback(() => {
+    setReviewDialogState({
+      open: false,
+      mode: "create",
+      review: null,
+      orderId: null,
+    });
+  }, []);
+
+  const handleReviewSaved = useCallback((review) => {
+    if (review) {
+      setPendingReviews((current) => {
+        const without = current.filter((item) => item.id !== review.id);
+        return [{ ...review }, ...without];
+      });
+    }
+
+    setReviewEligibility((current) => ({
+      ...current,
+      canReview: false,
+      existingReview: review ?? current.existingReview,
+    }));
+    setReviewsRefreshToken((current) => current + 1);
+  }, []);
+
+  const handleVisibleReviewsChange = useCallback((visibleReviews = []) => {
+    if (!Array.isArray(visibleReviews) || !visibleReviews.length) {
+      return;
+    }
+
+    setPendingReviews((current) =>
+      current.filter(
+        (pending) =>
+          pending?.id &&
+          !visibleReviews.some((visible) => visible?.id === pending.id)
+      )
+    );
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#07150f] text-emerald-50">
-      <UserNavbar />
+      <UserNavbar isLoggedIn={isLoggedIn} />
 
       <div className="mx-auto max-w-6xl space-y-12 px-4 pb-24 pt-8">
         {loading ? (
@@ -540,12 +731,17 @@ const ProductDetailsPage = () => {
                 product={{
                   ...productDetail,
                   backendId: productDocumentId ?? productDetail.backendId,
+                  rating: reviewMeta.averageRating ?? productDetail.rating ?? 0,
+                  reviewCount:
+                    reviewMeta.totalReviews ?? productDetail.reviewCount ?? 0,
                 }}
                 onAddToCart={handleAddToCart}
                 onBuyNow={handleBuyNow}
                 actionStatus={actionNotice}
                 onToggleWishlist={handleToggleWishlist}
                 wishlistState={wishlistStatus}
+                onRequestReview={handleRequestReview}
+                reviewEligibility={reviewEligibility}
               />
             </div>
 
@@ -558,9 +754,14 @@ const ProductDetailsPage = () => {
             </div>
 
             <ProductReviewsSummary
-              rating={productDetail.rating}
-              reviewCount={productDetail.reviewCount}
-              highlights={productDetail.reviewHighlights}
+              productId={productDocumentId}
+              isLoggedIn={isLoggedIn}
+              onRequestReview={handleRequestReview}
+              eligibility={reviewEligibility}
+              onSummaryChange={handleReviewSummaryChange}
+              refreshToken={reviewsRefreshToken}
+              pendingReviews={pendingReviews}
+              onVisibleReviewsChange={handleVisibleReviewsChange}
             />
 
             <section className="space-y-6">
@@ -581,6 +782,17 @@ const ProductDetailsPage = () => {
           </div>
         </div>
       ) : null}
+
+      <WriteReviewDialog
+        open={reviewDialogState.open}
+        mode={reviewDialogState.mode}
+        productId={productDocumentId}
+        productName={productDetail?.title}
+        defaultOrderId={reviewDialogState.orderId}
+        existingReview={reviewDialogState.review}
+        onClose={handleReviewDialogClose}
+        onSuccess={handleReviewSaved}
+      />
     </div>
   );
 };

@@ -4,17 +4,47 @@ import Breadcrumbs from "../../components/common/Breadcrumbs.jsx";
 import {
   fetchAccountSummary,
   updateAccountPreferences,
+  updateAccountProfile,
 } from "../../api/user.js";
+import { ApiError } from "../../api/client.js";
+import {
+  createAddress,
+  deleteAddress,
+  fetchAddresses,
+  setDefaultAddress,
+  updateAddress,
+} from "../../api/addresses.js";
+import {
+  deleteReview as deleteReviewRequest,
+  fetchUserReviews,
+} from "../../api/reviews.js";
 import AccountNavigation from "../../components/user/account/AccountNavigation.jsx";
 import OverviewSection from "../../components/user/account/OverviewSection.jsx";
 import OrdersSection from "../../components/user/account/OrdersSection.jsx";
 import AddressesSection from "../../components/user/account/AddressesSection.jsx";
 import PaymentsSection from "../../components/user/account/PaymentsSection.jsx";
 import PreferencesSection from "../../components/user/account/PreferencesSection.jsx";
+import EditProfileDialog from "../../components/user/account/EditProfileDialog.jsx";
+import AddressDialog from "../../components/user/account/AddressDialog.jsx";
+import MyReviewsSection from "../../components/user/account/reviews/MyReviewsSection.jsx";
+import WriteReviewDialog from "../../components/user/reviews/WriteReviewDialog.jsx";
 import {
   accountSections,
   preferenceLabels,
 } from "../../components/user/account/accountConstants.js";
+
+const getApiErrorMessage = (error, fallbackMessage) => {
+  if (error instanceof ApiError) {
+    return (
+      error.payload?.message ||
+      error.payload?.error ||
+      fallbackMessage ||
+      "Something went wrong."
+    );
+  }
+
+  return error?.message || fallbackMessage || "Something went wrong.";
+};
 
 const MyAccountPage = ({ isLoggedIn }) => {
   const [summary, setSummary] = useState(null);
@@ -25,7 +55,40 @@ const MyAccountPage = ({ isLoggedIn }) => {
   const [pendingPreference, setPendingPreference] = useState("");
   const [preferenceError, setPreferenceError] = useState("");
   const [preferenceMessage, setPreferenceMessage] = useState("");
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [addressesState, setAddressesState] = useState({
+    items: [],
+    loading: false,
+    error: "",
+    pendingAction: null,
+    statusMessage: "",
+    statusTone: "info",
+  });
+  const [addressDialogState, setAddressDialogState] = useState({
+    open: false,
+    mode: "create",
+    address: null,
+    saving: false,
+    error: "",
+  });
+  const [reviewsState, setReviewsState] = useState({
+    items: [],
+    loading: false,
+    error: "",
+    pagination: {
+      currentPage: 1,
+      totalPages: 1,
+      hasMore: false,
+    },
+  });
+  const [reviewsLoadedOnce, setReviewsLoadedOnce] = useState(false);
+  const [accountReviewDialogState, setAccountReviewDialogState] = useState({
+    open: false,
+    review: null,
+    mode: "edit",
+  });
   const successTimeoutRef = useRef();
+  const addressStatusTimeoutRef = useRef();
 
   const loadSummary = useCallback(async ({ signal } = {}) => {
     setLoading(true);
@@ -50,17 +113,229 @@ const MyAccountPage = ({ isLoggedIn }) => {
     }
   }, []);
 
+  const loadAddresses = useCallback(async ({ signal } = {}) => {
+    if (signal?.aborted) {
+      return;
+    }
+
+    setAddressesState((current) => ({
+      ...current,
+      loading: true,
+      error: "",
+      statusMessage: "",
+      statusTone: "info",
+      pendingAction: null,
+    }));
+
+    try {
+      const response = await fetchAddresses({ signal });
+      if (signal?.aborted) {
+        return;
+      }
+
+      setAddressesState((current) => ({
+        ...current,
+        items: Array.isArray(response?.addresses) ? response.addresses : [],
+        loading: false,
+        error: "",
+      }));
+    } catch (apiError) {
+      if (signal?.aborted) {
+        return;
+      }
+
+      setAddressesState((current) => ({
+        ...current,
+        loading: false,
+        error: getApiErrorMessage(
+          apiError,
+          "We couldn't load your addresses right now."
+        ),
+      }));
+    }
+  }, []);
+
+  const loadUserReviews = useCallback(
+    async ({ page = 1, append = false } = {}) => {
+      setReviewsState((current) => ({
+        ...current,
+        loading: true,
+        error: append ? current.error : "",
+      }));
+
+      try {
+        const response = await fetchUserReviews({ page, limit: 6 });
+        const nextReviews = Array.isArray(response?.reviews)
+          ? response.reviews
+          : [];
+        const nextPagination = response?.pagination ?? {
+          currentPage: page,
+          totalPages: page,
+          hasMore: Boolean(response?.hasMore),
+          nextPage: response?.nextPage,
+        };
+        const hasMore =
+          typeof nextPagination.hasMore === "boolean"
+            ? nextPagination.hasMore
+            : nextPagination.nextPage
+            ? true
+            : (nextPagination.currentPage ?? page) <
+              (nextPagination.totalPages ?? page);
+
+        setReviewsState((current) => ({
+          items: append ? [...current.items, ...nextReviews] : nextReviews,
+          loading: false,
+          error: "",
+          pagination: {
+            currentPage: nextPagination.currentPage ?? page,
+            totalPages: nextPagination.totalPages ?? page,
+            hasMore,
+          },
+        }));
+        setReviewsLoadedOnce(true);
+      } catch (apiError) {
+        setReviewsState((current) => ({
+          ...current,
+          loading: false,
+          error: getApiErrorMessage(
+            apiError,
+            "We couldn't load your reviews right now."
+          ),
+        }));
+      }
+    },
+    []
+  );
+
   useEffect(() => {
-    const controller = new AbortController();
-    loadSummary({ signal: controller.signal });
+    if (
+      selectedSection === "reviews" &&
+      !reviewsLoadedOnce &&
+      !reviewsState.loading
+    ) {
+      loadUserReviews();
+    }
+  }, [
+    selectedSection,
+    reviewsLoadedOnce,
+    loadUserReviews,
+    reviewsState.loading,
+  ]);
+
+  const handleRefreshReviews = useCallback(() => {
+    loadUserReviews();
+  }, [loadUserReviews]);
+
+  const handleLoadMoreReviews = useCallback(() => {
+    let nextPageToLoad = null;
+
+    setReviewsState((current) => {
+      if (current.loading || !current.pagination?.hasMore) {
+        return current;
+      }
+
+      nextPageToLoad = (current.pagination?.currentPage ?? 1) + 1;
+      return {
+        ...current,
+        loading: true,
+      };
+    });
+
+    if (nextPageToLoad) {
+      loadUserReviews({ page: nextPageToLoad, append: true });
+    }
+  }, [loadUserReviews]);
+
+  const handleEditReview = useCallback((review) => {
+    if (!review) {
+      return;
+    }
+
+    setAccountReviewDialogState({
+      open: true,
+      review,
+      mode: "edit",
+    });
+  }, []);
+
+  const handleCloseReviewDialog = useCallback(() => {
+    setAccountReviewDialogState({
+      open: false,
+      review: null,
+      mode: "edit",
+    });
+  }, []);
+
+  const handleReviewUpdated = useCallback((updatedReview) => {
+    if (!updatedReview?.id) {
+      return;
+    }
+
+    setReviewsState((current) => ({
+      ...current,
+      items: current.items.map((item) =>
+        item.id === updatedReview.id
+          ? {
+              ...item,
+              ...updatedReview,
+              product: updatedReview.product ?? item.product,
+            }
+          : item
+      ),
+    }));
+  }, []);
+
+  const handleDeleteReview = useCallback(async (review) => {
+    if (!review?.id) {
+      return;
+    }
+
+    let confirmed = true;
+    if (typeof window !== "undefined") {
+      confirmed = window.confirm("Delete this review?\nThis cannot be undone.");
+    }
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteReviewRequest(review.id);
+      setReviewsState((current) => ({
+        ...current,
+        items: current.items.filter((item) => item.id !== review.id),
+        error: "",
+      }));
+    } catch (apiError) {
+      const message = getApiErrorMessage(
+        apiError,
+        "We couldn't delete that review just yet."
+      );
+      setReviewsState((current) => ({
+        ...current,
+        error: message,
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    const summaryController = new AbortController();
+    const addressesController = new AbortController();
+
+    loadSummary({ signal: summaryController.signal });
+    loadAddresses({ signal: addressesController.signal });
 
     return () => {
-      controller.abort();
+      summaryController.abort();
+      addressesController.abort();
       if (successTimeoutRef.current && typeof window !== "undefined") {
         window.clearTimeout(successTimeoutRef.current);
       }
+      if (addressStatusTimeoutRef.current && typeof window !== "undefined") {
+        window.clearTimeout(addressStatusTimeoutRef.current);
+      }
     };
-  }, [loadSummary]);
+  }, [loadSummary, loadAddresses]);
 
   const handlePreferenceToggle = async (key) => {
     if (!key) {
@@ -109,18 +384,239 @@ const MyAccountPage = ({ isLoggedIn }) => {
     }
   };
 
+  const setAddressStatus = useCallback((message, tone = "info") => {
+    if (addressStatusTimeoutRef.current && typeof window !== "undefined") {
+      window.clearTimeout(addressStatusTimeoutRef.current);
+    }
+
+    setAddressesState((current) => ({
+      ...current,
+      statusMessage: message,
+      statusTone: tone,
+    }));
+
+    if (message && typeof window !== "undefined") {
+      addressStatusTimeoutRef.current = window.setTimeout(() => {
+        setAddressesState((current) => ({
+          ...current,
+          statusMessage: "",
+          statusTone: "info",
+        }));
+      }, 3000);
+    }
+  }, []);
+
+  const handleAddAddress = () => {
+    setAddressDialogState({
+      open: true,
+      mode: "create",
+      address: null,
+      saving: false,
+      error: "",
+    });
+  };
+
+  const handleEditAddress = (address) => {
+    if (!address) {
+      return;
+    }
+
+    setAddressDialogState({
+      open: true,
+      mode: "edit",
+      address,
+      saving: false,
+      error: "",
+    });
+  };
+
+  const handleCloseAddressDialog = () => {
+    setAddressDialogState({
+      open: false,
+      mode: "create",
+      address: null,
+      saving: false,
+      error: "",
+    });
+  };
+
+  const handleAddressSubmit = async (formValues) => {
+    setAddressDialogState((current) => ({
+      ...current,
+      saving: true,
+      error: "",
+    }));
+
+    const addressId =
+      addressDialogState.mode === "edit"
+        ? addressDialogState.address?.id
+        : undefined;
+
+    try {
+      if (addressDialogState.mode === "edit" && addressId) {
+        await updateAddress(addressId, formValues);
+        await loadAddresses();
+        setAddressStatus("Address updated.", "success");
+      } else {
+        await createAddress(formValues);
+        await loadAddresses();
+        setAddressStatus("Address saved.", "success");
+      }
+
+      setAddressDialogState({
+        open: false,
+        mode: "create",
+        address: null,
+        saving: false,
+        error: "",
+      });
+    } catch (apiError) {
+      setAddressDialogState((current) => ({
+        ...current,
+        saving: false,
+        error: getApiErrorMessage(
+          apiError,
+          "We couldn't save this address right now."
+        ),
+      }));
+    }
+  };
+
+  const handleDeleteAddress = async (address) => {
+    if (!address?.id) {
+      return;
+    }
+
+    let confirmed = true;
+    if (typeof window !== "undefined") {
+      confirmed = window.confirm("Remove this address?");
+    }
+
+    if (!confirmed) {
+      return;
+    }
+
+    setAddressesState((current) => ({
+      ...current,
+      pendingAction: { id: address.id, type: "delete" },
+      statusMessage: "",
+    }));
+
+    try {
+      await deleteAddress(address.id);
+      setAddressesState((current) => ({
+        ...current,
+        items: current.items.filter((item) => item.id !== address.id),
+        pendingAction: null,
+        error: "",
+      }));
+      setAddressStatus("Address deleted.", "success");
+    } catch (apiError) {
+      setAddressesState((current) => ({
+        ...current,
+        pendingAction: null,
+      }));
+      setAddressStatus(
+        getApiErrorMessage(
+          apiError,
+          "We couldn't delete that address just yet."
+        ),
+        "error"
+      );
+    }
+  };
+
+  const handleSetDefaultAddress = async (address) => {
+    if (!address?.id) {
+      return;
+    }
+
+    setAddressesState((current) => ({
+      ...current,
+      pendingAction: { id: address.id, type: "set-default" },
+      statusMessage: "",
+    }));
+
+    try {
+      const updated = await setDefaultAddress(address.id);
+      setAddressesState((current) => ({
+        ...current,
+        items: current.items.map((item) =>
+          item.id === updated.id
+            ? { ...updated, isDefault: true }
+            : { ...item, isDefault: false }
+        ),
+        pendingAction: null,
+        error: "",
+      }));
+      setAddressStatus("Default address updated.", "success");
+    } catch (apiError) {
+      setAddressesState((current) => ({
+        ...current,
+        pendingAction: null,
+      }));
+      setAddressStatus(
+        getApiErrorMessage(
+          apiError,
+          "We couldn't update your default address right now."
+        ),
+        "error"
+      );
+    }
+  };
+
+  const handleRefreshAddresses = () => {
+    loadAddresses();
+  };
+
   const orders = useMemo(
     () => (Array.isArray(summary?.recentOrders) ? summary.recentOrders : []),
-    [summary]
-  );
-  const addresses = useMemo(
-    () => (Array.isArray(summary?.addresses) ? summary.addresses : []),
     [summary]
   );
   const payments = useMemo(
     () =>
       Array.isArray(summary?.paymentMethods) ? summary.paymentMethods : [],
     [summary]
+  );
+
+  const handleProfileUpdate = useCallback(
+    async (updates) => {
+      try {
+        const updated = await updateAccountProfile(updates);
+
+        if (updated) {
+          setSummary((current) => {
+            if (!current) {
+              return current;
+            }
+
+            const nextProfile = current.profile
+              ? {
+                  ...current.profile,
+                  ...updated,
+                }
+              : updated;
+
+            return {
+              ...current,
+              profile: nextProfile,
+            };
+          });
+        }
+
+        return updated;
+      } catch (error) {
+        const message =
+          error instanceof ApiError
+            ? error.payload?.message ||
+              error.payload?.error ||
+              "We couldn't update your profile right now."
+            : error?.message || "We couldn't update your profile right now.";
+
+        throw new Error(message);
+      }
+    },
+    [setSummary]
   );
 
   return (
@@ -151,7 +647,10 @@ const MyAccountPage = ({ isLoggedIn }) => {
             </div>
             <button
               type="button"
-              onClick={() => loadSummary()}
+              onClick={() => {
+                loadSummary();
+                loadAddresses();
+              }}
               className="inline-flex items-center justify-center rounded-full border border-emerald-300/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-100 transition hover:border-emerald-200"
             >
               Retry
@@ -174,6 +673,7 @@ const MyAccountPage = ({ isLoggedIn }) => {
                   recentOrders={orders}
                   paymentMethods={payments}
                   onShowOrders={() => setSelectedSection("orders")}
+                  onEditProfile={() => setShowEditProfile(true)}
                 />
               ) : null}
 
@@ -182,7 +682,19 @@ const MyAccountPage = ({ isLoggedIn }) => {
               ) : null}
 
               {selectedSection === "addresses" ? (
-                <AddressesSection addresses={addresses} />
+                <AddressesSection
+                  addresses={addressesState.items}
+                  loading={addressesState.loading}
+                  error={addressesState.error}
+                  onRefresh={handleRefreshAddresses}
+                  onAdd={handleAddAddress}
+                  onEdit={handleEditAddress}
+                  onDelete={handleDeleteAddress}
+                  onSetDefault={handleSetDefaultAddress}
+                  pendingAction={addressesState.pendingAction}
+                  statusMessage={addressesState.statusMessage}
+                  statusTone={addressesState.statusTone}
+                />
               ) : null}
 
               {selectedSection === "payments" ? (
@@ -202,10 +714,48 @@ const MyAccountPage = ({ isLoggedIn }) => {
                   security={summary?.security}
                 />
               ) : null}
+
+              {selectedSection === "reviews" ? (
+                <MyReviewsSection
+                  reviews={reviewsState.items}
+                  loading={reviewsState.loading}
+                  error={reviewsState.error}
+                  onRefresh={handleRefreshReviews}
+                  onLoadMore={handleLoadMoreReviews}
+                  hasMore={Boolean(reviewsState.pagination?.hasMore)}
+                  onEdit={handleEditReview}
+                  onDelete={handleDeleteReview}
+                />
+              ) : null}
             </div>
           </div>
         )}
       </main>
+      <EditProfileDialog
+        open={showEditProfile}
+        profile={summary?.profile}
+        onClose={() => setShowEditProfile(false)}
+        onSubmit={handleProfileUpdate}
+      />
+      <AddressDialog
+        open={addressDialogState.open}
+        mode={addressDialogState.mode}
+        initialAddress={addressDialogState.address}
+        onClose={handleCloseAddressDialog}
+        onSubmit={handleAddressSubmit}
+        saving={addressDialogState.saving}
+        error={addressDialogState.error}
+      />
+      <WriteReviewDialog
+        open={accountReviewDialogState.open}
+        mode={accountReviewDialogState.mode}
+        productId={accountReviewDialogState.review?.product?.id}
+        productName={accountReviewDialogState.review?.product?.title}
+        existingReview={accountReviewDialogState.review}
+        defaultOrderId={accountReviewDialogState.review?.orderId}
+        onClose={handleCloseReviewDialog}
+        onSuccess={handleReviewUpdated}
+      />
     </div>
   );
 };

@@ -399,6 +399,8 @@ customerProfileSchema.statics.getAccountSummary = async function (userId) {
       rewardPoints: profile.rewards.rewardPoints,
       walletBalance: profile.rewards.walletBalance,
       nextTier: profile.membership.nextTier,
+      birthday: profile.birthday,
+      avatar: profile.avatar,
     },
     stats: [
       {

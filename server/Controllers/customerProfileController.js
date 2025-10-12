@@ -103,7 +103,7 @@ exports.getAccountSummary = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { birthday, avatar } = req.body;
+    const { birthday, avatar, fullName, email, mobileNumber } = req.body;
 
     let profile = await CustomerProfile.findOne({ userId });
 
@@ -111,9 +111,45 @@ exports.updateProfile = async (req, res) => {
       profile = await CustomerProfile.create({ userId });
     }
 
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (typeof fullName === "string") {
+      user.fullName = fullName.trim();
+    }
+
+    if (typeof email === "string") {
+      user.email = email.trim();
+    }
+
+    if (typeof mobileNumber === "string") {
+      const normalizedMobile = mobileNumber.trim();
+
+      if (normalizedMobile !== user.mobileNumber) {
+        const existingUser = await User.findOne({ mobileNumber: normalizedMobile });
+
+        if (existingUser && existingUser._id.toString() !== userId.toString()) {
+          return res.status(409).json({
+            success: false,
+            message: "Mobile number is already associated with another account",
+          });
+        }
+      }
+
+      user.mobileNumber = normalizedMobile;
+    }
+
+    await user.save();
+
     // Update allowed fields
-    if (birthday) {
-      profile.birthday = new Date(birthday);
+    if (birthday !== undefined) {
+      profile.birthday = birthday ? new Date(birthday) : null;
     }
 
     if (avatar) {
@@ -127,6 +163,11 @@ exports.updateProfile = async (req, res) => {
       message: "Profile updated successfully",
       data: {
         profile: {
+          id: profile._id,
+          userId: user._id,
+          name: user.fullName,
+          email: user.email,
+          phone: user.mobileNumber,
           birthday: profile.birthday,
           avatar: profile.avatar,
         },

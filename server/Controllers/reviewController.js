@@ -1,7 +1,26 @@
+const mongoose = require("mongoose");
 const Review = require("../models/Review");
 const Product = require("../models/Product");
 const Order = require("../models/Order");
 const User = require("../models/User");
+
+const resolveProductId = async (identifier) => {
+  if (!identifier) {
+    return null;
+  }
+
+  if (mongoose.Types.ObjectId.isValid(identifier)) {
+    return identifier;
+  }
+
+  const normalized = typeof identifier === "string" ? identifier.trim().toLowerCase() : identifier;
+  if (!normalized) {
+    return null;
+  }
+
+  const product = await Product.findOne({ slug: normalized }).select("_id");
+  return product ? product._id.toString() : null;
+};
 
 /**
  * @desc    Create a new review
@@ -12,7 +31,7 @@ exports.createReview = async (req, res) => {
   try {
     const userId = req.user._id;
     const {
-      productId,
+      productId: productIdentifier,
       orderId,
       rating,
       title,
@@ -21,8 +40,17 @@ exports.createReview = async (req, res) => {
       variant,
     } = req.body;
 
+    const resolvedProductId = await resolveProductId(productIdentifier);
+
+    if (!resolvedProductId) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
     // 1. Check if product exists
-    const product = await Product.findById(productId);
+    const product = await Product.findById(resolvedProductId);
     if (!product) {
       return res.status(404).json({
         success: false,
@@ -33,7 +61,7 @@ exports.createReview = async (req, res) => {
     // 2. Check if user already reviewed this product
     const existingReview = await Review.findOne({
       userId,
-      productId,
+      productId: resolvedProductId,
     });
 
     if (existingReview) {
@@ -45,11 +73,12 @@ exports.createReview = async (req, res) => {
 
     // 3. Verify purchase if orderId provided
     let isVerifiedPurchase = false;
-    if (orderId) {
+    let effectiveOrderId = orderId;
+    if (effectiveOrderId) {
       const order = await Order.findOne({
-        _id: orderId,
+        _id: effectiveOrderId,
         userId,
-        "items.productId": productId,
+        "items.productId": resolvedProductId,
         status: { $in: ["delivered", "completed"] },
       });
 
@@ -60,21 +89,21 @@ exports.createReview = async (req, res) => {
       // Check if user has purchased this product in any order
       const purchaseOrder = await Order.findOne({
         userId,
-        "items.productId": productId,
+        "items.productId": resolvedProductId,
         status: { $in: ["delivered", "completed"] },
       });
 
       if (purchaseOrder) {
         isVerifiedPurchase = true;
-        orderId = purchaseOrder._id;
+        effectiveOrderId = purchaseOrder._id;
       }
     }
 
     // 4. Create review
     const review = new Review({
-      productId,
+      productId: resolvedProductId,
       userId,
-      orderId: orderId || null,
+      orderId: effectiveOrderId || null,
       rating,
       title,
       comment,
@@ -137,9 +166,18 @@ exports.getProductReviews = async (req, res) => {
       verified = false,
     } = req.query;
 
+    const resolvedProductId = await resolveProductId(productId);
+
+    if (!resolvedProductId) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
     // Build filter
     const filter = {
-      productId,
+      productId: resolvedProductId,
       status: "approved", // Only show approved reviews
     };
 
@@ -168,7 +206,12 @@ exports.getProductReviews = async (req, res) => {
 
     // Calculate rating distribution
     const ratingDistribution = await Review.aggregate([
-      { $match: { productId: productId, status: "approved" } },
+      {
+        $match: {
+          productId: new mongoose.Types.ObjectId(resolvedProductId),
+          status: "approved",
+        },
+      },
       {
         $group: {
           _id: "$rating",
@@ -783,10 +826,19 @@ exports.canReviewProduct = async (req, res) => {
     const userId = req.user._id;
     const { productId } = req.params;
 
+    const resolvedProductId = await resolveProductId(productId);
+
+    if (!resolvedProductId) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
     // Check if user already reviewed this product
     const existingReview = await Review.findOne({
       userId,
-      productId,
+      productId: resolvedProductId,
     });
 
     if (existingReview) {
@@ -807,7 +859,7 @@ exports.canReviewProduct = async (req, res) => {
     // Check if user has purchased this product
     const purchaseOrder = await Order.findOne({
       userId,
-      "items.productId": productId,
+      "items.productId": resolvedProductId,
       status: { $in: ["delivered", "completed"] },
     });
 

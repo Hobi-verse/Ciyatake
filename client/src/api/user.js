@@ -104,8 +104,17 @@ const normalizeAccountSummary = (response) => {
     }
     : null;
 
+  const profile = summary.profile
+    ? {
+      ...summary.profile,
+      birthday: summary.profile.birthday ?? null,
+      avatar: summary.profile.avatar ?? null,
+    }
+    : null;
+
   return {
     ...summary,
+    profile,
     recentOrders,
     addresses: Array.isArray(summary.addresses) ? summary.addresses : [],
     paymentMethods: Array.isArray(summary.paymentMethods)
@@ -127,3 +136,9 @@ export const updateAccountPreferences = async (preferences) =>
     method: "PATCH",
     body: preferences,
   }).then((response) => response?.data?.preferences ?? preferences);
+
+export const updateAccountProfile = async (profile) =>
+  apiRequest("/profile", {
+    method: "PUT",
+    body: profile,
+  }).then((response) => response?.data?.profile ?? null);

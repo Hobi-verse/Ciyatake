@@ -4,6 +4,7 @@ import Breadcrumbs from "../../components/common/Breadcrumbs.jsx";
 import CartItem from "../../components/user/cart/CartItem.jsx";
 import SavedItem from "../../components/user/cart/SavedItem.jsx";
 import OrderSummary from "../../components/user/cart/OrderSummary.jsx";
+import CouponPanel from "../../components/user/cart/CouponPanel.jsx";
 import {
   fetchCart,
   removeCartItem,
@@ -12,14 +13,50 @@ import {
   moveCartItemToCart,
   emptyCart,
 } from "../../api/cart.js";
+import {
+  autoApplyBestCoupon,
+  fetchAvailableCoupons,
+  validateCoupon,
+} from "../../api/coupons.js";
 
 const TAX_RATE = 0.1;
+
+const resolveErrorMessage = (error, fallback) => {
+  if (!error) {
+    return fallback;
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  if (error?.payload?.message) {
+    return error.payload.message;
+  }
+
+  if (error?.payload?.data?.message) {
+    return error.payload.data.message;
+  }
+
+  if (error?.message) {
+    return error.message;
+  }
+
+  return fallback;
+};
 
 const CartPage = ({ isLoggedIn = false }) => {
   const [cart, setCart] = useState(() => emptyCart());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionError, setActionError] = useState("");
+  const [couponResult, setCouponResult] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [availableLoading, setAvailableLoading] = useState(false);
+  const [availableError, setAvailableError] = useState("");
+  const [lastValidatedSignature, setLastValidatedSignature] = useState("");
 
   const refreshCart = useCallback(async ({ signal } = {}) => {
     setLoading(true);
@@ -64,16 +101,98 @@ const CartPage = ({ isLoggedIn = false }) => {
     [cart.items]
   );
 
+  const cartSignature = useMemo(
+    () =>
+      cartItems
+        .map((item) => `${item.productId ?? item.id}:${item.quantity}`)
+        .join("|"),
+    [cartItems]
+  );
+
   const totals = useMemo(() => {
     const subtotal = Number.isFinite(cart.totals.subtotal)
       ? cart.totals.subtotal
       : cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const estimatedTax = Math.round(subtotal * TAX_RATE);
+
     return {
       subtotal,
       estimatedTax,
     };
   }, [cart.totals.subtotal, cartItems]);
+
+  const couponPayload = useMemo(() => {
+    const orderAmount = Math.max(0, totals.subtotal);
+    const items = cartItems
+      .map((item) => {
+        const productId = item.productId ?? item.id ?? item.variantSku ?? null;
+        if (!productId) {
+          return null;
+        }
+
+        return {
+          productId,
+          quantity: item.quantity ?? 1,
+          price: item.price ?? 0,
+        };
+      })
+      .filter(Boolean);
+
+    return { orderAmount, items };
+  }, [cartItems, totals.subtotal]);
+
+  const loadAvailableCoupons = useCallback(
+    async ({ signal } = {}) => {
+      if (!isLoggedIn) {
+        setAvailableCoupons([]);
+        setAvailableError("");
+        setAvailableLoading(false);
+        return;
+      }
+
+      setAvailableLoading(true);
+      setAvailableError("");
+
+      try {
+        const { coupons } = await fetchAvailableCoupons({ signal });
+        if (signal?.aborted) {
+          return;
+        }
+
+        setAvailableCoupons(coupons);
+      } catch (apiError) {
+        if (signal?.aborted) {
+          return;
+        }
+
+        setAvailableCoupons([]);
+        setAvailableError(
+          resolveErrorMessage(
+            apiError,
+            "We couldn't load your coupons right now."
+          )
+        );
+      } finally {
+        if (!signal?.aborted) {
+          setAvailableLoading(false);
+        }
+      }
+    },
+    [isLoggedIn]
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    if (isLoggedIn) {
+      loadAvailableCoupons({ signal: controller.signal });
+    } else {
+      setAvailableCoupons([]);
+      setAvailableError("");
+    }
+
+    return () => controller.abort();
+  }, [isLoggedIn, loadAvailableCoupons]);
 
   const handleQuantityChange = async (itemId, quantity) => {
     const nextQuantity = Math.max(1, quantity);
@@ -84,6 +203,8 @@ const CartPage = ({ isLoggedIn = false }) => {
         quantity: nextQuantity,
       });
       setCart(updatedCart);
+      setCouponError("");
+      setLastValidatedSignature("");
     } catch (apiError) {
       setActionError(
         apiError?.message || "We couldn't update the quantity. Please retry."
@@ -98,6 +219,8 @@ const CartPage = ({ isLoggedIn = false }) => {
     try {
       const updatedCart = await removeCartItem(itemId);
       setCart(updatedCart);
+      setCouponError("");
+      setLastValidatedSignature("");
     } catch (apiError) {
       setActionError(
         apiError?.message || "We couldn't remove that item just yet."
@@ -112,6 +235,8 @@ const CartPage = ({ isLoggedIn = false }) => {
     try {
       const updatedCart = await saveCartItemForLater(itemId);
       setCart(updatedCart);
+      setCouponError("");
+      setLastValidatedSignature("");
     } catch (apiError) {
       setActionError(
         apiError?.message || "We couldn't save that item for later."
@@ -126,6 +251,8 @@ const CartPage = ({ isLoggedIn = false }) => {
     try {
       const updatedCart = await moveCartItemToCart(itemId);
       setCart(updatedCart);
+      setCouponError("");
+      setLastValidatedSignature("");
     } catch (apiError) {
       setActionError(
         apiError?.message || "We couldn't move that item back to your cart."
@@ -137,6 +264,131 @@ const CartPage = ({ isLoggedIn = false }) => {
   const handleRemoveSaved = (itemId) => {
     handleRemove(itemId);
   };
+
+  const handleApplyCoupon = useCallback(
+    async (code) => {
+      const trimmed = code?.trim().toUpperCase();
+      if (!trimmed) {
+        setCouponError("Enter a coupon code to continue.");
+        return;
+      }
+
+      if (!couponPayload.items.length) {
+        setCouponError("Add items to your cart before applying a coupon.");
+        return;
+      }
+
+      setCouponLoading(true);
+      setCouponError("");
+
+      try {
+        const { coupon } = await validateCoupon({
+          code: trimmed,
+          ...couponPayload,
+        });
+        setCouponResult(coupon);
+        setLastValidatedSignature(cartSignature);
+      } catch (apiError) {
+        setCouponResult(null);
+        setLastValidatedSignature("");
+        setCouponError(
+          resolveErrorMessage(
+            apiError,
+            "We couldn't apply that coupon just yet."
+          )
+        );
+      } finally {
+        setCouponLoading(false);
+      }
+    },
+    [cartSignature, couponPayload]
+  );
+
+  const handleAutoApplyCoupon = useCallback(async () => {
+    if (!couponPayload.items.length) {
+      setCouponError("Add items to your cart before applying coupons.");
+      return;
+    }
+
+    setCouponLoading(true);
+    setCouponError("");
+
+    try {
+      const { coupon } = await autoApplyBestCoupon(couponPayload);
+      setCouponResult(coupon);
+      setLastValidatedSignature(cartSignature);
+    } catch (apiError) {
+      setCouponResult(null);
+      setLastValidatedSignature("");
+      setCouponError(
+        resolveErrorMessage(
+          apiError,
+          "No coupons could be applied to your cart right now."
+        )
+      );
+    } finally {
+      setCouponLoading(false);
+    }
+  }, [cartSignature, couponPayload]);
+
+  const handleRemoveCoupon = useCallback(() => {
+    setCouponResult(null);
+    setCouponError("");
+    setLastValidatedSignature("");
+  }, []);
+
+  useEffect(() => {
+    if (!couponResult?.code) {
+      return;
+    }
+
+    if (cartSignature === lastValidatedSignature) {
+      return;
+    }
+
+    const controller = new AbortController();
+    setCouponLoading(true);
+    setCouponError("");
+
+    validateCoupon(
+      { code: couponResult.code, ...couponPayload },
+      { signal: controller.signal }
+    )
+      .then(({ coupon }) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setCouponResult(coupon);
+        setLastValidatedSignature(cartSignature);
+      })
+      .catch((apiError) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setCouponResult(null);
+        setLastValidatedSignature("");
+        setCouponError(
+          resolveErrorMessage(
+            apiError,
+            "We couldn't keep your coupon after updating the cart."
+          )
+        );
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setCouponLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [
+    cartSignature,
+    couponPayload,
+    couponResult?.code,
+    lastValidatedSignature,
+  ]);
 
   return (
     <div className="min-h-screen bg-[#07150f] text-emerald-50">
@@ -192,8 +444,27 @@ const CartPage = ({ isLoggedIn = false }) => {
           <OrderSummary
             subtotal={totals.subtotal}
             estimatedTax={totals.estimatedTax}
-            shippingLabel="Free"
-          />
+            shippingLabel={
+              couponResult?.freeShipping ? "Free (coupon)" : "Free"
+            }
+            discount={couponResult?.discountApplied ?? 0}
+            couponCode={couponResult?.code ?? ""}
+            onRemoveCoupon={handleRemoveCoupon}
+          >
+            <CouponPanel
+              appliedCoupon={couponResult}
+              isApplying={couponLoading}
+              applyError={couponError}
+              onApply={handleApplyCoupon}
+              onAutoApply={handleAutoApplyCoupon}
+              onRemove={handleRemoveCoupon}
+              availableCoupons={availableCoupons}
+              availableLoading={availableLoading}
+              availableError={availableError}
+              onRefresh={() => loadAvailableCoupons({})}
+              isLoggedIn={isLoggedIn}
+            />
+          </OrderSummary>
         </section>
 
         {actionError ? (

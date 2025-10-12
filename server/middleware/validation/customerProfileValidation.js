@@ -34,6 +34,25 @@ exports.validateUpdateProfile = [
     .isString()
     .withMessage("Cloudinary ID must be a string"),
 
+  body("fullName")
+    .optional()
+    .isString()
+    .withMessage("Full name must be a string")
+    .trim()
+    .isLength({ min: 2, max: 80 })
+    .withMessage("Full name must be between 2 and 80 characters"),
+
+  body("email")
+    .optional({ checkFalsy: true })
+    .isEmail()
+    .withMessage("Email must be valid")
+    .normalizeEmail(),
+
+  body("mobileNumber")
+    .optional()
+    .matches(/^[0-9]{10}$/)
+    .withMessage("Mobile number must be a valid 10-digit number"),
+
   // Middleware to check validation results
   (req, res, next) => {
     const errors = validationResult(req);

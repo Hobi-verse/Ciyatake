@@ -20,7 +20,7 @@ const ProductGallery = ({ images = [] }) => {
           />
         </div>
         {activeImage.tag ? (
-          <span className="absolute left-4 top-4 rounded-full bg-emerald-400/80 px-3 py-1 text-xs font-semibold text-emerald-950">
+          <span className="absolute right-4 top-4 rounded-full bg-emerald-400/80 px-3 py-1 text-xs font-semibold text-emerald-950">
             {activeImage.tag}
           </span>
         ) : null}

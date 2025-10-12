@@ -299,8 +299,8 @@ export const fetchReports = async () =>
     () => getMockReports()
   );
 
-export const fetchAdminUsers = async () =>
+export const fetchAdminUsers = async ({ signal } = {}) =>
   withApiFallback(
-    () => apiRequest("/admin/users"),
+    () => apiRequest("/admin/users", { signal }),
     () => getMockAdminUsers()
   );

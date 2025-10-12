@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import UserNavbar from "../../components/user/common/UserNavbar.jsx";
 import CategoryTabs from "../../components/common/CategoryTabs.jsx";
-import SectionHeading from "../../components/common/SectionHeading.jsx";
-import RangeSlider from "../../components/common/RangeSlider.jsx";
-import SelectionGroup from "../../components/common/SelectionGroup.jsx";
-import ColorSwatchGroup from "../../components/common/ColorSwatchGroup.jsx";
+import SearchField from "../../components/common/SearchField.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
 import { fetchProducts } from "../../api/catalog.js";
-import { fetchCategories, fetchCategoryFilters } from "../../api/categories.js";
+import { fetchCategories } from "../../api/categories.js";
 
 const toTitleCase = (value = "") =>
   value
@@ -16,174 +13,58 @@ const toTitleCase = (value = "") =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-const formatSizeLabel = (value = "") => {
-  if (!value) {
-    return "";
-  }
+const DEFAULT_CATEGORY_OPTIONS = [
+  { label: "All Products", value: "all" },
+  { label: "Women", value: "women" },
+  { label: "Men", value: "men" },
+  { label: "Kids", value: "kids" },
+  { label: "Accessories", value: "accessories" },
+  { label: "Home & Living", value: "home-living" },
+];
 
-  return value.length <= 3 ? value.toUpperCase() : toTitleCase(value);
-};
+const HERO_HIGHLIGHTS = [
+  {
+    id: "delivery",
+    badge: "FD",
+    title: "Fast Delivery",
+    description: "Delivery in 2-3 days",
+  },
+  {
+    id: "location",
+    badge: "IN",
+    title: "Location",
+    description: "Pan India delivery",
+  },
+  {
+    id: "offer",
+    badge: "OF",
+    title: "Special Offer",
+    description: "Free shipping on orders above Rs 999",
+  },
+];
 
-const buildSizeOptions = (sizes = []) => {
-  const map = new Map();
-
-  sizes.forEach((size) => {
-    if (!size) {
-      return;
-    }
-
-    let value;
-    let label;
-
-    if (typeof size === "string" || typeof size === "number") {
-      const raw = size.toString();
-      value = raw.toLowerCase();
-      label = formatSizeLabel(raw);
-    } else if (typeof size === "object") {
-      const rawValue =
-        size.value ?? size.slug ?? size.name ?? size.label ?? size.id;
-
-      if (typeof rawValue !== "string" && typeof rawValue !== "number") {
-        return;
-      }
-
-      const raw = rawValue.toString();
-      value = raw.toLowerCase();
-      const rawLabel =
-        size.label ?? size.name ?? size.displayName ?? rawValue.toString();
-      label = formatSizeLabel(rawLabel.toString());
-    }
-
-    if (!value) {
-      return;
-    }
-
-    if (!map.has(value)) {
-      map.set(value, {
-        value,
-        label: label ?? formatSizeLabel(value),
-      });
-    }
-  });
-
-  return [{ label: "All", value: "all" }, ...Array.from(map.values())];
-};
-
-const buildColorOptions = (colors = []) => {
-  const swatches = new Map();
-
-  colors.forEach((color) => {
-    if (!color) {
-      return;
-    }
-
-    if (typeof color === "string") {
-      const value = color.toLowerCase();
-      if (!swatches.has(value)) {
-        swatches.set(value, {
-          value,
-          label: toTitleCase(color),
-          hex: undefined,
-        });
-      }
-      return;
-    }
-
-    const value =
-      color.value?.toLowerCase?.() ??
-      color.name?.toLowerCase?.() ??
-      color.label?.toLowerCase?.();
-
-    if (!value) {
-      return;
-    }
-
-    if (!swatches.has(value)) {
-      swatches.set(value, {
-        value,
-        label: color.label ?? toTitleCase(color.name ?? color.value ?? value),
-        hex: color.hex ?? undefined,
-      });
-    }
-  });
-
-  return [
-    { label: "All", value: "all", hex: "#d1fae5" },
-    ...Array.from(swatches.values()),
-  ];
-};
-
-const extractFilterValues = (filters = {}, keys = []) => {
-  for (const key of keys) {
-    const candidate = filters?.[key];
-
-    if (Array.isArray(candidate) && candidate.length) {
-      return candidate;
-    }
-
-    if (
-      candidate &&
-      typeof candidate === "object" &&
-      !Array.isArray(candidate)
-    ) {
-      if (Array.isArray(candidate.options) && candidate.options.length) {
-        return candidate.options;
-      }
-
-      if (Array.isArray(candidate.values) && candidate.values.length) {
-        return candidate.values;
-      }
-    }
-  }
-
-  return [];
-};
+const SORT_OPTIONS = [
+  { value: "relevance", label: "Recommended" },
+  { value: "price-asc", label: "Price: Low to High" },
+  { value: "price-desc", label: "Price: High to Low" },
+  { value: "rating-desc", label: "Rating: High to Low" },
+  { value: "rating-asc", label: "Rating: Low to High" },
+];
 
 const HomePage = ({ isLoggedIn }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryOptions, setCategoryOptions] = useState([
-    { label: "All", value: "all" },
-  ]);
+  const [categoryOptions, setCategoryOptions] = useState(
+    DEFAULT_CATEGORY_OPTIONS
+  );
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [sortOption, setSortOption] = useState("relevance");
   const [hasApiCategories, setHasApiCategories] = useState(false);
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [categoryError, setCategoryError] = useState(null);
-  const [sizeOptions, setSizeOptions] = useState([
-    { label: "All", value: "all" },
-  ]);
-  const [colorOptions, setColorOptions] = useState([
-    { label: "All", value: "all", hex: "#d1fae5" },
-  ]);
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedSize, setSelectedSize] = useState("all");
-  const [selectedColor, setSelectedColor] = useState("all");
-  const [derivedSizes, setDerivedSizes] = useState([]);
-  const [derivedColors, setDerivedColors] = useState([]);
-  const [filtersLoading, setFiltersLoading] = useState(false);
-  const [filtersError, setFiltersError] = useState(null);
-  const priceValues = useMemo(
-    () => products.map((product) => product.price ?? 0),
-    [products]
-  );
-  const minProductPrice = useMemo(
-    () => (priceValues.length ? Math.min(...priceValues) : 0),
-    [priceValues]
-  );
-  const maxProductPrice = useMemo(
-    () => (priceValues.length ? Math.max(...priceValues) : 0),
-    [priceValues]
-  );
-  const priceStep = useMemo(() => {
-    if (!priceValues.length) {
-      return 100;
-    }
-
-    const span = maxProductPrice - minProductPrice;
-    return Math.max(100, Math.round(span / 40) || 100);
-  }, [maxProductPrice, minProductPrice, priceValues]);
-  const [priceRange, setPriceRange] = useState([0, 0]);
 
   const loadCategories = useCallback(async ({ signal } = {}) => {
     setCategoryLoading(true);
@@ -205,44 +86,65 @@ const HomePage = ({ isLoggedIn }) => {
             return null;
           }
 
+          const rawValue = value.toString().trim();
+          const normalizedValue = rawValue
+            .toLowerCase()
+            .replace(/[\s&]+/g, "-")
+            .replace(/-+/g, "-");
+
           return {
-            value,
-            label: category.name ?? toTitleCase(value),
+            value: normalizedValue,
+            label: category.name ?? toTitleCase(rawValue),
           };
         })
         .filter(Boolean);
 
-      if (apiOptions.length) {
-        setCategoryOptions((current) => {
-          const map = new Map();
-          map.set("all", { label: "All", value: "all" });
+      if (!apiOptions.length) {
+        setHasApiCategories(false);
+        return;
+      }
 
-          apiOptions.forEach((option) => {
-            map.set(option.value, option);
-          });
+      setCategoryOptions(() => {
+        const map = new Map();
 
-          current.forEach((option) => {
-            if (option?.value && !map.has(option.value)) {
-              map.set(option.value, option);
-            }
-          });
-
-          return Array.from(map.values());
+        DEFAULT_CATEGORY_OPTIONS.forEach((option) => {
+          map.set(option.value, option);
         });
 
-        setHasApiCategories(true);
-        setSelectedCategory((previous) => {
-          if (previous === "all") {
-            return previous;
+        apiOptions.forEach((option) => {
+          if (option.value === "all") {
+            map.set("all", {
+              value: "all",
+              label: option.label ?? "All Products",
+            });
+            return;
           }
 
-          return apiOptions.some((option) => option.value === previous)
-            ? previous
-            : "all";
+          if (!map.has(option.value)) {
+            map.set(option.value, option);
+            return;
+          }
+
+          const existing = map.get(option.value);
+          map.set(option.value, {
+            ...existing,
+            label: option.label ?? existing.label,
+          });
         });
-      } else {
-        setHasApiCategories(false);
-      }
+
+        return Array.from(map.values());
+      });
+
+      setHasApiCategories(true);
+      setSelectedCategory((previous) => {
+        if (previous === "all") {
+          return previous;
+        }
+
+        return apiOptions.some((option) => option.value === previous)
+          ? previous
+          : "all";
+      });
     } catch (apiError) {
       if (signal?.aborted) {
         return;
@@ -277,7 +179,7 @@ const HomePage = ({ isLoggedIn }) => {
           query.category = selectedCategory;
         }
 
-        const { items } = await fetchProducts(query, { signal });
+        const { items, total } = await fetchProducts(query, { signal });
 
         if (signal?.aborted) {
           return;
@@ -285,107 +187,58 @@ const HomePage = ({ isLoggedIn }) => {
 
         const nextProducts = Array.isArray(items) ? items : [];
         setProducts(nextProducts);
+        const totalNumber = Number(total);
+        setTotalProducts(
+          Number.isFinite(totalNumber) ? totalNumber : nextProducts.length
+        );
 
-        const categorySet = new Map();
-        const sizeSet = new Set();
-        const colorMap = new Map();
+        if (!hasApiCategories && nextProducts.length) {
+          const derivedMap = new Map();
 
-        nextProducts.forEach((product) => {
-          if (product.category) {
+          nextProducts.forEach((product) => {
             const value = product.category;
-            if (!categorySet.has(value)) {
-              categorySet.set(value, {
-                value,
-                label: toTitleCase(value),
-              });
-            }
-          }
-
-          (product.sizes ?? []).forEach((size) => {
-            if (size) {
-              sizeSet.add(size.toLowerCase());
-            }
-          });
-
-          (product.colors ?? []).forEach((colorOption) => {
-            const value =
-              typeof colorOption === "string"
-                ? colorOption
-                : colorOption.value ?? colorOption.name;
             if (!value) {
               return;
             }
 
-            const label =
-              typeof colorOption === "string"
-                ? toTitleCase(colorOption)
-                : colorOption.label ?? toTitleCase(value);
-            const hex =
-              typeof colorOption === "string"
-                ? undefined
-                : colorOption.hex ?? undefined;
+            const normalizedValue = value
+              .toString()
+              .trim()
+              .toLowerCase()
+              .replace(/[\s&]+/g, "-")
+              .replace(/-+/g, "-");
 
-            if (!colorMap.has(value)) {
-              colorMap.set(value, {
-                value,
-                label,
-                hex,
+            if (!derivedMap.has(normalizedValue)) {
+              derivedMap.set(normalizedValue, {
+                value: normalizedValue,
+                label: toTitleCase(normalizedValue),
               });
             }
           });
-        });
 
-        const nextDerivedCategories = Array.from(categorySet.values());
+          if (derivedMap.size) {
+            setCategoryOptions((current) => {
+              const map = new Map();
 
-        if (!hasApiCategories && nextDerivedCategories.length) {
-          setCategoryOptions([
-            { label: "All", value: "all" },
-            ...nextDerivedCategories,
-          ]);
-          setSelectedCategory((previous) =>
-            previous === "all" || categorySet.has(previous) ? previous : "all"
-          );
-        } else if (hasApiCategories && nextDerivedCategories.length) {
-          setCategoryOptions((current) => {
-            const map = new Map();
-            current.forEach((option) => {
-              if (option?.value) {
+              DEFAULT_CATEGORY_OPTIONS.forEach((option) => {
                 map.set(option.value, option);
-              }
+              });
+
+              current.forEach((option) => {
+                if (option?.value && !map.has(option.value)) {
+                  map.set(option.value, option);
+                }
+              });
+
+              derivedMap.forEach((option, key) => {
+                if (!map.has(key)) {
+                  map.set(key, option);
+                }
+              });
+
+              return Array.from(map.values());
             });
-
-            nextDerivedCategories.forEach((option) => {
-              if (option?.value && !map.has(option.value)) {
-                map.set(option.value, option);
-              }
-            });
-
-            const allOption = map.get("all") ?? { label: "All", value: "all" };
-            map.delete("all");
-            return [allOption, ...Array.from(map.values())];
-          });
-        }
-
-        const nextDerivedSizes = Array.from(sizeSet.values()).sort();
-        setDerivedSizes(nextDerivedSizes);
-
-        if (selectedCategory === "all" || filtersError) {
-          const sizeOpts = buildSizeOptions(nextDerivedSizes);
-          setSizeOptions(sizeOpts);
-          setSelectedSize((previous) =>
-            previous === "all" || sizeSet.has(previous) ? previous : "all"
-          );
-        }
-
-        const nextDerivedColors = Array.from(colorMap.values());
-        setDerivedColors(nextDerivedColors);
-
-        if (selectedCategory === "all" || filtersError) {
-          const colorOpts = buildColorOptions(nextDerivedColors);
-          setColorOptions(colorOpts);
-          setSelectedColor((previous) =>
-            previous === "all" || colorMap.has(previous) ? previous : "all"
-          );
+          }
         }
       } catch (apiError) {
         if (signal?.aborted) {
@@ -399,7 +252,7 @@ const HomePage = ({ isLoggedIn }) => {
         }
       }
     },
-    [filtersError, hasApiCategories, selectedCategory]
+    [hasApiCategories, selectedCategory]
   );
 
   useEffect(() => {
@@ -411,183 +264,58 @@ const HomePage = ({ isLoggedIn }) => {
     };
   }, [loadProducts]);
 
-  useEffect(() => {
-    if (!priceValues.length) {
-      setPriceRange([0, 0]);
-      return;
-    }
-
-    setPriceRange([minProductPrice, maxProductPrice]);
-  }, [minProductPrice, maxProductPrice, priceValues]);
-
-  useEffect(() => {
-    const derivedSizeOptions = buildSizeOptions(derivedSizes);
-    const derivedColorOptions = buildColorOptions(derivedColors);
-
-    if (selectedCategory === "all" || !hasApiCategories) {
-      setFiltersLoading(false);
-      setFiltersError(null);
-      setSizeOptions(derivedSizeOptions);
-      setSelectedSize((previous) =>
-        previous === "all" ||
-        derivedSizeOptions.some((option) => option.value === previous)
-          ? previous
-          : "all"
-      );
-      setColorOptions(derivedColorOptions);
-      setSelectedColor((previous) =>
-        previous === "all" ||
-        derivedColorOptions.some((option) => option.value === previous)
-          ? previous
-          : "all"
-      );
-      return;
-    }
-
-    const controller = new AbortController();
-
-    const loadCategoryFilters = async () => {
-      setFiltersLoading(true);
-      setFiltersError(null);
-
-      try {
-        const { filters } = await fetchCategoryFilters(selectedCategory, {
-          signal: controller.signal,
-        });
-
-        if (controller.signal.aborted) {
-          return;
-        }
-
-        const sizeCandidates = extractFilterValues(filters, [
-          "sizes",
-          "size",
-          "availableSizes",
-          "sizeOptions",
-          "options",
-          "values",
-        ]);
-
-        const colorCandidates = extractFilterValues(filters, [
-          "colors",
-          "color",
-          "colour",
-          "availableColors",
-          "colorOptions",
-          "options",
-          "values",
-        ]);
-
-        const nextSizeOptions = buildSizeOptions(
-          sizeCandidates.length ? sizeCandidates : derivedSizes
-        );
-        setSizeOptions(nextSizeOptions);
-        setSelectedSize((previous) =>
-          previous === "all" ||
-          nextSizeOptions.some((option) => option.value === previous)
-            ? previous
-            : "all"
-        );
-
-        const nextColorOptions = buildColorOptions(
-          colorCandidates.length ? colorCandidates : derivedColors
-        );
-        setColorOptions(nextColorOptions);
-        setSelectedColor((previous) =>
-          previous === "all" ||
-          nextColorOptions.some((option) => option.value === previous)
-            ? previous
-            : "all"
-        );
-      } catch (apiError) {
-        if (controller.signal.aborted) {
-          return;
-        }
-
-        setFiltersError(apiError);
-
-        setSizeOptions(derivedSizeOptions);
-        setSelectedSize((previous) =>
-          previous === "all" ||
-          derivedSizeOptions.some((option) => option.value === previous)
-            ? previous
-            : "all"
-        );
-        setColorOptions(derivedColorOptions);
-        setSelectedColor((previous) =>
-          previous === "all" ||
-          derivedColorOptions.some((option) => option.value === previous)
-            ? previous
-            : "all"
-        );
-      } finally {
-        if (!controller.signal.aborted) {
-          setFiltersLoading(false);
-        }
-      }
-    };
-
-    loadCategoryFilters();
-
-    return () => {
-      controller.abort();
-    };
-  }, [selectedCategory, hasApiCategories, derivedSizes, derivedColors]);
-
   const filteredProducts = useMemo(() => {
-    const [minPrice, maxPrice] = priceRange;
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
-    return products.filter((product) => {
-      if (
-        selectedCategory !== "all" &&
-        (product.category ?? "") !== selectedCategory
-      ) {
+    const matches = products.filter((product) => {
+      const categoryValue = product.category
+        ? product.category.toString().toLowerCase()
+        : "";
+
+      if (selectedCategory !== "all" && categoryValue !== selectedCategory) {
         return false;
       }
 
-      if (selectedSize !== "all") {
-        const availableSizes = product.sizes ?? [];
-        if (
-          !availableSizes.includes(selectedSize) &&
-          !availableSizes.includes("all")
-        ) {
-          return false;
-        }
+      if (!normalizedSearch) {
+        return true;
       }
 
-      if (selectedColor !== "all") {
-        const availableColors = (product.colors ?? []).map((colorOption) =>
-          typeof colorOption === "string"
-            ? colorOption
-            : colorOption.value ?? colorOption.name
-        );
-        if (!availableColors.includes(selectedColor)) {
-          return false;
-        }
-      }
+      const haystack = [product.title, product.brand, product.description]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
 
-      if (product.price < minPrice || product.price > maxPrice) {
-        return false;
-      }
-
-      if (normalizedSearch.length) {
-        const matchesTitle = product.title
-          ?.toLowerCase()
-          .includes(normalizedSearch);
-        return matchesTitle;
-      }
-
-      return true;
+      return haystack.includes(normalizedSearch);
     });
-  }, [
-    priceRange,
-    searchTerm,
-    selectedCategory,
-    selectedSize,
-    selectedColor,
-    products,
-  ]);
+
+    if (matches.length <= 1) {
+      return matches;
+    }
+
+    const sorted = [...matches];
+
+    sorted.sort((a, b) => {
+      const priceA = Number(a.price ?? a.basePrice ?? 0);
+      const priceB = Number(b.price ?? b.basePrice ?? 0);
+      const ratingA = Number(a.averageRating ?? a.rating ?? 0);
+      const ratingB = Number(b.averageRating ?? b.rating ?? 0);
+
+      switch (sortOption) {
+        case "price-asc":
+          return priceA - priceB;
+        case "price-desc":
+          return priceB - priceA;
+        case "rating-desc":
+          return ratingB - ratingA;
+        case "rating-asc":
+          return ratingA - ratingB;
+        default:
+          return 0;
+      }
+    });
+
+    return sorted;
+  }, [products, searchTerm, selectedCategory, sortOption]);
 
   const handleRetryCategories = () => {
     if (!categoryLoading) {
@@ -595,16 +323,17 @@ const HomePage = ({ isLoggedIn }) => {
     }
   };
 
-  const handleResetFilters = () => {
+  const handleResetView = () => {
     setSelectedCategory("all");
-    setSelectedSize("all");
-    setSelectedColor("all");
-    setPriceRange([minProductPrice, maxProductPrice]);
-    setFiltersError(null);
+    setSearchTerm("");
   };
 
+  const displayedCount = filteredProducts.length;
+  const totalCount = totalProducts || displayedCount;
+  const isDefaultView = selectedCategory === "all" && searchTerm.trim() === "";
+
   return (
-    <div className="min-h-screen bg-[#0f231d] text-emerald-50">
+    <div className="min-h-screen bg-gradient-to-b from-[#04110c] via-[#071b14] to-[#0f231d] text-emerald-50">
       <UserNavbar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -612,23 +341,74 @@ const HomePage = ({ isLoggedIn }) => {
         isLoggedIn={isLoggedIn}
       />
 
-      <main className="mx-auto max-w-6xl space-y-12 px-4 py-12">
-        <section className="space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/70">
-            Categories
-          </p>
-          <CategoryTabs
-            items={categoryOptions}
-            value={selectedCategory}
-            onChange={setSelectedCategory}
-          />
+      <main className="mx-auto max-w-6xl space-y-10 px-4 py-12">
+        <section className="space-y-8 rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-emerald-900/30 backdrop-blur-sm">
+          <div className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-200/70">
+              All Products
+            </p>
+            <h1 className="text-3xl font-semibold text-emerald-50 md:text-4xl">
+              All our beautiful collection
+            </h1>
+            <p className="text-sm text-emerald-200/70">
+              Discover handpicked looks crafted to make everyday style feel
+              special.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {HERO_HIGHLIGHTS.map((highlight) => (
+              <div
+                key={highlight.id}
+                className="rounded-2xl border border-white/10 bg-white/5 p-4"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400/10 text-xs font-semibold uppercase tracking-wide text-emerald-200">
+                    {highlight.badge}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-50">
+                      {highlight.title}
+                    </p>
+                    <p className="text-xs text-emerald-200/70">
+                      {highlight.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <CategoryTabs
+              items={categoryOptions}
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+            />
+            <div className="w-full md:w-72">
+              <label className="sr-only" htmlFor="homepage-sort">
+                Sort products
+              </label>
+              <select
+                id="homepage-sort"
+                value={sortOption}
+                onChange={(event) => setSortOption(event.target.value)}
+                className="w-full rounded-2xl border border-white/10 bg-[#0b1a14] px-4 py-3 text-sm font-medium text-emerald-100 outline-none transition hover:border-emerald-300/40 focus:border-emerald-300/60"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           {categoryLoading ? (
             <p className="text-xs text-emerald-200/60">Loading categories…</p>
           ) : categoryError ? (
-            <div className="flex flex-wrap items-center gap-3 text-xs text-rose-300/80">
-              <span>
-                Unable to load categories. Showing available products only.
-              </span>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-rose-200/80">
+              <span>Unable to load categories right now.</span>
               <button
                 type="button"
                 onClick={handleRetryCategories}
@@ -640,71 +420,22 @@ const HomePage = ({ isLoggedIn }) => {
           ) : null}
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-xl shadow-emerald-900/20 backdrop-blur">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <h3 className="text-lg font-semibold text-emerald-50">Filters</h3>
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="text-sm font-medium text-emerald-200/80 underline-offset-4 transition hover:text-emerald-100 hover:underline"
-            >
-              Reset filters
-            </button>
+        <section className="space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm uppercase tracking-[0.2em] text-emerald-200/70">
+              Showing {displayedCount} of {totalCount} products
+            </p>
+            {isDefaultView ? null : (
+              <button
+                type="button"
+                onClick={handleResetView}
+                className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10"
+              >
+                Reset view
+              </button>
+            )}
           </div>
 
-          <div className="mt-6 space-y-8">
-            <RangeSlider
-              min={minProductPrice}
-              max={maxProductPrice}
-              step={priceStep}
-              value={priceRange}
-              onChange={setPriceRange}
-            />
-
-            <div className="grid gap-6 lg:grid-cols-[2fr_2fr_1fr]">
-              <div className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/70">
-                  Size
-                </p>
-                <SelectionGroup
-                  items={sizeOptions}
-                  value={selectedSize}
-                  onChange={setSelectedSize}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/70">
-                  Color
-                </p>
-                <ColorSwatchGroup
-                  colors={colorOptions}
-                  value={selectedColor}
-                  onChange={(nextValue) => setSelectedColor(nextValue)}
-                />
-                {filtersLoading ? (
-                  <p className="text-xs text-emerald-200/60">
-                    Updating options…
-                  </p>
-                ) : filtersError ? (
-                  <p className="text-xs text-rose-300/80">
-                    Unable to load category-specific filters. Showing available
-                    options.
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="flex items-end justify-end">
-                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-emerald-200/80">
-                  Showing {filteredProducts.length} products
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <SectionHeading title="Featured Products" eyebrow="Explore" />
           {loading ? (
             <div className="flex min-h-[16rem] items-center justify-center rounded-3xl border border-white/10 bg-white/5 text-sm text-emerald-200/70">
               Loading products...
@@ -724,13 +455,13 @@ const HomePage = ({ isLoggedIn }) => {
             <ProductGrid products={filteredProducts} />
           ) : (
             <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-emerald-300/40 bg-white/5 p-12 text-center text-sm text-emerald-200/80">
-              <p>No products match your filters yet.</p>
+              <p>No products match your current view yet.</p>
               <button
                 type="button"
-                onClick={handleResetFilters}
+                onClick={handleResetView}
                 className="rounded-full border border-emerald-300/60 px-4 py-2 font-medium text-emerald-100 transition hover:border-emerald-200 hover:bg-emerald-400/10"
               >
-                Clear filters
+                Reset view
               </button>
             </div>
           )}

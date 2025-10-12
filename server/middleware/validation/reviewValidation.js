@@ -1,5 +1,28 @@
 const { body, param, validationResult } = require("express-validator");
 const mongoose = require("mongoose");
+const Product = require("../../models/Product");
+
+const resolveProductId = async (identifier) => {
+  if (!identifier) {
+    return null;
+  }
+
+  if (mongoose.Types.ObjectId.isValid(identifier)) {
+    return identifier;
+  }
+
+  if (typeof identifier !== "string") {
+    return null;
+  }
+
+  const normalized = identifier.trim().toLowerCase();
+  if (!normalized) {
+    return null;
+  }
+
+  const product = await Product.findOne({ slug: normalized }).select("_id");
+  return product ? product._id.toString() : null;
+};
 
 /**
  * Validation middleware for creating a review
@@ -8,8 +31,15 @@ exports.validateCreateReview = [
   body("productId")
     .notEmpty()
     .withMessage("Product ID is required")
-    .custom((value) => mongoose.Types.ObjectId.isValid(value))
-    .withMessage("Invalid product ID format"),
+    .bail()
+    .custom(async (value, { req }) => {
+      const resolved = await resolveProductId(value);
+      if (!resolved) {
+        throw new Error("Product not found");
+      }
+      req.body.productId = resolved;
+      return true;
+    }),
 
   body("orderId")
     .optional()

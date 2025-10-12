@@ -11,6 +11,7 @@ const OverviewSection = ({
   recentOrders,
   paymentMethods,
   onShowOrders,
+  onEditProfile,
 }) => {
   const nextTier = profile?.nextTier ?? {};
   const latestOrder = recentOrders?.[0];
@@ -36,14 +37,29 @@ const OverviewSection = ({
     <div className="space-y-6">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
         <div className="rounded-3xl border border-emerald-300/40 bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent p-6 text-emerald-50">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-100/70">
-            Profile overview
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            {profile?.name ?? "Guest"}
-          </h2>
-          <p className="mt-1 text-sm text-emerald-100/80">{profile?.email}</p>
-          <p className="text-sm text-emerald-100/70">{profile?.phone}</p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-100/70">
+                Profile overview
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">
+                {profile?.name ?? "Guest"}
+              </h2>
+              <p className="mt-1 text-sm text-emerald-100/80">
+                {profile?.email}
+              </p>
+              <p className="text-sm text-emerald-100/70">{profile?.phone}</p>
+            </div>
+            {typeof onEditProfile === "function" ? (
+              <button
+                type="button"
+                onClick={onEditProfile}
+                className="inline-flex items-center justify-center rounded-full border border-emerald-200/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-50 transition hover:border-emerald-100"
+              >
+                Edit profile
+              </button>
+            ) : null}
+          </div>
           <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-100/80">
             <span className="rounded-full border border-emerald-200/60 px-3 py-1">
               {profile?.membershipTier ?? "Member"} tier

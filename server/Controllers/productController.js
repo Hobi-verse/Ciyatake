@@ -134,6 +134,16 @@ exports.getProductById = async (req, res) => {
       imageUrl: p.media?.[0]?.url || "",
     }));
 
+    const effectiveMrp =
+      Number.isFinite(product.mrp) && product.mrp > 0
+        ? product.mrp
+        : product.basePrice;
+    const computedDiscount = Number.isFinite(product.discountPercentage)
+      ? product.discountPercentage
+      : effectiveMrp > 0 && effectiveMrp > product.basePrice
+        ? Math.round(((effectiveMrp - product.basePrice) / effectiveMrp) * 100)
+        : 0;
+
     // Prepare detailed response
     const productDetail = {
       id: product.slug,
@@ -143,6 +153,9 @@ exports.getProductById = async (req, res) => {
       category: product.category,
       price: product.basePrice,
       basePrice: product.basePrice,
+      mrp: effectiveMrp,
+      discountPercentage: computedDiscount,
+      brand: product.brand ?? "Ciyatake",
       media: product.media,
       colors: product.getAvailableColors(),
       sizes: product.getAvailableSizes(),

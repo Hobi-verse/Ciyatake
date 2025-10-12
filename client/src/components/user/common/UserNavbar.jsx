@@ -12,11 +12,11 @@ import { logoutUser } from "../../../api/auth";
 import { clearAuthSession } from "../../../utils/authStorage";
 
 const userLinks = [
-  { label: "New Arrivals", to: "/new" },
-  { label: "Men", to: "/men" },
   { label: "Women", to: "/women" },
+  { label: "Men", to: "/men" },
+  { label: "Kids", to: "/kids" },
   { label: "Accessories", to: "/accessories" },
-  { label: "Sale", to: "/sale" },
+  { label: "Home & Living", to: "/home-living" },
 ];
 
 const createIconRenderer =

@@ -125,6 +125,13 @@ const productSchema = new mongoose.Schema(
       default: "",
     },
 
+    // Brand or collection name for merchandising
+    brand: {
+      type: String,
+      trim: true,
+      default: "Ciyatake",
+    },
+
     // Category reference (can be ObjectId or string enum)
     category: {
       type: String,
@@ -138,6 +145,19 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0,
+    },
+
+    // Original listing price (maximum retail price)
+    mrp: {
+      type: Number,
+      min: 0,
+    },
+
+    // Optional pre-computed discount percentage for merchandising
+    discountPercentage: {
+      type: Number,
+      min: 0,
+      max: 100,
     },
 
     // Product media (images, videos)
@@ -274,10 +294,20 @@ productSchema.methods.getAvailableColors = function () {
 
 // Method to transform to frontend format
 productSchema.methods.toFrontendFormat = function () {
+  const effectiveMrp = Number.isFinite(this.mrp) && this.mrp > 0 ? this.mrp : this.basePrice;
+  const computedDiscount = Number.isFinite(this.discountPercentage)
+    ? this.discountPercentage
+    : effectiveMrp > 0 && effectiveMrp > this.basePrice
+      ? Math.round(((effectiveMrp - this.basePrice) / effectiveMrp) * 100)
+      : 0;
+
   return {
     id: this.slug,
     title: this.title,
     price: this.basePrice,
+    mrp: effectiveMrp,
+    discountPercentage: computedDiscount,
+    brand: this.brand ?? "Ciyatake",
     category: this.category,
     sizes: this.getAvailableSizes(),
     colors: this.getAvailableColors(),
