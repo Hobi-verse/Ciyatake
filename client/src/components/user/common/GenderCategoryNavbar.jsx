@@ -12,8 +12,10 @@ import logoutIcon from "../../../assets/icons/log-out.svg";
 import menuIcon from "../../../assets/icons/menu.svg";
 import closeIcon from "../../../assets/icons/close.svg";
 
-const createIconRenderer = (src) => ({ className = "" } = {}) =>
-  <img src={src} alt="" className={className} aria-hidden="true" />;
+const createIconRenderer =
+  (src) =>
+  ({ className = "" } = {}) =>
+    <img src={src} alt="" className={className} aria-hidden="true" />;
 
 const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
   const dropdownRef = useRef(null);
@@ -46,18 +48,18 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
 
     // For women, we expect "Women Ethnic" and "Women Western" as separate main categories
     if (gender === "Women") {
-      return categories.map(mainCategory => ({
+      return categories.map((mainCategory) => ({
         title: mainCategory.name,
         mainCategory: mainCategory,
-        subcategories: mainCategory.children || []
+        subcategories: mainCategory.children || [],
       }));
     }
 
     // For Men and Kids, show all their categories
-    return categories.map(mainCategory => ({
+    return categories.map((mainCategory) => ({
       title: mainCategory.name,
       mainCategory: mainCategory,
-      subcategories: mainCategory.children || []
+      subcategories: mainCategory.children || [],
     }));
   };
 
@@ -65,8 +67,12 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
 
   // Special handling for Women's comprehensive dropdown
   const renderWomenDropdown = () => {
-    const ethnicCategory = categoryGroups.find(cat => cat.title === "Women Ethnic");
-    const westernCategory = categoryGroups.find(cat => cat.title === "Women Western");
+    const ethnicCategory = categoryGroups.find(
+      (cat) => cat.title === "Women Ethnic"
+    );
+    const westernCategory = categoryGroups.find(
+      (cat) => cat.title === "Women Western"
+    );
 
     if (!ethnicCategory && !westernCategory) {
       return renderStandardDropdown();
@@ -77,128 +83,147 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
         {/* Women Ethnic Section */}
         {ethnicCategory && (
           <div className="col-span-8">
-            <h3 className="text-sm font-bold text-purple-700 border-b-2 border-purple-200 pb-1 mb-4 uppercase tracking-wide">
+            <h3 className="mb-4 border-b border-emerald-500/40 pb-1 text-sm font-bold uppercase tracking-wide text-emerald-200">
               {ethnicCategory.title}
             </h3>
             <div className="grid grid-cols-6 gap-4">
               {/* Sarees */}
               <div className="space-y-1">
-                <h4 className="text-xs font-semibold text-gray-800 mb-2">Sarees</h4>
+                <h4 className="mb-2 text-xs font-semibold text-emerald-100">
+                  Sarees
+                </h4>
                 {ethnicCategory.subcategories
-                  .filter(sub => sub.name.toLowerCase().includes('saree'))
+                  .filter((sub) => sub.name.toLowerCase().includes("saree"))
                   .slice(0, 8)
                   .map((subcategory) => (
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block text-xs text-gray-600 hover:text-purple-600 hover:underline transition-colors py-0.5"
+                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
                       onClick={onClose}
                     >
                       {subcategory.name}
                     </Link>
-                  ))
-                }
+                  ))}
               </div>
 
               {/* Kurtis */}
               <div className="space-y-1">
-                <h4 className="text-xs font-semibold text-gray-800 mb-2">Kurtis</h4>
+                <h4 className="mb-2 text-xs font-semibold text-emerald-100">
+                  Kurtis
+                </h4>
                 {ethnicCategory.subcategories
-                  .filter(sub => sub.name.toLowerCase().includes('kurti'))
+                  .filter((sub) => sub.name.toLowerCase().includes("kurti"))
                   .slice(0, 5)
                   .map((subcategory) => (
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block text-xs text-gray-600 hover:text-purple-600 hover:underline transition-colors py-0.5"
+                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
                       onClick={onClose}
                     >
                       {subcategory.name}
                     </Link>
-                  ))
-                }
+                  ))}
               </div>
 
               {/* Kurta Sets */}
               <div className="space-y-1">
-                <h4 className="text-xs font-semibold text-gray-800 mb-2">Kurta Sets</h4>
+                <h4 className="mb-2 text-xs font-semibold text-emerald-100">
+                  Kurta Sets
+                </h4>
                 {ethnicCategory.subcategories
-                  .filter(sub => sub.name.toLowerCase().includes('kurta') && sub.name.toLowerCase().includes('set'))
+                  .filter(
+                    (sub) =>
+                      sub.name.toLowerCase().includes("kurta") &&
+                      sub.name.toLowerCase().includes("set")
+                  )
                   .slice(0, 6)
                   .map((subcategory) => (
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block text-xs text-gray-600 hover:text-purple-600 hover:underline transition-colors py-0.5"
+                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
                       onClick={onClose}
                     >
                       {subcategory.name}
                     </Link>
-                  ))
-                }
+                  ))}
               </div>
 
               {/* Dupatta Sets */}
               <div className="space-y-1">
-                <h4 className="text-xs font-semibold text-gray-800 mb-2">Dupatta Sets</h4>
+                <h4 className="mb-2 text-xs font-semibold text-emerald-100">
+                  Dupatta Sets
+                </h4>
                 {ethnicCategory.subcategories
-                  .filter(sub => sub.name.toLowerCase().includes('sets') && !sub.name.toLowerCase().includes('kurta'))
+                  .filter(
+                    (sub) =>
+                      sub.name.toLowerCase().includes("sets") &&
+                      !sub.name.toLowerCase().includes("kurta")
+                  )
                   .slice(0, 4)
                   .map((subcategory) => (
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block text-xs text-gray-600 hover:text-purple-600 hover:underline transition-colors py-0.5"
+                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
                       onClick={onClose}
                     >
                       {subcategory.name}
                     </Link>
-                  ))
-                }
+                  ))}
               </div>
 
               {/* Suits & Dress Material */}
               <div className="space-y-1">
-                <h4 className="text-xs font-semibold text-gray-800 mb-2">Suits & Dress Material</h4>
+                <h4 className="mb-2 text-xs font-semibold text-emerald-100">
+                  Suits & Dress Material
+                </h4>
                 {ethnicCategory.subcategories
-                  .filter(sub => sub.name.toLowerCase().includes('suits') || sub.name.toLowerCase().includes('dress material'))
+                  .filter(
+                    (sub) =>
+                      sub.name.toLowerCase().includes("suits") ||
+                      sub.name.toLowerCase().includes("dress material")
+                  )
                   .slice(0, 6)
                   .map((subcategory) => (
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block text-xs text-gray-600 hover:text-purple-600 hover:underline transition-colors py-0.5"
+                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
                       onClick={onClose}
                     >
                       {subcategory.name}
                     </Link>
-                  ))
-                }
+                  ))}
               </div>
 
               {/* Lehengas & Other Ethnic */}
               <div className="space-y-1">
-                <h4 className="text-xs font-semibold text-gray-800 mb-2">Lehengas & Other Ethnic</h4>
+                <h4 className="mb-2 text-xs font-semibold text-emerald-100">
+                  Lehengas & Other Ethnic
+                </h4>
                 {ethnicCategory.subcategories
-                  .filter(sub => 
-                    sub.name.toLowerCase().includes('lehenga') || 
-                    sub.name.toLowerCase().includes('blouse') ||
-                    sub.name.toLowerCase().includes('dupatta') ||
-                    sub.name.toLowerCase().includes('gown') ||
-                    sub.name.toLowerCase().includes('petticoat')
+                  .filter(
+                    (sub) =>
+                      sub.name.toLowerCase().includes("lehenga") ||
+                      sub.name.toLowerCase().includes("blouse") ||
+                      sub.name.toLowerCase().includes("dupatta") ||
+                      sub.name.toLowerCase().includes("gown") ||
+                      sub.name.toLowerCase().includes("petticoat")
                   )
                   .slice(0, 8)
                   .map((subcategory) => (
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block text-xs text-gray-600 hover:text-purple-600 hover:underline transition-colors py-0.5"
+                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
                       onClick={onClose}
                     >
                       {subcategory.name}
                     </Link>
-                  ))
-                }
+                  ))}
               </div>
             </div>
           </div>
@@ -207,28 +232,30 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
         {/* Women Western Section */}
         {westernCategory && (
           <div className="col-span-4">
-            <h3 className="text-sm font-bold text-pink-700 border-b-2 border-pink-200 pb-1 mb-4 uppercase tracking-wide">
+            <h3 className="mb-4 border-b border-emerald-500/40 pb-1 text-sm font-bold uppercase tracking-wide text-emerald-200">
               {westernCategory.title}
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                {westernCategory.subcategories.slice(0, 6).map((subcategory) => (
-                  <Link
-                    key={subcategory.slug}
-                    to={`/category/${subcategory.slug}`}
-                    className="block text-xs text-gray-600 hover:text-pink-600 hover:underline transition-colors py-0.5"
-                    onClick={onClose}
-                  >
-                    {subcategory.name}
-                  </Link>
-                ))}
+                {westernCategory.subcategories
+                  .slice(0, 6)
+                  .map((subcategory) => (
+                    <Link
+                      key={subcategory.slug}
+                      to={`/category/${subcategory.slug}`}
+                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
+                      onClick={onClose}
+                    >
+                      {subcategory.name}
+                    </Link>
+                  ))}
               </div>
               <div className="space-y-1">
                 {westernCategory.subcategories.slice(6).map((subcategory) => (
                   <Link
                     key={subcategory.slug}
                     to={`/category/${subcategory.slug}`}
-                    className="block text-xs text-gray-600 hover:text-pink-600 hover:underline transition-colors py-0.5"
+                    className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
                     onClick={onClose}
                   >
                     {subcategory.name}
@@ -244,33 +271,40 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
 
   const renderStandardDropdown = () => {
     return (
-      <div className={`grid gap-6 ${
-        gender === "Men" ? "grid-cols-4" : 
-        gender === "Kids" ? "grid-cols-3" : 
-        "grid-cols-4"
-      }`}>
+      <div
+        className={`grid gap-6 ${
+          gender === "Men"
+            ? "grid-cols-4"
+            : gender === "Kids"
+            ? "grid-cols-3"
+            : "grid-cols-4"
+        }`}
+      >
         {categoryGroups.map((group, groupIndex) => (
-          <div key={group.mainCategory?.slug || groupIndex} className="space-y-2">
-            <h3 className="text-sm font-medium text-blue-600 border-b border-blue-200 pb-1 mb-2 uppercase tracking-wide">
+          <div
+            key={group.mainCategory?.slug || groupIndex}
+            className="space-y-2"
+          >
+            <h3 className="mb-2 border-b border-emerald-500/40 pb-1 text-sm font-medium uppercase tracking-wide text-emerald-200">
               {group.title}
             </h3>
-            
+
             <div className="space-y-1">
               <Link
                 to={`/category/${group.mainCategory?.slug}?gender=${gender}`}
-                className="block text-xs font-medium text-gray-700 hover:text-blue-600 hover:underline transition-colors py-0.5"
+                className="block py-0.5 text-xs font-medium text-emerald-100 transition-colors hover:text-emerald-200 hover:underline"
                 onClick={onClose}
               >
                 All {group.mainCategory?.name}
               </Link>
-              
+
               {group.subcategories && group.subcategories.length > 0 && (
-                <div className="space-y-0.5 ml-1">
+                <div className="ml-1 space-y-0.5">
                   {group.subcategories.slice(0, 10).map((subcategory) => (
                     <Link
                       key={subcategory.slug || subcategory.id}
                       to={`/category/${subcategory.slug}?gender=${gender}`}
-                      className="block text-xs text-gray-600 hover:text-blue-600 hover:underline transition-colors py-0.5"
+                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
                       onClick={onClose}
                     >
                       {subcategory.name}
@@ -288,43 +322,45 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
   return (
     <div
       ref={dropdownRef}
-      className="absolute top-full left-0 w-full bg-white shadow-2xl border border-gray-200 rounded-lg mt-2 z-50"
-      style={{ 
-        width: '90%',
-        minWidth: '1000px',
-        maxWidth: '1400px',
-        marginLeft: 0
+      className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-emerald-900/60 bg-[#10241e] shadow-xl shadow-emerald-900/40 backdrop-blur"
+      style={{
+        width: "90%",
+        minWidth: "1000px",
+        maxWidth: "1400px",
+        marginLeft: 0,
       }}
     >
       <div className="px-8 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-gray-900">
-            {gender === "Women" ? "Women's Fashion" : 
-             gender === "Men" ? "Men's Collection" : 
-             "Kids Collection"}
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-emerald-100">
+            {gender === "Women"
+              ? "Women's Fashion"
+              : gender === "Men"
+              ? "Men's Collection"
+              : "Kids Collection"}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-emerald-300 transition-colors hover:text-emerald-100"
           >
             ✕
           </button>
         </div>
-        
+
         {/* Category Content */}
         {gender === "Women" ? renderWomenDropdown() : renderStandardDropdown()}
-        
-        <div className="mt-6 pt-4 border-t border-gray-200 flex gap-4">
+
+        <div className="mt-6 flex gap-4 border-t border-emerald-900/60 pt-4">
           <Link
             to={`/${gender.toLowerCase()}`}
-            className="inline-block text-center text-sm text-purple-600 hover:text-purple-700 font-medium border border-purple-200 hover:border-purple-300 rounded-lg px-6 py-2 transition-colors"
+            className="inline-block rounded-lg border border-emerald-500/40 px-6 py-2 text-center text-sm font-medium text-emerald-100 transition-colors hover:border-emerald-300/70 hover:bg-emerald-500/10"
             onClick={onClose}
           >
             Shop All {gender}'s Items
           </Link>
           <Link
             to="/offers"
-            className="inline-block text-center text-sm text-red-600 hover:text-red-700 font-medium border border-red-200 hover:border-red-300 rounded-lg px-6 py-2 transition-colors"
+            className="inline-block rounded-lg border border-emerald-500/40 px-6 py-2 text-center text-sm font-medium text-emerald-100 transition-colors hover:border-emerald-300/70 hover:bg-emerald-500/10"
             onClick={onClose}
           >
             Special Offers
@@ -348,7 +384,7 @@ const GenderCategoryNavbar = ({
   const [genderCategories, setGenderCategories] = useState({
     Women: [],
     Men: [],
-    Kids: []
+    Kids: [],
   });
   const hoverTimeoutRef = useRef(null);
 
@@ -362,32 +398,37 @@ const GenderCategoryNavbar = ({
     const loadCategoriesForAllGenders = async () => {
       try {
         console.log("Loading categories for all genders...");
-        
+
         // Load categories for each gender
         const genderPromises = genderLinks.map(async (genderLink) => {
           try {
-            const response = await fetchCategoryTree({ gender: genderLink.value });
+            const response = await fetchCategoryTree({
+              gender: genderLink.value,
+            });
             console.log(`${genderLink.value} categories response:`, response);
             return {
               gender: genderLink.value,
-              categories: response.success ? response.categories : []
+              categories: response.success ? response.categories : [],
             };
           } catch (apiError) {
-            console.error(`Failed to load ${genderLink.value} categories:`, apiError);
+            console.error(
+              `Failed to load ${genderLink.value} categories:`,
+              apiError
+            );
             return {
               gender: genderLink.value,
-              categories: []
+              categories: [],
             };
           }
         });
 
         const results = await Promise.all(genderPromises);
-        
+
         const newGenderCategories = {};
         results.forEach(({ gender, categories }) => {
           newGenderCategories[gender] = categories;
         });
-        
+
         console.log("All gender categories loaded:", newGenderCategories);
         setGenderCategories(newGenderCategories);
       } catch (error) {
@@ -538,14 +579,14 @@ const GenderCategoryNavbar = ({
                 </Link>
               </div>
             ))}
-            
+
             <Link
               to="/accessories"
               className="transition hover:text-emerald-300 hover:underline py-2 px-2"
             >
               Accessories
             </Link>
-            
+
             <Link
               to="/home-living"
               className="transition hover:text-emerald-300 hover:underline py-2 px-2"
@@ -600,33 +641,47 @@ const GenderCategoryNavbar = ({
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-2">
               {actions.map((action, index) => {
-                const key = action.key ?? `${action.label ?? "action"}-${index}`;
+                const key =
+                  action.key ?? `${action.label ?? "action"}-${index}`;
 
-                if (action.variant === "button") {
-                  if (action.to) {
-                    return (
-                      <Link
-                        key={key}
-                        to={action.to}
-                        onClick={action.onClick}
-                        className="inline-flex items-center justify-center rounded-full border border-emerald-300/70 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200 hover:bg-emerald-400/10"
-                      >
-                        {action.label}
-                      </Link>
-                    );
-                  }
+                if (action.variant === "button" && action.to) {
+                  return (
+                    <Link
+                      key={key}
+                      to={action.to}
+                      onClick={action.onClick}
+                      className="inline-flex items-center justify-center rounded-full border border-emerald-300/70 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200 hover:bg-emerald-400/10"
+                    >
+                      {action.label}
+                    </Link>
+                  );
+                }
+
+                if (action.to) {
+                  return (
+                    <Link
+                      key={key}
+                      to={action.to}
+                      onClick={action.onClick}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10"
+                      title={action.label}
+                    >
+                      <action.icon className="h-5 w-5" />
+                    </Link>
+                  );
                 }
 
                 return (
-                  <Link
+                  <button
                     key={key}
-                    to={action.to}
+                    type="button"
                     onClick={action.onClick}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10"
-                    title={action.label}
+                    disabled={isLoggingOut}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    title={isLoggingOut ? "Logging out..." : action.label}
                   >
                     <action.icon className="h-5 w-5" />
-                  </Link>
+                  </button>
                 );
               })}
             </div>
@@ -650,7 +705,11 @@ const GenderCategoryNavbar = ({
         </div>
 
         {/* Mobile Menu */}
-        <div className={`${isMobileMenuOpen ? "mt-6" : "hidden"} flex flex-col gap-4 lg:hidden`}>
+        <div
+          className={`${
+            isMobileMenuOpen ? "mt-6" : "hidden"
+          } flex flex-col gap-4 lg:hidden`}
+        >
           {/* Mobile Search */}
           <div className="relative">
             <input
@@ -712,7 +771,8 @@ const GenderCategoryNavbar = ({
           {/* Mobile Actions */}
           <div className="flex flex-wrap gap-3">
             {actions.map((action, index) => {
-              const key = action.key ?? `${action.label ?? "action"}-mobile-${index}`;
+              const key =
+                action.key ?? `${action.label ?? "action"}-mobile-${index}`;
 
               if (action.variant === "button") {
                 return (
@@ -727,16 +787,31 @@ const GenderCategoryNavbar = ({
                 );
               }
 
+              if (action.to) {
+                return (
+                  <Link
+                    key={key}
+                    to={action.to}
+                    onClick={action.onClick}
+                    className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10"
+                    title={action.label}
+                  >
+                    <action.icon className="h-6 w-6" />
+                  </Link>
+                );
+              }
+
               return (
-                <Link
+                <button
                   key={key}
-                  to={action.to}
+                  type="button"
                   onClick={action.onClick}
-                  className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10"
-                  title={action.label}
+                  disabled={isLoggingOut}
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+                  title={isLoggingOut ? "Logging out..." : action.label}
                 >
                   <action.icon className="h-6 w-6" />
-                </Link>
+                </button>
               );
             })}
           </div>

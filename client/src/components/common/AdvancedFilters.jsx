@@ -51,14 +51,14 @@ const RATING_OPTIONS = [
 ];
 
 const FilterSection = ({ title, children, isOpen, onToggle }) => (
-  <div className="border-b border-slate-200 pb-4">
+  <div className="border-b border-emerald-900/60 pb-4 last:border-b-0">
     <button
       onClick={onToggle}
-      className="flex w-full items-center justify-between py-3 text-left text-sm font-semibold text-slate-900"
+      className="flex w-full items-center justify-between py-3 text-left text-sm font-semibold text-emerald-100 transition-colors hover:text-emerald-300"
     >
       {title}
       <svg
-        className={`h-4 w-4 transform transition-transform ${
+        className={`h-5 w-5 transform transition-transform duration-200 ${
           isOpen ? "rotate-180" : ""
         }`}
         fill="none"
@@ -77,11 +77,11 @@ const FilterSection = ({ title, children, isOpen, onToggle }) => (
   </div>
 );
 
-const AdvancedFilters = ({ 
-  filters, 
-  onFiltersChange, 
+const AdvancedFilters = ({
+  filters,
+  onFiltersChange,
   productCount,
-  onClearFilters 
+  onClearFilters,
 }) => {
   const [openSections, setOpenSections] = useState({
     allProducts: true,
@@ -104,25 +104,28 @@ const AdvancedFilters = ({
     const loadCategories = async () => {
       setLoadingCategories(true);
       try {
-        const params = filters.gender !== "all" ? { gender: filters.gender } : {};
+        const params =
+          filters.gender !== "all" ? { gender: filters.gender } : {};
         const { categories } = await fetchCategoryTree(params);
         setCategoryTree(categories || []);
-        
+
         // Set available categories based on gender
         if (filters.gender !== "all" && categories) {
-          setAvailableCategories(categories.map(cat => ({
-            value: cat.slug,
-            label: cat.name,
-            children: cat.children || []
-          })));
+          setAvailableCategories(
+            categories.map((cat) => ({
+              value: cat.slug,
+              label: cat.name,
+              children: cat.children || [],
+            }))
+          );
         } else {
           // If no gender selected, show all main categories
           const allCategories = [];
-          (categories || []).forEach(cat => {
+          (categories || []).forEach((cat) => {
             allCategories.push({
               value: cat.slug,
               label: cat.name,
-              children: cat.children || []
+              children: cat.children || [],
             });
           });
           setAvailableCategories(allCategories);
@@ -141,12 +144,16 @@ const AdvancedFilters = ({
   // Update subcategories when category changes
   useEffect(() => {
     if (filters.category && filters.category !== "all") {
-      const selectedCategory = availableCategories.find(cat => cat.value === filters.category);
+      const selectedCategory = availableCategories.find(
+        (cat) => cat.value === filters.category
+      );
       if (selectedCategory && selectedCategory.children) {
-        setAvailableSubcategories(selectedCategory.children.map(subcat => ({
-          value: subcat.slug,
-          label: subcat.name
-        })));
+        setAvailableSubcategories(
+          selectedCategory.children.map((subcat) => ({
+            value: subcat.slug,
+            label: subcat.name,
+          }))
+        );
       } else {
         setAvailableSubcategories([]);
       }
@@ -156,35 +163,35 @@ const AdvancedFilters = ({
   }, [filters.category, availableCategories]);
 
   const toggleSection = (section) => {
-    setOpenSections(prev => ({
+    setOpenSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
   const updateFilter = (key, value) => {
     // If gender changes, reset category and subcategory
-    if (key === 'gender') {
+    if (key === "gender") {
       onFiltersChange({
         ...filters,
         gender: value,
         category: "all",
-        subcategory: "all"
+        subcategory: "all",
       });
     }
     // If category changes, reset subcategory
-    else if (key === 'category') {
+    else if (key === "category") {
       onFiltersChange({
         ...filters,
         category: value,
-        subcategory: "all"
+        subcategory: "all",
       });
     }
     // For other filters, just update normally
     else {
       onFiltersChange({
         ...filters,
-        [key]: value
+        [key]: value,
       });
     }
   };
@@ -192,9 +199,9 @@ const AdvancedFilters = ({
   const toggleArrayFilter = (key, value) => {
     const currentArray = filters[key] || [];
     const newArray = currentArray.includes(value)
-      ? currentArray.filter(item => item !== value)
+      ? currentArray.filter((item) => item !== value)
       : [...currentArray, value];
-    
+
     updateFilter(key, newArray);
   };
 
@@ -207,35 +214,35 @@ const AdvancedFilters = ({
   });
 
   return (
-    <div className="w-80 bg-white">
+    <div className="w-full lg:w-80">
       <div className="sticky top-4">
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 p-6">
+        <div className="rounded-xl border border-emerald-900 bg-[#132e26] shadow-lg shadow-emerald-900/40">
+          <div className="border-b border-emerald-900/60 p-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">FILTERS</h2>
+              <h2 className="text-lg font-bold text-emerald-100">FILTERS</h2>
               {hasActiveFilters && (
                 <button
                   onClick={onClearFilters}
-                  className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                  className="text-sm font-medium text-emerald-300 transition-colors hover:text-emerald-200"
                 >
                   Clear All
                 </button>
               )}
             </div>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-emerald-200">
               {productCount}+ Products
             </p>
           </div>
 
-          <div className="p-6 space-y-6">
+          <div className="space-y-6 p-6 text-emerald-100">
             {/* All Products Button */}
-            <div className="border-b border-slate-200 pb-4">
+            <div className="pb-4">
               <button
                 onClick={() => onClearFilters()}
-                className={`w-full rounded-lg py-3 px-4 text-left font-medium transition-all ${
+                className={`w-full rounded-lg py-3 px-4 text-left font-semibold transition-all ${
                   !hasActiveFilters
-                    ? "bg-emerald-600 text-white shadow-md"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-emerald-500 text-emerald-50 shadow-md hover:bg-emerald-400"
+                    : "bg-[#1c3b33] text-emerald-200 hover:bg-[#21453c]"
                 }`}
               >
                 All Products
@@ -250,16 +257,21 @@ const AdvancedFilters = ({
             >
               <div className="space-y-2">
                 {GENDER_OPTIONS.map((gender) => (
-                  <label key={gender.value} className="flex items-center">
+                  <label
+                    key={gender.value}
+                    className="flex items-center cursor-pointer group"
+                  >
                     <input
                       type="radio"
                       name="gender"
                       value={gender.value}
                       checked={filters.gender === gender.value}
                       onChange={(e) => updateFilter("gender", e.target.value)}
-                      className="mr-3 h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      className="mr-3 h-4 w-4 border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
                     />
-                    <span className="text-sm text-slate-700">{gender.label}</span>
+                    <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                      {gender.label}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -272,31 +284,42 @@ const AdvancedFilters = ({
               onToggle={() => toggleSection("category")}
             >
               {loadingCategories ? (
-                <p className="text-sm text-slate-500">Loading categories...</p>
+                <p className="text-sm text-emerald-300">
+                  Loading categories...
+                </p>
               ) : (
                 <div className="space-y-2">
-                  <label className="flex items-center">
+                  <label className="flex items-center cursor-pointer group">
                     <input
                       type="radio"
                       name="category"
                       value="all"
                       checked={filters.category === "all"}
                       onChange={(e) => updateFilter("category", e.target.value)}
-                      className="mr-3 h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      className="mr-3 h-4 w-4 border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
                     />
-                    <span className="text-sm text-slate-700">All Categories</span>
+                    <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                      All Categories
+                    </span>
                   </label>
                   {availableCategories.map((category) => (
-                    <label key={category.value} className="flex items-center">
+                    <label
+                      key={category.value}
+                      className="flex items-center cursor-pointer group"
+                    >
                       <input
                         type="radio"
                         name="category"
                         value={category.value}
                         checked={filters.category === category.value}
-                        onChange={(e) => updateFilter("category", e.target.value)}
-                        className="mr-3 h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        onChange={(e) =>
+                          updateFilter("category", e.target.value)
+                        }
+                        className="mr-3 h-4 w-4 border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
                       />
-                      <span className="text-sm text-slate-700">{category.label}</span>
+                      <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                        {category.label}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -304,40 +327,53 @@ const AdvancedFilters = ({
             </FilterSection>
 
             {/* Subcategory Filter - Only show if category is selected */}
-            {filters.category && filters.category !== "all" && availableSubcategories.length > 0 && (
-              <FilterSection
-                title="Subcategory"
-                isOpen={openSections.subcategory}
-                onToggle={() => toggleSection("subcategory")}
-              >
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="subcategory"
-                      value="all"
-                      checked={filters.subcategory === "all"}
-                      onChange={(e) => updateFilter("subcategory", e.target.value)}
-                      className="mr-3 h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                    />
-                    <span className="text-sm text-slate-700">All Subcategories</span>
-                  </label>
-                  {availableSubcategories.map((subcategory) => (
-                    <label key={subcategory.value} className="flex items-center">
+            {filters.category &&
+              filters.category !== "all" &&
+              availableSubcategories.length > 0 && (
+                <FilterSection
+                  title="Subcategory"
+                  isOpen={openSections.subcategory}
+                  onToggle={() => toggleSection("subcategory")}
+                >
+                  <div className="space-y-2">
+                    <label className="flex items-center cursor-pointer group">
                       <input
                         type="radio"
                         name="subcategory"
-                        value={subcategory.value}
-                        checked={filters.subcategory === subcategory.value}
-                        onChange={(e) => updateFilter("subcategory", e.target.value)}
-                        className="mr-3 h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        value="all"
+                        checked={filters.subcategory === "all"}
+                        onChange={(e) =>
+                          updateFilter("subcategory", e.target.value)
+                        }
+                        className="mr-3 h-4 w-4 border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
                       />
-                      <span className="text-sm text-slate-700">{subcategory.label}</span>
+                      <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                        All Subcategories
+                      </span>
                     </label>
-                  ))}
-                </div>
-              </FilterSection>
-            )}
+                    {availableSubcategories.map((subcategory) => (
+                      <label
+                        key={subcategory.value}
+                        className="flex items-center cursor-pointer group"
+                      >
+                        <input
+                          type="radio"
+                          name="subcategory"
+                          value={subcategory.value}
+                          checked={filters.subcategory === subcategory.value}
+                          onChange={(e) =>
+                            updateFilter("subcategory", e.target.value)
+                          }
+                          className="mr-3 h-4 w-4 border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
+                        />
+                        <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                          {subcategory.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </FilterSection>
+              )}
 
             {/* Color Filter */}
             <FilterSection
@@ -345,25 +381,35 @@ const AdvancedFilters = ({
               isOpen={openSections.color}
               onToggle={() => toggleSection("color")}
             >
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-3">
                 {COMMON_COLORS.map((color) => (
                   <button
                     key={color.name}
                     onClick={() => toggleArrayFilter("colors", color.name)}
-                    className={`group relative flex h-12 w-12 items-center justify-center rounded-lg border-2 transition-all ${
+                    className={`group relative flex h-12 w-12 items-center justify-center rounded-lg border-2 transition-all hover:scale-105 ${
                       filters.colors?.includes(color.name)
-                        ? "border-emerald-500 ring-2 ring-emerald-200"
-                        : "border-slate-200 hover:border-slate-300"
+                        ? "border-emerald-400 ring-2 ring-emerald-500/30"
+                        : "border-emerald-900/60 hover:border-emerald-700"
                     }`}
-                    title={color.name.charAt(0).toUpperCase() + color.name.slice(1)}
+                    title={
+                      color.name.charAt(0).toUpperCase() + color.name.slice(1)
+                    }
                   >
                     <div
-                      className="h-8 w-8 rounded-md border border-slate-200"
+                      className={`h-8 w-8 rounded-md ${
+                        color.name === "white"
+                          ? "border-2 border-emerald-200/70"
+                          : "border border-emerald-900/60"
+                      }`}
                       style={{ backgroundColor: color.hex }}
                     />
                     {filters.colors?.includes(color.name) && (
                       <svg
-                        className="absolute h-4 w-4 text-white drop-shadow-sm"
+                        className={`absolute h-5 w-5 ${
+                          color.name === "white" || color.name === "yellow"
+                            ? "text-emerald-900"
+                            : "text-white"
+                        } drop-shadow-lg`}
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -390,10 +436,10 @@ const AdvancedFilters = ({
                   <button
                     key={size}
                     onClick={() => toggleArrayFilter("sizes", size)}
-                    className={`rounded-lg border py-2 px-3 text-sm font-medium transition-all ${
+                    className={`rounded-lg border py-2.5 px-3 text-sm font-semibold transition-all hover:scale-105 ${
                       filters.sizes?.includes(size)
-                        ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                        : "border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                        ? "border-emerald-400 bg-emerald-500/15 text-emerald-200 shadow-sm"
+                        : "border-emerald-900/60 text-emerald-100 hover:border-emerald-700 hover:bg-[#1a352e]"
                     }`}
                   >
                     {size}
@@ -410,25 +456,37 @@ const AdvancedFilters = ({
             >
               <div className="space-y-2">
                 {PRICE_RANGES.map((range, index) => (
-                  <label key={index} className="flex items-center">
+                  <label
+                    key={index}
+                    className="flex items-center cursor-pointer group"
+                  >
                     <input
                       type="checkbox"
                       checked={filters.priceRanges?.some(
-                        r => r.min === range.min && r.max === range.max
+                        (r) => r.min === range.min && r.max === range.max
                       )}
                       onChange={(e) => {
                         const currentRanges = filters.priceRanges || [];
                         if (e.target.checked) {
-                          updateFilter("priceRanges", [...currentRanges, range]);
+                          updateFilter("priceRanges", [
+                            ...currentRanges,
+                            range,
+                          ]);
                         } else {
-                          updateFilter("priceRanges", 
-                            currentRanges.filter(r => !(r.min === range.min && r.max === range.max))
+                          updateFilter(
+                            "priceRanges",
+                            currentRanges.filter(
+                              (r) =>
+                                !(r.min === range.min && r.max === range.max)
+                            )
                           );
                         }
                       }}
-                      className="mr-3 h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      className="mr-3 h-4 w-4 rounded border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
                     />
-                    <span className="text-sm text-slate-700">{range.label}</span>
+                    <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                      {range.label}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -442,16 +500,23 @@ const AdvancedFilters = ({
             >
               <div className="space-y-2">
                 {RATING_OPTIONS.map((rating) => (
-                  <label key={rating.value} className="flex items-center">
+                  <label
+                    key={rating.value}
+                    className="flex items-center cursor-pointer group"
+                  >
                     <input
                       type="radio"
                       name="rating"
                       value={rating.value}
                       checked={filters.minRating === rating.value}
-                      onChange={(e) => updateFilter("minRating", Number(e.target.value))}
-                      className="mr-3 h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      onChange={(e) =>
+                        updateFilter("minRating", Number(e.target.value))
+                      }
+                      className="mr-3 h-4 w-4 border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
                     />
-                    <span className="text-sm text-slate-700">{rating.label}</span>
+                    <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                      {rating.label}
+                    </span>
                   </label>
                 ))}
               </div>

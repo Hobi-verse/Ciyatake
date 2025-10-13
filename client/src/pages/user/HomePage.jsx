@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import GenderCategoryNavbar from "../../components/user/common/GenderCategoryNavbar.jsx";
-import AdvancedFilters, { SORT_OPTIONS } from "../../components/common/AdvancedFilters.jsx";
+import AdvancedFilters, {
+  SORT_OPTIONS,
+} from "../../components/common/AdvancedFilters.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
 import { fetchProducts } from "../../api/catalog.js";
 import { fetchCategories } from "../../api/categories.js";
@@ -63,11 +65,13 @@ const HomePage = ({ isLoggedIn }) => {
     DEFAULT_CATEGORY_OPTIONS
   );
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [productsLimit, setProductsLimit] = useState(48);
   const [totalProducts, setTotalProducts] = useState(0);
   const [sortOption, setSortOption] = useState("relevance");
   const [hasApiCategories, setHasApiCategories] = useState(false);
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [categoryError, setCategoryError] = useState(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const loadCategories = useCallback(async ({ signal } = {}) => {
     setCategoryLoading(true);
@@ -141,9 +145,11 @@ const HomePage = ({ isLoggedIn }) => {
       setHasApiCategories(true);
       setFilters((previous) => ({
         ...previous,
-        category: apiOptions.some((option) => option.value === previous.category)
+        category: apiOptions.some(
+          (option) => option.value === previous.category
+        )
           ? previous.category
-          : "all"
+          : "all",
       }));
     } catch (apiError) {
       if (signal?.aborted) {
@@ -168,14 +174,31 @@ const HomePage = ({ isLoggedIn }) => {
     };
   }, [loadCategories]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 240);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   const loadProducts = useCallback(
     async ({ signal } = {}) => {
       setLoading(true);
       setError(null);
 
       try {
-        const query = { limit: 48 };
-        
+        const query = { limit: productsLimit };
+
         // Apply filters to query
         if (filters.category && filters.category !== "all") {
           query.category = filters.category;
@@ -196,8 +219,8 @@ const HomePage = ({ isLoggedIn }) => {
           query.minRating = filters.minRating;
         }
         if (filters.priceRanges && filters.priceRanges.length > 0) {
-          const minPrice = Math.min(...filters.priceRanges.map(r => r.min));
-          const maxPrice = Math.max(...filters.priceRanges.map(r => r.max));
+          const minPrice = Math.min(...filters.priceRanges.map((r) => r.min));
+          const maxPrice = Math.max(...filters.priceRanges.map((r) => r.max));
           query.minPrice = minPrice;
           query.maxPrice = maxPrice;
         }
@@ -278,7 +301,7 @@ const HomePage = ({ isLoggedIn }) => {
         }
       }
     },
-    [hasApiCategories, filters, sortOption]
+    [hasApiCategories, filters, sortOption, productsLimit]
   );
 
   useEffect(() => {
@@ -320,15 +343,27 @@ const HomePage = ({ isLoggedIn }) => {
   const handleClearFilters = () => {
     setFilters(DEFAULT_FILTERS);
     setSearchTerm("");
+    setProductsLimit(48);
   };
 
   const handleFiltersChange = (newFilters) => {
     setFilters(newFilters);
   };
 
+  const handleLoadMoreItems = () => {
+    setProductsLimit((previous) => previous + 24);
+  };
+
+  const handleScrollToTop = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const displayedCount = filteredProducts.length;
   const totalCount = totalProducts || displayedCount;
-  
+
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === "category") return value !== "all";
     if (key === "subcategory") return value !== "all";
@@ -336,11 +371,11 @@ const HomePage = ({ isLoggedIn }) => {
     if (Array.isArray(value)) return value.length > 0;
     return value !== null && value !== "";
   });
-  
+
   const isDefaultView = !hasActiveFilters && searchTerm.trim() === "";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0f231d] text-emerald-100">
       <GenderCategoryNavbar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -348,16 +383,18 @@ const HomePage = ({ isLoggedIn }) => {
         isLoggedIn={isLoggedIn}
       />
 
-      <main className="mx-auto max-w-7xl px-4 py-8">
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         {/* Header Section */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Products For You</h1>
-          <p className="mt-2 text-gray-600">
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-bold tracking-tight text-emerald-50">
+            Products For You
+          </h1>
+          <p className="mt-3 text-base text-emerald-300">
             Discover our complete collection with advanced filters
           </p>
         </div>
 
-        <div className="flex gap-8">
+        <div className="flex flex-col gap-8 lg:flex-row">
           {/* Filters Sidebar */}
           <AdvancedFilters
             filters={filters}
@@ -367,29 +404,26 @@ const HomePage = ({ isLoggedIn }) => {
           />
 
           {/* Main Content */}
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 space-y-6 rounded-2xl border border-emerald-900/60 bg-[#132e26] p-6 shadow-lg shadow-emerald-900/40">
             {/* Sort and Results Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Products For You
-                </h2>
-                <p className="text-gray-500">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4 text-sm text-emerald-200">
+                <p>
                   Showing {displayedCount} of {totalCount} products
                 </p>
               </div>
-              
-              <div className="flex items-center gap-4">
+
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:gap-4">
                 {!isDefaultView && (
                   <button
                     type="button"
                     onClick={handleClearFilters}
-                    className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                    className="text-sm font-semibold text-emerald-300 transition-colors hover:text-emerald-200"
                   >
                     Clear all filters
                   </button>
                 )}
-                
+
                 <div className="w-48">
                   <label className="sr-only" htmlFor="homepage-sort">
                     Sort products
@@ -398,7 +432,7 @@ const HomePage = ({ isLoggedIn }) => {
                     id="homepage-sort"
                     value={sortOption}
                     onChange={(event) => setSortOption(event.target.value)}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full rounded-lg border border-emerald-900/60 bg-[#0f231d] px-3 py-2 text-sm text-emerald-200 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
                   >
                     {SORT_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -412,16 +446,18 @@ const HomePage = ({ isLoggedIn }) => {
 
             {/* Loading States */}
             {categoryLoading && (
-              <p className="text-sm text-gray-500">Loading categories…</p>
+              <p className="text-sm text-emerald-300">Loading categories…</p>
             )}
-            
+
             {categoryError && (
-              <div className="flex items-center gap-3 text-sm text-red-600">
-                <span>Unable to load categories right now.</span>
+              <div className="flex flex-wrap items-center gap-3 rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                <span className="font-medium">
+                  Unable to load categories right now.
+                </span>
                 <button
                   type="button"
                   onClick={handleRetryCategories}
-                  className="rounded border border-red-300 px-3 py-1 font-medium hover:bg-red-50"
+                  className="rounded border border-rose-400 px-3 py-1 font-semibold text-rose-100 transition-colors hover:bg-rose-500/20"
                 >
                   Retry
                 </button>
@@ -430,16 +466,18 @@ const HomePage = ({ isLoggedIn }) => {
 
             {/* Products Grid */}
             {loading ? (
-              <div className="flex min-h-[16rem] items-center justify-center text-gray-500">
+              <div className="flex min-h-[16rem] items-center justify-center text-emerald-300">
                 Loading products...
               </div>
             ) : error ? (
-              <div className="flex flex-col items-center justify-center gap-3 p-12 text-center">
-                <p className="text-gray-600">We couldn&apos;t load products right now.</p>
+              <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-12 text-center">
+                <p className="text-rose-100">
+                  We couldn&apos;t load products right now.
+                </p>
                 <button
                   type="button"
                   onClick={() => loadProducts()}
-                  className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
+                  className="rounded-lg border border-rose-400 px-4 py-2 font-semibold text-rose-100 transition-colors hover:bg-rose-500/20"
                 >
                   Retry loading products
                 </button>
@@ -447,20 +485,59 @@ const HomePage = ({ isLoggedIn }) => {
             ) : filteredProducts.length ? (
               <ProductGrid products={filteredProducts} />
             ) : (
-              <div className="flex flex-col items-center justify-center gap-3 p-12 text-center">
-                <p className="text-gray-600">No products match your current filters.</p>
+              <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-emerald-900/60 bg-[#0f231d] p-12 text-center">
+                <p className="text-emerald-200">
+                  No products match your current filters.
+                </p>
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-700"
+                  className="rounded-lg bg-emerald-500 px-4 py-2 font-semibold text-emerald-50 transition-colors hover:bg-emerald-400"
                 >
                   Clear filters
                 </button>
               </div>
             )}
+
+            {!loading &&
+              !error &&
+              filteredProducts.length > 0 &&
+              filteredProducts.length < totalCount && (
+                <div className="flex justify-center pt-2">
+                  <button
+                    type="button"
+                    onClick={handleLoadMoreItems}
+                    className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-5 py-2 text-sm font-semibold text-emerald-50 transition-colors hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#132e26]"
+                  >
+                    More Items
+                  </button>
+                </div>
+              )}
           </div>
         </div>
       </main>
+      {showScrollTop && (
+        <button
+          type="button"
+          onClick={handleScrollToTop}
+          aria-label="Back to top"
+          className="fixed bottom-6 right-6 inline-flex h-12 w-12 items-center justify-center rounded-full border border-emerald-500/60 bg-emerald-500 text-emerald-50 shadow-lg shadow-emerald-900/40 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
+          >
+            <path d="M5 11l7-7 7 7" />
+            <path d="M12 18V4" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 };
