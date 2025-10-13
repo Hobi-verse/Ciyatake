@@ -60,6 +60,13 @@ const categorySchema = new mongoose.Schema(
     // Available filters for this category
     filters: filterOptionsSchema,
 
+    // Target gender for category filtering
+    targetGender: {
+      type: String,
+      enum: ["Men", "Women", "Kids", "Unisex", null],
+      default: null,
+    },
+
     // Display order for navigation
     displayOrder: {
       type: Number,
@@ -95,6 +102,7 @@ const categorySchema = new mongoose.Schema(
 categorySchema.index({ slug: 1 });
 categorySchema.index({ parentCategory: 1 });
 categorySchema.index({ isActive: 1, displayOrder: 1 });
+categorySchema.index({ targetGender: 1, isActive: 1 });
 
 // Virtual for subcategories
 categorySchema.virtual("subcategories", {

@@ -48,8 +48,11 @@ export const fetchCategories = async (params = {}, { signal } = {}) => {
   };
 };
 
-export const fetchCategoryTree = async ({ signal } = {}) => {
-  const payload = await apiRequest("/categories/tree", { signal });
+export const fetchCategoryTree = async (params = {}, { signal } = {}) => {
+  const payload = await apiRequest("/categories/tree", { 
+    query: params,
+    signal 
+  });
 
   const categories = Array.isArray(payload?.categories)
     ? payload.categories.map(normalizeCategoryNode)

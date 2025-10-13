@@ -496,45 +496,100 @@ exports.updateProductCount = async (req, res) => {
 // @access  Public
 exports.getCategoryTree = async (req, res) => {
   try {
-    // Get all active categories
-    const categories = await Category.find({ isActive: true })
-      .sort({ displayOrder: 1, name: 1 })
-      .select("slug name parentCategory productCount");
+    const { gender } = req.query;
 
-    // Build tree structure
-    const categoryMap = new Map();
-    const rootCategories = [];
+    if (gender) {
+      // If gender is specified, only return main categories that match the targetGender
+      const mainCategoryFilter = { 
+        isActive: true, 
+        parentCategory: null,
+        targetGender: gender 
+      };
 
-    // First pass: create map of all categories
-    categories.forEach((cat) => {
-      categoryMap.set(cat._id.toString(), {
-        id: cat.slug,
-        slug: cat.slug,
-        name: cat.name,
-        productCount: cat.productCount,
-        children: [],
+      // Get main categories (those without a parent) that match the gender
+      const mainCategories = await Category.find(mainCategoryFilter)
+        .sort({ displayOrder: 1, name: 1 })
+        .select("slug name parentCategory productCount targetGender");
+
+      // Build tree structure with subcategories
+      const categoriesWithChildren = await Promise.all(
+        mainCategories.map(async (mainCat) => {
+          // Get all subcategories for this main category
+          const subcategories = await Category.find({
+            parentCategory: mainCat._id,
+            isActive: true,
+          })
+            .sort({ displayOrder: 1, name: 1 })
+            .select("slug name parentCategory productCount targetGender");
+
+          // Format subcategories
+          const children = subcategories.map((subCat) => ({
+            id: subCat.slug,
+            slug: subCat.slug,
+            name: subCat.name,
+            productCount: subCat.productCount,
+            targetGender: subCat.targetGender,
+            children: [],
+          }));
+
+          return {
+            id: mainCat.slug,
+            slug: mainCat.slug,
+            name: mainCat.name,
+            productCount: mainCat.productCount,
+            targetGender: mainCat.targetGender,
+            children: children,
+          };
+        })
+      );
+
+      res.status(200).json({
+        success: true,
+        categories: categoriesWithChildren,
+        filter: { gender },
       });
-    });
+    } else {
+      // If no gender specified, return all categories in tree structure
+      const categories = await Category.find({ isActive: true })
+        .sort({ displayOrder: 1, name: 1 })
+        .select("slug name parentCategory productCount targetGender");
 
-    // Second pass: build tree
-    categories.forEach((cat) => {
-      const node = categoryMap.get(cat._id.toString());
-      if (cat.parentCategory) {
-        const parent = categoryMap.get(cat.parentCategory.toString());
-        if (parent) {
-          parent.children.push(node);
+      // Build tree structure
+      const categoryMap = new Map();
+      const rootCategories = [];
+
+      // First pass: create map of all categories
+      categories.forEach((cat) => {
+        categoryMap.set(cat._id.toString(), {
+          id: cat.slug,
+          slug: cat.slug,
+          name: cat.name,
+          productCount: cat.productCount,
+          targetGender: cat.targetGender,
+          children: [],
+        });
+      });
+
+      // Second pass: build tree
+      categories.forEach((cat) => {
+        const node = categoryMap.get(cat._id.toString());
+        if (cat.parentCategory) {
+          const parent = categoryMap.get(cat.parentCategory.toString());
+          if (parent) {
+            parent.children.push(node);
+          } else {
+            rootCategories.push(node);
+          }
         } else {
           rootCategories.push(node);
         }
-      } else {
-        rootCategories.push(node);
-      }
-    });
+      });
 
-    res.status(200).json({
-      success: true,
-      categories: rootCategories,
-    });
+      res.status(200).json({
+        success: true,
+        categories: rootCategories,
+      });
+    }
   } catch (error) {
     console.error("Get Category Tree Error:", error);
     res.status(500).json({

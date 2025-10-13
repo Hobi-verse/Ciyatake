@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import UserNavbar from "../../components/user/common/UserNavbar.jsx";
-import CategoryTabs from "../../components/common/CategoryTabs.jsx";
-import SearchField from "../../components/common/SearchField.jsx";
+import GenderCategoryNavbar from "../../components/user/common/GenderCategoryNavbar.jsx";
+import AdvancedFilters, { SORT_OPTIONS } from "../../components/common/AdvancedFilters.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
 import { fetchProducts } from "../../api/catalog.js";
 import { fetchCategories } from "../../api/categories.js";
@@ -15,11 +14,13 @@ const toTitleCase = (value = "") =>
 
 const DEFAULT_CATEGORY_OPTIONS = [
   { label: "All Products", value: "all" },
-  { label: "Women", value: "women" },
-  { label: "Men", value: "men" },
-  { label: "Kids", value: "kids" },
-  { label: "Accessories", value: "accessories" },
-  { label: "Home & Living", value: "home-living" },
+  { label: "Sarees", value: "sarees" },
+  { label: "Kurtis", value: "kurtis" },
+  { label: "Kurta Sets", value: "kurta-sets" },
+  { label: "Dupatta Sets", value: "dupatta-sets" },
+  { label: "Suits & Dress Material", value: "suits-dress-material" },
+  { label: "Lehengas", value: "lehengas" },
+  { label: "Other Ethnic", value: "other-ethnic" },
 ];
 
 const HERO_HIGHLIGHTS = [
@@ -43,13 +44,15 @@ const HERO_HIGHLIGHTS = [
   },
 ];
 
-const SORT_OPTIONS = [
-  { value: "relevance", label: "Recommended" },
-  { value: "price-asc", label: "Price: Low to High" },
-  { value: "price-desc", label: "Price: High to Low" },
-  { value: "rating-desc", label: "Rating: High to Low" },
-  { value: "rating-asc", label: "Rating: Low to High" },
-];
+const DEFAULT_FILTERS = {
+  category: "all",
+  subcategory: "all",
+  gender: "all",
+  colors: [],
+  sizes: [],
+  priceRanges: [],
+  minRating: null,
+};
 
 const HomePage = ({ isLoggedIn }) => {
   const [products, setProducts] = useState([]);
@@ -59,7 +62,7 @@ const HomePage = ({ isLoggedIn }) => {
   const [categoryOptions, setCategoryOptions] = useState(
     DEFAULT_CATEGORY_OPTIONS
   );
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [totalProducts, setTotalProducts] = useState(0);
   const [sortOption, setSortOption] = useState("relevance");
   const [hasApiCategories, setHasApiCategories] = useState(false);
@@ -136,15 +139,12 @@ const HomePage = ({ isLoggedIn }) => {
       });
 
       setHasApiCategories(true);
-      setSelectedCategory((previous) => {
-        if (previous === "all") {
-          return previous;
-        }
-
-        return apiOptions.some((option) => option.value === previous)
-          ? previous
-          : "all";
-      });
+      setFilters((previous) => ({
+        ...previous,
+        category: apiOptions.some((option) => option.value === previous.category)
+          ? previous.category
+          : "all"
+      }));
     } catch (apiError) {
       if (signal?.aborted) {
         return;
@@ -175,8 +175,34 @@ const HomePage = ({ isLoggedIn }) => {
 
       try {
         const query = { limit: 48 };
-        if (selectedCategory && selectedCategory !== "all") {
-          query.category = selectedCategory;
+        
+        // Apply filters to query
+        if (filters.category && filters.category !== "all") {
+          query.category = filters.category;
+        }
+        if (filters.subcategory && filters.subcategory !== "all") {
+          query.category = filters.subcategory; // Use subcategory as the actual category filter
+        }
+        if (filters.gender && filters.gender !== "all") {
+          query.targetGender = filters.gender;
+        }
+        if (filters.colors && filters.colors.length > 0) {
+          query.colors = filters.colors.join(",");
+        }
+        if (filters.sizes && filters.sizes.length > 0) {
+          query.sizes = filters.sizes.join(",");
+        }
+        if (filters.minRating) {
+          query.minRating = filters.minRating;
+        }
+        if (filters.priceRanges && filters.priceRanges.length > 0) {
+          const minPrice = Math.min(...filters.priceRanges.map(r => r.min));
+          const maxPrice = Math.max(...filters.priceRanges.map(r => r.max));
+          query.minPrice = minPrice;
+          query.maxPrice = maxPrice;
+        }
+        if (sortOption && sortOption !== "relevance") {
+          query.sort = sortOption;
         }
 
         const { items, total } = await fetchProducts(query, { signal });
@@ -252,7 +278,7 @@ const HomePage = ({ isLoggedIn }) => {
         }
       }
     },
-    [hasApiCategories, selectedCategory]
+    [hasApiCategories, filters, sortOption]
   );
 
   useEffect(() => {
@@ -268,14 +294,6 @@ const HomePage = ({ isLoggedIn }) => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
     const matches = products.filter((product) => {
-      const categoryValue = product.category
-        ? product.category.toString().toLowerCase()
-        : "";
-
-      if (selectedCategory !== "all" && categoryValue !== selectedCategory) {
-        return false;
-      }
-
       if (!normalizedSearch) {
         return true;
       }
@@ -288,34 +306,10 @@ const HomePage = ({ isLoggedIn }) => {
       return haystack.includes(normalizedSearch);
     });
 
-    if (matches.length <= 1) {
-      return matches;
-    }
-
-    const sorted = [...matches];
-
-    sorted.sort((a, b) => {
-      const priceA = Number(a.price ?? a.basePrice ?? 0);
-      const priceB = Number(b.price ?? b.basePrice ?? 0);
-      const ratingA = Number(a.averageRating ?? a.rating ?? 0);
-      const ratingB = Number(b.averageRating ?? b.rating ?? 0);
-
-      switch (sortOption) {
-        case "price-asc":
-          return priceA - priceB;
-        case "price-desc":
-          return priceB - priceA;
-        case "rating-desc":
-          return ratingB - ratingA;
-        case "rating-asc":
-          return ratingA - ratingB;
-        default:
-          return 0;
-      }
-    });
-
-    return sorted;
-  }, [products, searchTerm, selectedCategory, sortOption]);
+    // Products are already filtered by the API based on filters
+    // Just apply search term filtering here
+    return matches;
+  }, [products, searchTerm]);
 
   const handleRetryCategories = () => {
     if (!categoryLoading) {
@@ -323,149 +317,149 @@ const HomePage = ({ isLoggedIn }) => {
     }
   };
 
-  const handleResetView = () => {
-    setSelectedCategory("all");
+  const handleClearFilters = () => {
+    setFilters(DEFAULT_FILTERS);
     setSearchTerm("");
+  };
+
+  const handleFiltersChange = (newFilters) => {
+    setFilters(newFilters);
   };
 
   const displayedCount = filteredProducts.length;
   const totalCount = totalProducts || displayedCount;
-  const isDefaultView = selectedCategory === "all" && searchTerm.trim() === "";
+  
+  const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
+    if (key === "category") return value !== "all";
+    if (key === "subcategory") return value !== "all";
+    if (key === "gender") return value !== "all";
+    if (Array.isArray(value)) return value.length > 0;
+    return value !== null && value !== "";
+  });
+  
+  const isDefaultView = !hasActiveFilters && searchTerm.trim() === "";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#04110c] via-[#071b14] to-[#0f231d] text-emerald-50">
-      <UserNavbar
+    <div className="min-h-screen bg-gray-50">
+      <GenderCategoryNavbar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onSearchSubmit={setSearchTerm}
         isLoggedIn={isLoggedIn}
       />
 
-      <main className="mx-auto max-w-6xl space-y-10 px-4 py-12">
-        <section className="space-y-8 rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-emerald-900/30 backdrop-blur-sm">
-          <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-200/70">
-              All Products
-            </p>
-            <h1 className="text-3xl font-semibold text-emerald-50 md:text-4xl">
-              All our beautiful collection
-            </h1>
-            <p className="text-sm text-emerald-200/70">
-              Discover handpicked looks crafted to make everyday style feel
-              special.
-            </p>
-          </div>
+      <main className="mx-auto max-w-7xl px-4 py-8">
+        {/* Header Section */}
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-gray-900">Products For You</h1>
+          <p className="mt-2 text-gray-600">
+            Discover our complete collection with advanced filters
+          </p>
+        </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {HERO_HIGHLIGHTS.map((highlight) => (
-              <div
-                key={highlight.id}
-                className="rounded-2xl border border-white/10 bg-white/5 p-4"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400/10 text-xs font-semibold uppercase tracking-wide text-emerald-200">
-                    {highlight.badge}
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-emerald-50">
-                      {highlight.title}
-                    </p>
-                    <p className="text-xs text-emerald-200/70">
-                      {highlight.description}
-                    </p>
-                  </div>
+        <div className="flex gap-8">
+          {/* Filters Sidebar */}
+          <AdvancedFilters
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            productCount={totalCount}
+            onClearFilters={handleClearFilters}
+          />
+
+          {/* Main Content */}
+          <div className="flex-1 space-y-6">
+            {/* Sort and Results Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Products For You
+                </h2>
+                <p className="text-gray-500">
+                  Showing {displayedCount} of {totalCount} products
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                {!isDefaultView && (
+                  <button
+                    type="button"
+                    onClick={handleClearFilters}
+                    className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                  >
+                    Clear all filters
+                  </button>
+                )}
+                
+                <div className="w-48">
+                  <label className="sr-only" htmlFor="homepage-sort">
+                    Sort products
+                  </label>
+                  <select
+                    id="homepage-sort"
+                    value={sortOption}
+                    onChange={(event) => setSortOption(event.target.value)}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  >
+                    {SORT_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        Sort by: {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <CategoryTabs
-              items={categoryOptions}
-              value={selectedCategory}
-              onChange={setSelectedCategory}
-            />
-            <div className="w-full md:w-72">
-              <label className="sr-only" htmlFor="homepage-sort">
-                Sort products
-              </label>
-              <select
-                id="homepage-sort"
-                value={sortOption}
-                onChange={(event) => setSortOption(event.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-[#0b1a14] px-4 py-3 text-sm font-medium text-emerald-100 outline-none transition hover:border-emerald-300/40 focus:border-emerald-300/60"
-              >
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
             </div>
-          </div>
 
-          {categoryLoading ? (
-            <p className="text-xs text-emerald-200/60">Loading categories…</p>
-          ) : categoryError ? (
-            <div className="flex flex-wrap items-center gap-3 text-xs text-rose-200/80">
-              <span>Unable to load categories right now.</span>
-              <button
-                type="button"
-                onClick={handleRetryCategories}
-                className="rounded-full border border-rose-300/60 px-3 py-1 font-medium text-rose-100 transition hover:border-rose-200 hover:bg-rose-400/10"
-              >
-                Retry
-              </button>
-            </div>
-          ) : null}
-        </section>
+            {/* Loading States */}
+            {categoryLoading && (
+              <p className="text-sm text-gray-500">Loading categories…</p>
+            )}
+            
+            {categoryError && (
+              <div className="flex items-center gap-3 text-sm text-red-600">
+                <span>Unable to load categories right now.</span>
+                <button
+                  type="button"
+                  onClick={handleRetryCategories}
+                  className="rounded border border-red-300 px-3 py-1 font-medium hover:bg-red-50"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
 
-        <section className="space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm uppercase tracking-[0.2em] text-emerald-200/70">
-              Showing {displayedCount} of {totalCount} products
-            </p>
-            {isDefaultView ? null : (
-              <button
-                type="button"
-                onClick={handleResetView}
-                className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10"
-              >
-                Reset view
-              </button>
+            {/* Products Grid */}
+            {loading ? (
+              <div className="flex min-h-[16rem] items-center justify-center text-gray-500">
+                Loading products...
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center gap-3 p-12 text-center">
+                <p className="text-gray-600">We couldn&apos;t load products right now.</p>
+                <button
+                  type="button"
+                  onClick={() => loadProducts()}
+                  className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Retry loading products
+                </button>
+              </div>
+            ) : filteredProducts.length ? (
+              <ProductGrid products={filteredProducts} />
+            ) : (
+              <div className="flex flex-col items-center justify-center gap-3 p-12 text-center">
+                <p className="text-gray-600">No products match your current filters.</p>
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-700"
+                >
+                  Clear filters
+                </button>
+              </div>
             )}
           </div>
-
-          {loading ? (
-            <div className="flex min-h-[16rem] items-center justify-center rounded-3xl border border-white/10 bg-white/5 text-sm text-emerald-200/70">
-              Loading products...
-            </div>
-          ) : error ? (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-rose-300/40 bg-rose-500/10 p-12 text-center text-sm text-rose-100">
-              <p>We couldn&apos;t load products right now.</p>
-              <button
-                type="button"
-                onClick={() => loadProducts()}
-                className="rounded-full border border-rose-300/60 px-4 py-2 font-medium text-rose-100 transition hover:border-rose-200 hover:bg-rose-400/10"
-              >
-                Retry loading products
-              </button>
-            </div>
-          ) : filteredProducts.length ? (
-            <ProductGrid products={filteredProducts} />
-          ) : (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-emerald-300/40 bg-white/5 p-12 text-center text-sm text-emerald-200/80">
-              <p>No products match your current view yet.</p>
-              <button
-                type="button"
-                onClick={handleResetView}
-                className="rounded-full border border-emerald-300/60 px-4 py-2 font-medium text-emerald-100 transition hover:border-emerald-200 hover:bg-emerald-400/10"
-              >
-                Reset view
-              </button>
-            </div>
-          )}
-        </section>
+        </div>
       </main>
     </div>
   );

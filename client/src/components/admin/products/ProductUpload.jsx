@@ -16,6 +16,7 @@ const DEFAULT_FORM = {
   description: "",
   brand: "",
   gender: "",
+  targetGender: "",
   category: "",
   subCategory: "",
   productType: "",
@@ -348,6 +349,7 @@ const prepareProductPayload = (form) => {
     title,
     description: form.description ?? "",
     category: form.category || "general",
+    targetGender: form.targetGender || null,
     basePrice: Math.max(0, Number(form.price) || 0),
     media: buildMediaPayload(form),
     benefits: tags.slice(0, 4),
@@ -370,6 +372,8 @@ const mapProductToForm = (product) => {
   next.description = product.description ?? next.description;
   next.category = product.category ?? next.category;
   next.subCategory = product.subCategory ?? next.subCategory;
+  next.gender = product.targetGender ?? next.gender;
+  next.targetGender = product.targetGender ?? next.targetGender;
   next.price = product.basePrice ?? product.price ?? next.price;
   next.stockQuantity = product.totalStock ?? next.stockQuantity;
   next.sku = product.variants?.[0]?.sku ?? product.id ?? next.sku;
@@ -456,7 +460,10 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
     setLoadingCategories(true);
     setCategoryError(null);
 
-    fetchCategoryTree()
+    // Load categories with gender filter if gender is selected
+    const params = form.gender ? { gender: form.gender } : {};
+
+    fetchCategoryTree(params)
       .then(({ categories }) => {
         if (cancelled) {
           return;
@@ -483,7 +490,7 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [form.gender]);
 
   const categoryIndex = useMemo(() => {
     const map = new Map();
@@ -516,24 +523,18 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
       return [];
     }
 
-    const normalizedGender = form.gender?.toLowerCase().trim() ?? "";
-
-    if (normalizedGender) {
-      const match = categoryTree.find((node) => {
-        const name = node.name?.toLowerCase() ?? "";
-        const slug = node.slug?.toLowerCase() ?? "";
-        return name === normalizedGender || slug === normalizedGender;
-      });
-
-      if (match?.children?.length) {
-        return match.children.map((child) => ({
-          value: child.slug,
-          label: child.name,
-          productCount: child.productCount ?? null,
-        }));
-      }
+    // If gender is selected and categories are filtered by gender on the backend,
+    // the categoryTree already contains only the relevant categories
+    if (form.gender) {
+      // Categories are already filtered by gender from backend
+      return categoryTree.map((category) => ({
+        value: category.slug,
+        label: category.name,
+        productCount: category.productCount ?? null,
+      }));
     }
 
+    // If no gender is selected, show all main categories
     const flattened = [];
     categoryTree.forEach((node) => {
       if (Array.isArray(node.children) && node.children.length) {
@@ -688,9 +689,11 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
   const selectGender = (gender) => {
     updateForm({
       gender,
+      targetGender: gender, // Set targetGender to match the selected gender
       category: "",
       subCategory: "",
     });
+    // Categories will be reloaded automatically by the useEffect dependency on form.gender
   };
 
   const selectCategory = (categorySlug) => {

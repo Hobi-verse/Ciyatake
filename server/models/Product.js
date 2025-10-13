@@ -140,6 +140,14 @@ const productSchema = new mongoose.Schema(
       lowercase: true,
     },
 
+    // Target gender for the product
+    targetGender: {
+      type: String,
+      required: true,
+      enum: ["Men", "Women", "Kids", "Unisex"],
+      trim: true,
+    },
+
     // Base price in smallest currency unit (e.g., paise for INR)
     basePrice: {
       type: Number,
@@ -231,6 +239,8 @@ const productSchema = new mongoose.Schema(
 // Indexes for performance
 productSchema.index({ slug: 1 });
 productSchema.index({ category: 1 });
+productSchema.index({ targetGender: 1 });
+productSchema.index({ category: 1, targetGender: 1 });
 productSchema.index({ tags: 1 });
 productSchema.index({ isActive: 1 });
 productSchema.index({ "variants.sku": 1 });
@@ -309,6 +319,7 @@ productSchema.methods.toFrontendFormat = function () {
     discountPercentage: computedDiscount,
     brand: this.brand ?? "Ciyatake",
     category: this.category,
+    targetGender: this.targetGender,
     sizes: this.getAvailableSizes(),
     colors: this.getAvailableColors(),
     imageUrl: this.imageUrl,

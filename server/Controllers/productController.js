@@ -8,12 +8,15 @@ exports.getAllProducts = async (req, res) => {
   try {
     const {
       category,
+      subcategory,
+      targetGender,
       minPrice,
       maxPrice,
       sizes,
       colors,
       tags,
       search,
+      minRating,
       sort = "-createdAt",
       page = 1,
       limit = 12,
@@ -33,6 +36,16 @@ exports.getAllProducts = async (req, res) => {
       filter.category = category.toLowerCase();
     }
 
+    // Subcategory filter - if subcategory is specified, use it instead of category
+    if (subcategory && subcategory !== "all") {
+      filter.category = subcategory.toLowerCase();
+    }
+
+    // Target Gender filter
+    if (targetGender) {
+      filter.targetGender = targetGender;
+    }
+
     // Price range filter
     if (minPrice || maxPrice) {
       filter.basePrice = {};
@@ -40,16 +53,21 @@ exports.getAllProducts = async (req, res) => {
       if (maxPrice) filter.basePrice.$lte = parseInt(maxPrice);
     }
 
+    // Rating filter
+    if (minRating) {
+      filter.averageRating = { $gte: parseFloat(minRating) };
+    }
+
     // Size filter (check if any variant has the size)
     if (sizes) {
-      const sizeArray = Array.isArray(sizes) ? sizes : [sizes];
-      filter["variants.size"] = { $in: sizeArray };
+      const sizeArray = typeof sizes === 'string' ? sizes.split(',') : (Array.isArray(sizes) ? sizes : [sizes]);
+      filter["variants.size"] = { $in: sizeArray.map(s => s.toUpperCase()) };
     }
 
     // Color filter (check if any variant has the color)
     if (colors) {
-      const colorArray = Array.isArray(colors) ? colors : [colors];
-      filter["variants.color.name"] = { $in: colorArray };
+      const colorArray = typeof colors === 'string' ? colors.split(',') : (Array.isArray(colors) ? colors : [colors]);
+      filter["variants.color.name"] = { $in: colorArray.map(c => c.toLowerCase()) };
     }
 
     // Tags filter
@@ -75,9 +93,31 @@ exports.getAllProducts = async (req, res) => {
     // Calculate pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
+    // Handle sort options
+    let sortQuery = {};
+    switch (sort) {
+      case "price-asc":
+        sortQuery = { basePrice: 1 };
+        break;
+      case "price-desc":
+        sortQuery = { basePrice: -1 };
+        break;
+      case "rating-desc":
+        sortQuery = { averageRating: -1, reviewCount: -1 };
+        break;
+      case "newest":
+        sortQuery = { createdAt: -1 };
+        break;
+      case "relevance":
+      default:
+        // Default relevance sort: featured first, then rating, then newest
+        sortQuery = { featured: -1, averageRating: -1, createdAt: -1 };
+        break;
+    }
+
     // Execute query
     const products = await Product.find(filter)
-      .sort(sort)
+      .sort(sortQuery)
       .skip(skip)
       .limit(parseInt(limit))
       .select("-__v");
