@@ -8,7 +8,7 @@ const {
   refundPayment,
   handleWebhook,
 } = require("../Controllers/paymentController");
-const { authenticate } = require("../middleware/authMiddleware");
+const { protect } = require("../middleware/authMiddleware");
 const {
   validateCreateOrder,
   validatePaymentVerification,
@@ -19,7 +19,7 @@ const {
 router.post("/webhook", handleWebhook); // Webhook should be public
 
 // Protected routes (require authentication)
-router.use(authenticate); // Apply authentication middleware to all routes below
+router.use(protect); // Apply authentication middleware to all routes below
 
 // Create Razorpay order
 router.post("/create-order", validateCreateOrder, createOrder);
