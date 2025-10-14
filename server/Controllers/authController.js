@@ -4,6 +4,7 @@ const CustomerProfile = require("../models/CustomerProfile");
 const TokenBlacklist = require("../models/TokenBlacklist");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const passport = require("../config/passport");
 
 // Generate a random 6-digit OTP
 const generateOTP = () => {
@@ -311,6 +312,139 @@ exports.logout = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Logout failed. Please try again",
+    });
+  }
+};
+
+// Google OAuth - Initiate authentication
+exports.googleAuth = passport.authenticate("google", {
+  scope: ["profile", "email"],
+});
+
+// Google OAuth - Callback handler
+exports.googleCallback = async (req, res) => {
+  try {
+    const user = req.user;
+    
+    if (!user) {
+      return res.redirect(`${process.env.CLIENT_URL || "http://localhost:5173"}/login?error=google_auth_failed`);
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        id: user._id, 
+        mobileNumber: user.mobileNumber || "", 
+        email: user.email,
+        role: user.role 
+      },
+      process.env.JWT_SECRET || "your-secret-key-change-in-production",
+      { expiresIn: "7d" }
+    );
+
+    // Set secure cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: "lax",
+    });
+
+    // Redirect to frontend with success
+    return res.redirect(`${process.env.CLIENT_URL || "http://localhost:5173"}/login/success?token=${token}`);
+    
+  } catch (error) {
+    console.error("Google Callback Error:", error);
+    return res.redirect(`${process.env.CLIENT_URL || "http://localhost:5173"}/login?error=google_auth_error`);
+  }
+};
+
+// Get current user profile
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error("Get Profile Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get profile",
+    });
+  }
+};
+
+// Link mobile number to Google account
+exports.linkMobileNumber = async (req, res) => {
+  try {
+    const { mobileNumber, otp } = req.body;
+    const userId = req.user.id;
+
+    // Validate input
+    if (!mobileNumber || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Mobile number and OTP are required",
+      });
+    }
+
+    // Verify OTP
+    const otpRecord = await OTP.findOne({
+      mobileNumber,
+      otp,
+      isUsed: false,
+      expiresAt: { $gt: new Date() },
+    }).sort({ createdAt: -1 });
+
+    if (!otpRecord) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
+    }
+
+    // Check if mobile number is already linked to another account
+    const existingUser = await User.findOne({ 
+      mobileNumber, 
+      _id: { $ne: userId } 
+    });
+
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: "This mobile number is already linked to another account",
+      });
+    }
+
+    // Update user with mobile number
+    await User.findByIdAndUpdate(userId, {
+      mobileNumber,
+      isVerified: true,
+    });
+
+    // Mark OTP as used
+    otpRecord.isUsed = true;
+    await otpRecord.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Mobile number linked successfully",
+    });
+  } catch (error) {
+    console.error("Link Mobile Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to link mobile number",
     });
   }
 };

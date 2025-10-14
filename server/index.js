@@ -4,6 +4,8 @@ require('dotenv').config();
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const session = require("express-session");
+const passport = require("./config/passport");
 
 const dataBase = require("./config/dataBase");
 const authRoutes = require("./routes/authRoutes");
@@ -17,6 +19,7 @@ const customerProfileRoutes = require("./routes/customerProfileRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const searchRoutes = require("./routes/searchRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const PORT = process.env.PORT || 4000;
 
@@ -27,6 +30,21 @@ app.use(cors({
 }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+// Session configuration for Google OAuth
+app.use(session({
+  secret: process.env.SESSION_SECRET || "your-session-secret-change-in-production",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  },
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 dataBase.connect();
 
@@ -42,6 +60,7 @@ app.use("/api/profile", customerProfileRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/search", searchRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.get("/", (req, res) => {
   return res.json({
