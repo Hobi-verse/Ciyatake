@@ -124,38 +124,44 @@ exports.getAvailableCoupons = async (req, res) => {
       "validity.startDate": { $lte: now },
       "validity.endDate": { $gte: now },
     })
-      .select("-usedBy -createdBy")
+      .select("-createdBy")
       .sort({ discountValue: -1 });
 
     // Filter coupons based on user eligibility
     const availableCoupons = [];
     for (const coupon of coupons) {
       // Check if coupon has reached total usage limit
-      if (coupon.usageLimit.total && coupon.usageCount >= coupon.usageLimit.total) {
+      if (
+        coupon.usageLimit?.total &&
+        coupon.usageCount >= coupon.usageLimit.total
+      ) {
         continue;
       }
 
       // Check per-user usage limit
-      const userUsageCount = coupon.usedBy.filter(
-        (u) => u.userId.toString() === userId.toString()
+      const userUsageCount = (coupon.usedBy ?? []).filter((u) =>
+        u.userId?.toString?.() === userId.toString()
       ).length;
-      if (userUsageCount >= coupon.usageLimit.perUser) {
+      if (
+        coupon.usageLimit?.perUser !== undefined &&
+        userUsageCount >= coupon.usageLimit.perUser
+      ) {
         continue;
       }
 
       // Check new users only
       if (
-        coupon.eligibility.newUsersOnly &&
-        customerProfile?.stats.totalOrders > 0
+        coupon.eligibility?.newUsersOnly &&
+        customerProfile?.stats?.totalOrders > 0
       ) {
         continue;
       }
 
       // Check membership tier
       if (
-        coupon.eligibility.membershipTiers.length > 0 &&
+        (coupon.eligibility?.membershipTiers?.length ?? 0) > 0 &&
         !coupon.eligibility.membershipTiers.includes(
-          customerProfile?.membership.tier
+          customerProfile?.membership?.tier
         )
       ) {
         continue;
@@ -163,7 +169,7 @@ exports.getAvailableCoupons = async (req, res) => {
 
       // Check specific users
       if (
-        coupon.eligibility.specificUsers.length > 0 &&
+        (coupon.eligibility?.specificUsers?.length ?? 0) > 0 &&
         !coupon.eligibility.specificUsers.some(
           (id) => id.toString() === userId.toString()
         )
@@ -182,10 +188,14 @@ exports.getAvailableCoupons = async (req, res) => {
         validUntil: coupon.validity.endDate,
         campaignType: coupon.campaignType,
         usageRemaining:
-          coupon.usageLimit.total !== null
+          coupon.usageLimit?.total !== null &&
+            coupon.usageLimit?.total !== undefined
             ? coupon.usageLimit.total - coupon.usageCount
             : null,
-        userUsageRemaining: coupon.usageLimit.perUser - userUsageCount,
+        userUsageRemaining:
+          coupon.usageLimit?.perUser !== undefined
+            ? coupon.usageLimit.perUser - userUsageCount
+            : null,
       });
     }
 

@@ -1,12 +1,4 @@
-import { apiRequest, withApiFallback } from "./client";
-import {
-  getMockAdminUsers,
-  getMockCustomers,
-  getMockDashboardMetrics,
-  getMockRecentActivities,
-  getMockRecentOrders,
-  getMockReports,
-} from "./mockData";
+import { apiRequest } from "./client";
 
 const toISOStringSafe = (value) => {
   if (!value) {
@@ -65,29 +57,6 @@ const normalizeAdminOrder = (order) => {
   };
 };
 
-const normalizeMockOrder = (order) => {
-  if (!order || typeof order !== "object") {
-    return null;
-  }
-
-  const placedAt = order.placedAt ?? (order.date ? `${order.date}T00:00:00Z` : null);
-
-  return {
-    id: order.id ?? null,
-    orderNumber: order.id ?? "",
-    status: normalizeOrderStatus(order.status),
-    placedAt: toISOStringSafe(placedAt),
-    grandTotal: typeof order.total === "number" ? order.total : null,
-    discount: null,
-    paymentStatus: null,
-    paymentMethod: null,
-    itemsCount: typeof order.itemsCount === "number" ? order.itemsCount : null,
-    customerName: order.customer ?? null,
-    customerEmail: null,
-    customerPhone: null,
-  };
-};
-
 const normalizeAdminCustomer = (customer) => {
   if (!customer || typeof customer !== "object") {
     return null;
@@ -116,33 +85,10 @@ const normalizeAdminCustomer = (customer) => {
   };
 };
 
-const normalizeMockCustomer = (customer) => {
-  if (!customer || typeof customer !== "object") {
-    return null;
-  }
-
-  return {
-    id: customer.id ?? null,
-    userId: null,
-    name: customer.name ?? "",
-    email: customer.email ?? "",
-    phone: null,
-    membershipTier: null,
-    totalOrders: 0,
-    totalSpent: 0,
-    rewardPoints: 0,
-    walletBalance: 0,
-    lastUpdated: null,
-    joinedAt: toISOStringSafe(customer.joined),
-    isVerified: false,
-  };
+export const fetchDashboardMetrics = async () => {
+  const response = await apiRequest("/admin/dashboard/metrics");
+  return response?.data ?? response ?? {};
 };
-
-export const fetchDashboardMetrics = async () =>
-  withApiFallback(
-    () => apiRequest("/admin/dashboard/metrics"),
-    () => getMockDashboardMetrics()
-  );
 
 export const fetchRecentOrders = async (params = {}) => {
   const query = {
@@ -152,25 +98,7 @@ export const fetchRecentOrders = async (params = {}) => {
     ...params,
   };
 
-  const response = await withApiFallback(
-    () => apiRequest("/search/admin/orders", { query }),
-    () => getMockRecentOrders()
-  );
-
-  if (Array.isArray(response)) {
-    const results = response
-      .map((order) => normalizeMockOrder(order))
-      .filter(Boolean);
-
-    return {
-      results,
-      pagination: null,
-      stats: [],
-      query: "",
-      source: "mock",
-    };
-  }
-
+  const response = await apiRequest("/search/admin/orders", { query });
   const data = response?.data ?? {};
   const pagination = response?.pagination ?? null;
 
@@ -187,11 +115,10 @@ export const fetchRecentOrders = async (params = {}) => {
   };
 };
 
-export const fetchRecentActivities = async () =>
-  withApiFallback(
-    () => apiRequest("/admin/activities"),
-    () => getMockRecentActivities()
-  );
+export const fetchRecentActivities = async () => {
+  const response = await apiRequest("/admin/activities");
+  return response?.data ?? response ?? [];
+};
 
 export const fetchProductsSummary = async (params = {}) => {
   const query = {
@@ -254,25 +181,7 @@ export const fetchCustomers = async (params = {}) => {
     ...params,
   };
 
-  const response = await withApiFallback(
-    () => apiRequest("/search/admin/customers", { query }),
-    () => getMockCustomers()
-  );
-
-  if (Array.isArray(response)) {
-    const results = response
-      .map((customer) => normalizeMockCustomer(customer))
-      .filter(Boolean);
-
-    return {
-      results,
-      pagination: null,
-      tierDistribution: [],
-      query: "",
-      source: "mock",
-    };
-  }
-
+  const response = await apiRequest("/search/admin/customers", { query });
   const data = response?.data ?? {};
   const pagination = response?.pagination ?? null;
 
@@ -293,14 +202,12 @@ export const fetchCustomers = async (params = {}) => {
   };
 };
 
-export const fetchReports = async () =>
-  withApiFallback(
-    () => apiRequest("/admin/reports"),
-    () => getMockReports()
-  );
+export const fetchReports = async () => {
+  const response = await apiRequest("/admin/reports");
+  return response?.data ?? response ?? [];
+};
 
-export const fetchAdminUsers = async ({ signal } = {}) =>
-  withApiFallback(
-    () => apiRequest("/admin/users", { signal }),
-    () => getMockAdminUsers()
-  );
+export const fetchAdminUsers = async ({ signal } = {}) => {
+  const response = await apiRequest("/admin/users", { signal });
+  return response?.data ?? response ?? [];
+};

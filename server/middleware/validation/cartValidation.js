@@ -18,7 +18,7 @@ const validateCartItem = [
         return true;
       }
 
-      if (typeof value === 'string' && value.length >= 3) {
+      if (typeof value === 'string' && value.trim().length >= 1) {
         return true;
       }
 
@@ -70,7 +70,7 @@ const validateCartItemUpdate = [
         return true;
       }
 
-      if (typeof value === 'string' && value.length >= 3) {
+      if (typeof value === 'string' && value.trim().length >= 1) {
         return true;
       }
 

@@ -1,37 +1,10 @@
-import { apiRequest, withApiFallback } from "./client";
-import {
-  getMockCheckoutSummary,
-  getMockOrderConfirmation,
-} from "./mockData";
+import { apiRequest } from "./client";
 
-export const fetchCheckoutSummary = async ({ signal } = {}) =>
-  withApiFallback(
-    () => apiRequest("/checkout/summary", { signal }),
-    () => getMockCheckoutSummary()
-  );
-
-export const placeOrder = async (payload) =>
-  withApiFallback(
-    () =>
-      apiRequest("/orders", {
-        method: "POST",
-        body: payload,
-      }),
-    () =>
-      Promise.resolve({
-        success: true,
-        order: payload,
-        message: "Order placed (mock)",
-      })
-  );
-
-export const fetchOrderById = async (orderId) => {
+export const fetchOrderById = async (orderId, { signal } = {}) => {
   if (!orderId) {
     throw new Error("fetchOrderById requires an orderId");
   }
 
-  return withApiFallback(
-    () => apiRequest(`/orders/${orderId}`),
-    () => getMockOrderConfirmation()
-  );
+  const response = await apiRequest(`/orders/${orderId}`, { signal });
+  return response?.data ?? response ?? {};
 };

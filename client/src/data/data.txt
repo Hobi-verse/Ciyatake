@@ -1,1 +1,0 @@
-dummy data files to check the api integration later we will change the link to db link (route) when data will be inserted in db

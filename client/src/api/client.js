@@ -1,4 +1,4 @@
-import { API_BASE_URL, MOCK_WARNING_PREFIX, USE_API_MOCKS } from "./config";
+import { API_BASE_URL } from "./config";
 import { getAuthToken } from "../utils/authStorage";
 
 export class ApiError extends Error {
@@ -45,12 +45,13 @@ export const apiRequest = async (
     ? path
     : `${API_BASE_URL.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
 
+  const requestHeaders = {
+    ...(headers ?? {}),
+  };
+
   const requestInit = {
     method,
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
+    headers: requestHeaders,
     signal,
   };
 
@@ -59,8 +60,32 @@ export const apiRequest = async (
     requestInit.headers.Authorization = `Bearer ${token}`;
   }
 
-  if (body !== undefined && body !== null) {
-    requestInit.body = typeof body === "string" ? body : JSON.stringify(body);
+  const hasBody = body !== undefined && body !== null;
+  const isFormDataBody =
+    typeof FormData !== "undefined" && body instanceof FormData;
+
+  if (hasBody) {
+    if (!isFormDataBody) {
+      if (
+        !requestHeaders["Content-Type"] &&
+        !requestHeaders["content-type"]
+      ) {
+        requestHeaders["Content-Type"] = "application/json";
+      }
+
+      requestInit.body =
+        typeof body === "string" ? body : JSON.stringify(body);
+    } else {
+      requestInit.body = body;
+    }
+  } else if (
+    method &&
+    method !== "GET" &&
+    method !== "HEAD" &&
+    !requestHeaders["Content-Type"] &&
+    !requestHeaders["content-type"]
+  ) {
+    requestHeaders["Content-Type"] = "application/json";
   }
 
   const queryString = buildQueryString(query);
@@ -81,27 +106,3 @@ export const apiRequest = async (
   return payload;
 };
 
-export const withApiFallback = async (requestFn, mockFn, {
-  silenceWarnings = false,
-} = {}) => {
-  if (typeof requestFn !== "function") {
-    throw new Error("withApiFallback requires a request function");
-  }
-
-  try {
-    return await requestFn();
-  } catch (error) {
-    if (!USE_API_MOCKS || typeof mockFn !== "function") {
-      throw error;
-    }
-
-    if (!silenceWarnings) {
-      console.warn(
-        `${MOCK_WARNING_PREFIX} Falling back to mock data due to API error:`,
-        error
-      );
-    }
-
-    return await mockFn();
-  }
-};

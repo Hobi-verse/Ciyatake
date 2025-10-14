@@ -1,80 +1,101 @@
-import { client } from "./client";
+import { ApiError, apiRequest } from "./client";
+
+let razorpayScriptPromise = null;
+
+const loadRazorpayScript = () => {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return Promise.reject(new Error("Razorpay SDK can only load in the browser"));
+  }
+
+  if (window.Razorpay) {
+    return Promise.resolve();
+  }
+
+  if (razorpayScriptPromise) {
+    return razorpayScriptPromise;
+  }
+
+  razorpayScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => {
+      razorpayScriptPromise = null;
+      script.remove();
+      reject(new Error("Failed to load Razorpay SDK"));
+    };
+    document.head.appendChild(script);
+  });
+
+  return razorpayScriptPromise;
+};
 
 // Payment API endpoints
 export const paymentAPI = {
   // Create Razorpay order
-  createOrder: async (orderData) => {
-    try {
-      const response = await client.post("/payments/create-order", orderData);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
-  },
+  createOrder: (orderData) =>
+    apiRequest("/payments/create-order", {
+      method: "POST",
+      body: orderData,
+    }),
 
   // Verify payment and create order
-  verifyPayment: async (paymentData) => {
-    try {
-      const response = await client.post("/payments/verify-payment", paymentData);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
-  },
+  verifyPayment: (paymentData) =>
+    apiRequest("/payments/verify-payment", {
+      method: "POST",
+      body: paymentData,
+    }),
 
   // Get payment status
-  getPaymentStatus: async (paymentId) => {
-    try {
-      const response = await client.get(`/payments/status/${paymentId}`);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
-  },
+  getPaymentStatus: (paymentId) => apiRequest(`/payments/status/${paymentId}`),
 
   // Handle payment failure
-  reportPaymentFailure: async (failureData) => {
-    try {
-      const response = await client.post("/payments/failure", failureData);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
-  },
+  reportPaymentFailure: (failureData) =>
+    apiRequest("/payments/failure", {
+      method: "POST",
+      body: failureData,
+    }),
 
   // Request refund (admin functionality)
-  requestRefund: async (refundData) => {
-    try {
-      const response = await client.post("/payments/refund", refundData);
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
-  },
+  requestRefund: (refundData) =>
+    apiRequest("/payments/refund", {
+      method: "POST",
+      body: refundData,
+    }),
 };
 
 // Helper function to initialize Razorpay checkout
-export const initializeRazorpayCheckout = (options) => {
+export const initializeRazorpayCheckout = async (options) => {
+  await loadRazorpayScript();
+
   return new Promise((resolve, reject) => {
     if (!window.Razorpay) {
       reject(new Error("Razorpay SDK not loaded"));
       return;
     }
 
+    const { modal: modalOptions, ...restOptions } = options ?? {};
+
     const rzp = new window.Razorpay({
-      ...options,
+      ...restOptions,
       handler: (response) => {
         resolve(response);
       },
       modal: {
+        ...(modalOptions ?? {}),
         ondismiss: () => {
+          if (typeof modalOptions?.ondismiss === "function") {
+            modalOptions.ondismiss();
+          }
           reject(new Error("Payment cancelled by user"));
         },
       },
     });
 
     rzp.on("payment.failed", (response) => {
-      reject(response.error);
+      const failure = response?.error ?? new Error("Payment failed");
+      reject(failure);
     });
 
     rzp.open();
@@ -94,6 +115,14 @@ export const processPayment = async ({
   onFailure,
 }) => {
   try {
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error("Invalid payment amount");
+    }
+
+    if (!shippingAddressId) {
+      throw new Error("Shipping address is required for payment");
+    }
+
     // Step 1: Create Razorpay order
     const orderResponse = await paymentAPI.createOrder({
       amount,
@@ -105,11 +134,13 @@ export const processPayment = async ({
       },
     });
 
-    if (!orderResponse.success) {
-      throw new Error(orderResponse.message || "Failed to create order");
+    const { success, data, message } = orderResponse ?? {};
+
+    if (!success || !data?.orderId || !data?.key) {
+      throw new Error(message || "Failed to create payment order");
     }
 
-    const { orderId, key } = orderResponse.data;
+    const { orderId, key } = data;
 
     // Step 2: Initialize Razorpay checkout
     const paymentResponse = await initializeRazorpayCheckout({
@@ -120,9 +151,9 @@ export const processPayment = async ({
       description: "Order Payment",
       order_id: orderId,
       prefill: {
-        name: customerDetails.name,
-        email: customerDetails.email,
-        contact: customerDetails.phone,
+        name: customerDetails?.name ?? "",
+        email: customerDetails?.email ?? "",
+        contact: customerDetails?.phone ?? "",
       },
       theme: {
         color: "#000000", // Your brand color
@@ -143,12 +174,14 @@ export const processPayment = async ({
       customerNotes,
     });
 
-    if (verificationResponse.success) {
+    if (verificationResponse?.success) {
       onSuccess && onSuccess(verificationResponse.data);
       return verificationResponse.data;
-    } else {
-      throw new Error(verificationResponse.message || "Payment verification failed");
     }
+
+    throw new Error(
+      verificationResponse?.message || "Payment verification failed"
+    );
   } catch (error) {
     // Report payment failure
     if (error.error && error.error.metadata) {
@@ -164,6 +197,11 @@ export const processPayment = async ({
     }
 
     onFailure && onFailure(error);
+
+    if (error instanceof ApiError) {
+      throw error.payload ?? error;
+    }
+
     throw error;
   }
 };

@@ -1,10 +1,5 @@
-import { apiRequest, withApiFallback } from "./client";
+import { apiRequest } from "./client";
 import { API_BASE_URL } from "./config";
-
-const createMockResponse = (data = {}) => ({
-  success: true,
-  ...data,
-});
 
 const normalizeMobilePayload = (payload = {}) => {
   const { phoneNumber, mobileNumber, ...rest } = payload ?? {};
@@ -15,104 +10,39 @@ const normalizeMobilePayload = (payload = {}) => {
 };
 
 export const sendOtp = async ({ phoneNumber, mobileNumber, context = "register" } = {}) =>
-  withApiFallback(
-    () =>
-      apiRequest("/v1/auth/send-otp", {
-        method: "POST",
-        body: normalizeMobilePayload({ phoneNumber, mobileNumber, context }),
-      }),
-    () =>
-      Promise.resolve(
-        createMockResponse({
-          message: "OTP sent (mock)",
-          otp: "123456",
-        })
-      )
-  );
+  apiRequest("/v1/auth/send-otp", {
+    method: "POST",
+    body: normalizeMobilePayload({ phoneNumber, mobileNumber, context }),
+  });
 
 export const verifyOtp = async ({ phoneNumber, mobileNumber, otp } = {}) =>
-  withApiFallback(
-    () =>
-      apiRequest("/v1/auth/verify-otp", {
-        method: "POST",
-        body: normalizeMobilePayload({ phoneNumber, mobileNumber, otp }),
-      }),
-    () =>
-      Promise.resolve(
-        createMockResponse({
-          message: "OTP verified (mock)",
-        })
-      )
-  );
+  apiRequest("/v1/auth/verify-otp", {
+    method: "POST",
+    body: normalizeMobilePayload({ phoneNumber, mobileNumber, otp }),
+  });
 
 export const registerUser = async (payload = {}) =>
-  withApiFallback(
-    () =>
-      apiRequest("/v1/auth/signup", {
-        method: "POST",
-        body: normalizeMobilePayload(payload),
-      }),
-    () =>
-      Promise.resolve(
-        createMockResponse({
-          message: "User registered (mock)",
-          user: {
-            id: "mock-user",
-            mobileNumber: payload?.phoneNumber ?? payload?.mobileNumber,
-          },
-          token: "mock-token",
-        })
-      )
-  );
+  apiRequest("/v1/auth/signup", {
+    method: "POST",
+    body: normalizeMobilePayload(payload),
+  });
 
 export const loginUser = async (payload = {}) =>
-  withApiFallback(
-    () =>
-      apiRequest("/v1/auth/login", {
-        method: "POST",
-        body: normalizeMobilePayload(payload),
-      }),
-    () =>
-      Promise.resolve(
-        createMockResponse({
-          message: "Login successful (mock)",
-          token: "mock-token",
-          user: {
-            id: "mock-user",
-            mobileNumber: payload?.phoneNumber ?? payload?.mobileNumber,
-          },
-        })
-      )
-  );
+  apiRequest("/v1/auth/login", {
+    method: "POST",
+    body: normalizeMobilePayload(payload),
+  });
 
 export const updatePassword = async (payload = {}) =>
-  withApiFallback(
-    () =>
-      apiRequest("/v1/auth/password", {
-        method: "PATCH",
-        body: normalizeMobilePayload(payload),
-      }),
-    () =>
-      Promise.resolve(
-        createMockResponse({
-          message: "Password updated (mock)",
-        })
-      )
-  );
+  apiRequest("/v1/auth/password", {
+    method: "PATCH",
+    body: normalizeMobilePayload(payload),
+  });
 
 export const logoutUser = async () =>
-  withApiFallback(
-    () =>
-      apiRequest("/v1/auth/logout", {
-        method: "POST",
-      }),
-    () =>
-      Promise.resolve(
-        createMockResponse({
-          message: "Logout successful (mock)",
-        })
-      )
-  );
+  apiRequest("/v1/auth/logout", {
+    method: "POST",
+  });
 
 // Google OAuth Login
 export const googleLogin = () => {
@@ -122,39 +52,16 @@ export const googleLogin = () => {
 
 // Get user profile
 export const getUserProfile = async () =>
-  withApiFallback(
-    () =>
-      apiRequest("/v1/auth/profile", {
-        method: "GET",
-      }),
-    () =>
-      Promise.resolve(
-        createMockResponse({
-          user: {
-            id: "mock-user",
-            fullName: "Mock User",
-            email: "mock@example.com",
-            profilePicture: "",
-          },
-        })
-      )
-  );
+  apiRequest("/v1/auth/profile", {
+    method: "GET",
+  });
 
 // Link mobile number to Google account
 export const linkMobileNumber = async ({ phoneNumber, mobileNumber, otp } = {}) =>
-  withApiFallback(
-    () =>
-      apiRequest("/v1/auth/link-mobile", {
-        method: "POST",
-        body: normalizeMobilePayload({ phoneNumber, mobileNumber, otp }),
-      }),
-    () =>
-      Promise.resolve(
-        createMockResponse({
-          message: "Mobile number linked successfully (mock)",
-        })
-      )
-  );
+  apiRequest("/v1/auth/link-mobile", {
+    method: "POST",
+    body: normalizeMobilePayload({ phoneNumber, mobileNumber, otp }),
+  });
 
 // Handle Google OAuth success callback
 export const handleGoogleSuccess = (token) => {
