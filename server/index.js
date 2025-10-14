@@ -17,6 +17,7 @@ const customerProfileRoutes = require("./routes/customerProfileRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const searchRoutes = require("./routes/searchRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const PORT = process.env.PORT || 4000;
 
@@ -42,6 +43,7 @@ app.use("/api/profile", customerProfileRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/search", searchRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.get("/", (req, res) => {
   return res.json({
