@@ -6,8 +6,11 @@ const userSchema = new mongoose.Schema(
     // User's mobile number for login and OTP verification
     mobileNumber: {
       type: String,
-      required: true,
+      required: function() {
+        return !this.googleId; // Mobile not required if Google OAuth
+      },
       unique: true,
+      sparse: true, // Allow multiple null values
       trim: true,
       match: [/^[0-9]{10}$/, "Please enter a valid 10-digit mobile number"],
     },
@@ -15,8 +18,30 @@ const userSchema = new mongoose.Schema(
     // Secure password storage (will be hashed before saving)
     password: {
       type: String,
-      required: true,
+      required: function() {
+        return !this.googleId; // Password not required if Google OAuth
+      },
       minlength: [6, "Password must be at least 6 characters long"],
+    },
+    
+    // Google OAuth ID for social login
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // Allow multiple null values
+    },
+    
+    // Profile picture URL (from Google or uploaded)
+    profilePicture: {
+      type: String,
+      default: "",
+    },
+    
+    // Authentication provider (local, google, etc.)
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
     },
     
     // User's full name for personalization

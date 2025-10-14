@@ -6,6 +6,10 @@ const {
   signup,
   login,
   logout,
+  googleAuth,
+  googleCallback,
+  getProfile,
+  linkMobileNumber,
 } = require("../Controllers/authController");
 const { protect } = require("../middleware/authMiddleware");
 
@@ -23,5 +27,13 @@ router.post("/login", login);
 
 // Route to logout user and invalidate token
 router.post("/logout", protect, logout);
+
+// Google OAuth routes
+router.get("/google", googleAuth);
+router.get("/google/callback", googleAuth, googleCallback);
+
+// Protected routes
+router.get("/profile", protect, getProfile);
+router.post("/link-mobile", protect, linkMobileNumber);
 
 module.exports = router;

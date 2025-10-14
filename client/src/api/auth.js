@@ -1,4 +1,5 @@
 import { apiRequest, withApiFallback } from "./client";
+import { API_BASE_URL } from "./config";
 
 const createMockResponse = (data = {}) => ({
   success: true,
@@ -112,3 +113,56 @@ export const logoutUser = async () =>
         })
       )
   );
+
+// Google OAuth Login
+export const googleLogin = () => {
+  // Redirect to backend Google OAuth endpoint
+  window.location.href = `${API_BASE_URL}/v1/auth/google`;
+};
+
+// Get user profile
+export const getUserProfile = async () =>
+  withApiFallback(
+    () =>
+      apiRequest("/v1/auth/profile", {
+        method: "GET",
+      }),
+    () =>
+      Promise.resolve(
+        createMockResponse({
+          user: {
+            id: "mock-user",
+            fullName: "Mock User",
+            email: "mock@example.com",
+            profilePicture: "",
+          },
+        })
+      )
+  );
+
+// Link mobile number to Google account
+export const linkMobileNumber = async ({ phoneNumber, mobileNumber, otp } = {}) =>
+  withApiFallback(
+    () =>
+      apiRequest("/v1/auth/link-mobile", {
+        method: "POST",
+        body: normalizeMobilePayload({ phoneNumber, mobileNumber, otp }),
+      }),
+    () =>
+      Promise.resolve(
+        createMockResponse({
+          message: "Mobile number linked successfully (mock)",
+        })
+      )
+  );
+
+// Handle Google OAuth success callback
+export const handleGoogleSuccess = (token) => {
+  // Store token in localStorage
+  if (token) {
+    localStorage.setItem("authToken", token);
+    // You can also set it in your auth context/state management
+    return true;
+  }
+  return false;
+};

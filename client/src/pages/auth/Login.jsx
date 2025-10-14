@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthForm from "../../components/common/AuthForm";
 import UserNavbar from "../../components/user/common/UserNavbar";
-import { loginUser } from "../../api/auth";
+import { loginUser, googleLogin } from "../../api/auth";
 import { storeAuthSession } from "../../utils/authStorage";
 
 const Login = () => {
@@ -15,6 +15,51 @@ const Login = () => {
     () => (isSubmitting ? "Signing in..." : "Sign In"),
     [isSubmitting]
   );
+
+  // Handle Google OAuth callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const error = urlParams.get('error');
+
+    if (token) {
+      // Handle successful Google login
+      setStatus({
+        type: "success",
+        message: "Google login successful! Redirecting...",
+      });
+      
+      // Store the token
+      localStorage.setItem('authToken', token);
+      
+      // You may want to get user info here
+      // For now, redirect to home page
+      setTimeout(() => {
+        navigate('/', { replace: true });
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }, 1000);
+    }
+
+    if (error) {
+      // Handle Google login error
+      const errorMessages = {
+        google_auth_failed: 'Google authentication failed. Please try again.',
+        google_auth_error: 'An error occurred during Google authentication.',
+      };
+      
+      const message = errorMessages[error] || 'Authentication failed. Please try again.';
+      setStatus({
+        type: "error",
+        message: message,
+      });
+      
+      // Clean up URL
+      setTimeout(() => {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }, 3000);
+    }
+  }, [navigate]);
 
   const extractErrorMessage = (
     error,
@@ -91,8 +136,23 @@ const Login = () => {
     },
   ];
 
+  const handleGoogleLogin = () => {
+    try {
+      setStatus({
+        type: "info",
+        message: "Redirecting to Google for authentication...",
+      });
+      googleLogin();
+    } catch (error) {
+      setStatus({
+        type: "error",
+        message: "Failed to initialize Google login. Please try again.",
+      });
+    }
+  };
+
   const socialProviders = [
-    { label: "Google", onClick: () => alert("Login with Google") },
+    { label: "Google", onClick: handleGoogleLogin },
   ];
 
   const handleLogin = async (formValues, { reset }) => {
