@@ -252,7 +252,8 @@ const AuthForm = ({
               {socialProviders.map((provider, index) => (
                 <Button
                   key={`${provider.label}-${index}`}
-                  className="flex-1 border border-[#DCECE9] bg-white text-slate-600 hover:border-[#b8985b]/60 hover:bg-[#F2EAE0] hover:text-[#b8985b]"
+                  variant="outline"
+                  className="flex-1 border-[#DCECE9] text-slate-600 hover:border-[#b8985b] hover:text-[#b8985b]"
                   onClick={provider.onClick}
                 >
                   Continue with {provider.label}

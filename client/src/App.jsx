@@ -26,6 +26,7 @@ import {
   AUTH_STORAGE_KEYS,
   getStoredAuthSession,
 } from "./utils/authStorage";
+import Footer from "./components/user/common/Footer.jsx";
 
 function App() {
   const [authSession, setAuthSession] = useState(() => getStoredAuthSession());
@@ -73,67 +74,70 @@ function App() {
   const isLoggedIn = !!authSession.token;
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <Routes>
-        <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
-        <Route
-          path="/products/:productId"
-          element={<ProductDetailsPage isLoggedIn={isLoggedIn} />}
-        />
-        <Route path="/cart" element={<CartPage isLoggedIn={isLoggedIn} />} />
-        <Route
-          path="/wishlist"
-          element={<WishlistPage isLoggedIn={isLoggedIn} />}
-        />
-        <Route
-          path="/checkout"
-          element={<CheckoutPage isLoggedIn={isLoggedIn} />}
-        />
-        <Route
-          path="/confirmation"
-          element={<ConfirmationPage isLoggedIn={isLoggedIn} />}
-        />
-        <Route
-          path="/account"
-          element={
-            <ProtectedRoute
-              session={authSession}
-              allowedRoles={["customer"]}
-              forbiddenPath="/admin/dashboard"
-            >
-              <MyAccountPage isLoggedIn={isLoggedIn} />
-            </ProtectedRoute>
-          }
-        />
+    <div className="flex min-h-screen flex-col bg-white text-slate-900">
+      <div className="flex-1">
+        <Routes>
+          <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
+          <Route
+            path="/products/:productId"
+            element={<ProductDetailsPage isLoggedIn={isLoggedIn} />}
+          />
+          <Route path="/cart" element={<CartPage isLoggedIn={isLoggedIn} />} />
+          <Route
+            path="/wishlist"
+            element={<WishlistPage isLoggedIn={isLoggedIn} />}
+          />
+          <Route
+            path="/checkout"
+            element={<CheckoutPage isLoggedIn={isLoggedIn} />}
+          />
+          <Route
+            path="/confirmation"
+            element={<ConfirmationPage isLoggedIn={isLoggedIn} />}
+          />
+          <Route
+            path="/account"
+            element={
+              <ProtectedRoute
+                session={authSession}
+                allowedRoles={["customer"]}
+                forbiddenPath="/admin/dashboard"
+              >
+                <MyAccountPage isLoggedIn={isLoggedIn} />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute
-              session={authSession}
-              allowedRoles={["admin"]}
-              forbiddenPath="/account"
-            >
-              <AdminDashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="products" element={<Products />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="coupons" element={<Coupons />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="users" element={<Users />} />
-          <Route path="*" element={<Navigate to="dashboard" replace />} />
-        </Route>
-        <Route path="/login" element={<Login />} />
-        <Route path="/login/success" element={<LoginSuccess />} />
-        <Route path="/signup" element={<Register />} />
-        <Route path="/forget-password" element={<ForgetPass />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute
+                session={authSession}
+                allowedRoles={["admin"]}
+                forbiddenPath="/account"
+              >
+                <AdminDashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="products" element={<Products />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="coupons" element={<Coupons />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="users" element={<Users />} />
+            <Route path="*" element={<Navigate to="dashboard" replace />} />
+          </Route>
+          <Route path="/login" element={<Login />} />
+          <Route path="/login/success" element={<LoginSuccess />} />
+          <Route path="/signup" element={<Register />} />
+          <Route path="/forget-password" element={<ForgetPass />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+      <Footer />
     </div>
   );
 }

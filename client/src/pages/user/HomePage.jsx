@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import GenderCategoryNavbar from "../../components/user/common/GenderCategoryNavbar.jsx";
+import UserNavbar from "../../components/user/common/UserNavbar.jsx";
 import AdvancedFilters, {
   SORT_OPTIONS,
 } from "../../components/common/AdvancedFilters.jsx";
@@ -361,6 +361,10 @@ const HomePage = ({ isLoggedIn }) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleSearchSubmit = (value) => {
+    setSearchTerm((value ?? "").toString());
+  };
+
   const displayedCount = filteredProducts.length;
   const totalCount = totalProducts || displayedCount;
 
@@ -376,10 +380,10 @@ const HomePage = ({ isLoggedIn }) => {
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <GenderCategoryNavbar
+      <UserNavbar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        onSearchSubmit={setSearchTerm}
+        onSearchSubmit={handleSearchSubmit}
         isLoggedIn={isLoggedIn}
       />
 
