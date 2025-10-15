@@ -1,4 +1,5 @@
 const { body, param } = require("express-validator");
+const mongoose = require("mongoose");
 
 /**
  * Validation for coupon code check
@@ -42,9 +43,22 @@ exports.validateCouponApplication = [
 
   body("items.*.productId")
     .notEmpty()
-    .withMessage("Product ID is required for each item")
-    .isMongoId()
-    .withMessage("Invalid product ID format"),
+    .withMessage("Product identifier is required for each item")
+    .custom((value) => {
+      if (typeof value !== "string") {
+        throw new Error("Product identifier must be a string");
+      }
+
+      if (mongoose.Types.ObjectId.isValid(value)) {
+        return true;
+      }
+
+      if (value.trim().length >= 1) {
+        return true;
+      }
+
+      throw new Error("Invalid product identifier format");
+    }),
 
   body("items.*.quantity")
     .optional()

@@ -6,7 +6,12 @@ import CheckoutProgress from "../../components/user/checkout/CheckoutProgress.js
 import CheckoutSection from "../../components/user/checkout/CheckoutSection.jsx";
 import CheckoutField from "../../components/user/checkout/CheckoutField.jsx";
 import CheckoutOrderSummary from "../../components/user/checkout/CheckoutOrderSummary.jsx";
-import { fetchCart, validateCart } from "../../api/cart.js";
+import {
+  fetchCart,
+  validateCart,
+  updateCartItem,
+  removeCartItem,
+} from "../../api/cart.js";
 import { fetchAddresses, createAddress } from "../../api/addresses.js";
 import { fetchAccountSummary } from "../../api/user.js";
 import { processPayment } from "../../api/payments.js";
@@ -360,17 +365,65 @@ const CheckoutPage = () => {
       }
 
       const validation = await validateCart();
-      const issues = validation?.issues ?? validation?.cartIssues ?? [];
-      const normalizedCart = validation?.cart ?? cart;
+      let issues = validation?.issues ?? validation?.cartIssues ?? [];
+      let normalizedCart = validation?.cart ?? cart;
 
       if (!validation?.valid) {
+        const insufficientStockIssues = issues.filter(
+          (issue) =>
+            issue?.type === "insufficient_stock" &&
+            Number.isFinite(issue?.availableQuantity)
+        );
+
+        let adjustedCart = normalizedCart;
+
+        if (insufficientStockIssues.length) {
+          for (const issue of insufficientStockIssues) {
+            const itemId = issue?.itemId;
+            const availableQuantity = Number(issue?.availableQuantity);
+
+            if (!itemId || !Number.isFinite(availableQuantity)) {
+              continue;
+            }
+
+            try {
+              if (availableQuantity > 0) {
+                adjustedCart = await updateCartItem(itemId, {
+                  quantity: availableQuantity,
+                });
+              } else {
+                adjustedCart = await removeCartItem(itemId);
+              }
+            } catch (adjustError) {
+              console.warn(
+                "Failed to auto-adjust cart item after stock validation",
+                adjustError
+              );
+            }
+          }
+
+          try {
+            const refreshedValidation = await validateCart();
+            normalizedCart = refreshedValidation?.cart ?? adjustedCart;
+            issues = refreshedValidation?.issues ?? [];
+          } catch (revalidateError) {
+            console.warn(
+              "Failed to revalidate cart after stock adjustment",
+              revalidateError
+            );
+            normalizedCart = adjustedCart;
+          }
+        }
+
         setCheckoutIssues(issues);
         setCart(normalizedCart);
         setOrder(buildOrderFromCart(normalizedCart));
+
         const issueMessage = issues
           .map((issue) => issue?.message)
           .filter(Boolean)
           .join(" ");
+
         setOrderError(
           issueMessage.length
             ? issueMessage

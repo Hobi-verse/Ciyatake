@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Coupon = require("../models/Coupon");
 const Order = require("../models/Order");
 const CustomerProfile = require("../models/CustomerProfile");
@@ -65,11 +66,15 @@ exports.validateCoupon = async (req, res) => {
     }
 
     // Check product applicability
-    if (
-      coupon.applicableProducts.length > 0 ||
-      coupon.excludedProducts.length > 0 ||
-      coupon.applicableCategories.length > 0
-    ) {
+    const hasProductApplicabilityRules =
+      (Array.isArray(coupon.applicableProducts) &&
+        coupon.applicableProducts.length > 0) ||
+      (Array.isArray(coupon.excludedProducts) &&
+        coupon.excludedProducts.length > 0) ||
+      (Array.isArray(coupon.applicableCategories) &&
+        coupon.applicableCategories.length > 0);
+
+    if (hasProductApplicabilityRules) {
       const applicabilityCheck = await checkProductApplicability(coupon, items);
       if (!applicabilityCheck.valid) {
         return res.status(400).json({
@@ -177,6 +182,17 @@ exports.getAvailableCoupons = async (req, res) => {
         continue;
       }
 
+      const validity = {
+        startDate: coupon.validity?.startDate ?? null,
+        endDate: coupon.validity?.endDate ?? null,
+      };
+
+      const isExpired = validity.endDate ? now > validity.endDate : false;
+      const isCurrentlyActive =
+        coupon.isActive !== false &&
+        !isExpired &&
+        (!validity.startDate || now >= validity.startDate);
+
       availableCoupons.push({
         _id: coupon._id,
         code: coupon.code,
@@ -185,8 +201,13 @@ exports.getAvailableCoupons = async (req, res) => {
         discountValue: coupon.discountValue,
         maxDiscount: coupon.maxDiscount,
         minOrderAmount: coupon.minOrderAmount,
-        validUntil: coupon.validity.endDate,
+        validFrom: validity.startDate,
+        validUntil: validity.endDate,
         campaignType: coupon.campaignType,
+        isActive: coupon.isActive !== false,
+        isCurrentlyActive,
+        isExpired,
+        isEnabled: coupon.isActive !== false,
         usageRemaining:
           coupon.usageLimit?.total !== null &&
             coupon.usageLimit?.total !== undefined
@@ -318,11 +339,15 @@ exports.autoApplyBestCoupon = async (req, res) => {
       if (!userEligibility.valid) continue;
 
       // Check product applicability
-      if (
-        coupon.applicableProducts.length > 0 ||
-        coupon.excludedProducts.length > 0 ||
-        coupon.applicableCategories.length > 0
-      ) {
+      const hasProductApplicabilityRules =
+        (Array.isArray(coupon.applicableProducts) &&
+          coupon.applicableProducts.length > 0) ||
+        (Array.isArray(coupon.excludedProducts) &&
+          coupon.excludedProducts.length > 0) ||
+        (Array.isArray(coupon.applicableCategories) &&
+          coupon.applicableCategories.length > 0);
+
+      if (hasProductApplicabilityRules) {
         const applicabilityCheck = await checkProductApplicability(
           coupon,
           items
@@ -877,13 +902,115 @@ exports.getCouponAnalytics = async (req, res) => {
 async function checkProductApplicability(coupon, items) {
   const Product = require("../models/Product");
 
+  if (!Array.isArray(items) || items.length === 0) {
+    return { valid: true };
+  }
+
+  const identifierSets = items.reduce(
+    (acc, item) => {
+      const raw = item?.productId;
+      if (!raw) {
+        return acc;
+      }
+
+      if (typeof raw === "string") {
+        const trimmed = raw.trim();
+        if (mongoose.Types.ObjectId.isValid(trimmed)) {
+          acc.objectIds.add(trimmed);
+        } else if (trimmed.length) {
+          acc.slugs.add(trimmed.toLowerCase());
+        }
+      } else if (mongoose.Types.ObjectId.isValid(raw)) {
+        acc.objectIds.add(raw.toString());
+      }
+
+      return acc;
+    },
+    { objectIds: new Set(), slugs: new Set() }
+  );
+
+  const productQuery = [];
+
+  if (identifierSets.objectIds.size > 0) {
+    productQuery.push({ _id: { $in: Array.from(identifierSets.objectIds) } });
+  }
+
+  if (identifierSets.slugs.size > 0) {
+    productQuery.push({ slug: { $in: Array.from(identifierSets.slugs) } });
+  }
+
+  const products = productQuery.length
+    ? await Product.find({ $or: productQuery }).select("slug category")
+    : [];
+
+  const productLookup = new Map();
+
+  products.forEach((product) => {
+    const id = product._id?.toString?.();
+    if (id) {
+      productLookup.set(id, product);
+    }
+
+    if (product.slug) {
+      productLookup.set(product.slug.toLowerCase(), product);
+    }
+  });
+
+  const resolveProduct = (identifier) => {
+    if (!identifier) {
+      return null;
+    }
+
+    if (productLookup.has(identifier)) {
+      return productLookup.get(identifier);
+    }
+
+    if (typeof identifier === "string") {
+      const trimmed = identifier.trim();
+
+      if (productLookup.has(trimmed)) {
+        return productLookup.get(trimmed);
+      }
+
+      const lower = trimmed.toLowerCase();
+      return productLookup.get(lower) ?? null;
+    }
+
+    const idString = identifier.toString?.();
+    return idString ? productLookup.get(idString) ?? null : null;
+  };
+
+  const applicableProductIds = (coupon.applicableProducts ?? [])
+    .map((pid) => pid?.toString?.())
+    .filter(Boolean);
+  const excludedProductIds = (coupon.excludedProducts ?? [])
+    .map((pid) => pid?.toString?.())
+    .filter(Boolean);
+  const applicableCategories = (coupon.applicableCategories ?? [])
+    .map((category) => category?.toString?.().toLowerCase?.())
+    .filter(Boolean);
+
   // If specific products are specified, check if any cart item matches
-  if (coupon.applicableProducts.length > 0) {
-    const hasApplicableProduct = items.some((item) =>
-      coupon.applicableProducts.some(
-        (pid) => pid.toString() === item.productId.toString()
-      )
-    );
+  const hasApplicableProductRules =
+    Array.isArray(coupon.applicableProducts) &&
+    coupon.applicableProducts.length > 0;
+  const hasExcludedProductRules =
+    Array.isArray(coupon.excludedProducts) &&
+    coupon.excludedProducts.length > 0;
+  const hasApplicableCategoryRules =
+    Array.isArray(coupon.applicableCategories) &&
+    coupon.applicableCategories.length > 0;
+
+  if (hasApplicableProductRules) {
+    const hasApplicableProduct = items.some((item) => {
+      const product = resolveProduct(item.productId);
+
+      if (!product) {
+        return false;
+      }
+
+      return applicableProductIds.includes(product._id.toString());
+    });
 
     if (!hasApplicableProduct) {
       return {
@@ -894,12 +1021,16 @@ async function checkProductApplicability(coupon, items) {
   }
 
   // Check for excluded products
-  if (coupon.excludedProducts.length > 0) {
-    const hasExcludedProduct = items.some((item) =>
-      coupon.excludedProducts.some(
-        (pid) => pid.toString() === item.productId.toString()
-      )
-    );
+  if (hasExcludedProductRules) {
+    const hasExcludedProduct = items.some((item) => {
+      const product = resolveProduct(item.productId);
+
+      if (!product) {
+        return false;
+      }
+
+      return excludedProductIds.includes(product._id.toString());
+    });
 
     if (hasExcludedProduct) {
       return {
@@ -910,16 +1041,23 @@ async function checkProductApplicability(coupon, items) {
   }
 
   // Check for applicable categories
-  if (coupon.applicableCategories.length > 0) {
-    // Get products with their categories
-    const productIds = items.map((item) => item.productId);
-    const products = await Product.find({
-      _id: { $in: productIds },
-    }).select("categoryId");
+  if (hasApplicableCategoryRules) {
+    const hasApplicableCategory = items.some((item) => {
+      const product = resolveProduct(item.productId);
 
-    const hasApplicableCategory = products.some((product) =>
-      coupon.applicableCategories.includes(product.categoryId.toString())
-    );
+      if (!product) {
+        return false;
+      }
+
+      const categoryValue =
+        product.categoryId?.toString?.() ?? product.category ?? null;
+
+      if (!categoryValue) {
+        return false;
+      }
+
+      return applicableCategories.includes(categoryValue.toLowerCase());
+    });
 
     if (!hasApplicableCategory) {
       return {
