@@ -1,7 +1,7 @@
 // Product validation middleware
 exports.validateProduct = (req, res, next) => {
   const errors = [];
-  const { slug, title, category, basePrice, variants } = req.body;
+  const { slug, title, category, basePrice, variants, customCategoryName } = req.body;
 
   // Required fields
   if (!slug || slug.trim() === "") {
@@ -16,6 +16,12 @@ exports.validateProduct = (req, res, next) => {
 
   if (!category || category.trim() === "") {
     errors.push("Product category is required");
+  } else if (category.trim().toLowerCase() === "other") {
+    if (!customCategoryName || customCategoryName.trim() === "") {
+      errors.push("Custom category name is required when selecting Other");
+    } else if (customCategoryName.trim().length > 60) {
+      errors.push("Custom category name must be 60 characters or fewer");
+    }
   }
 
   if (!basePrice) {
@@ -88,7 +94,7 @@ exports.validateProduct = (req, res, next) => {
 // Product update validation (fields are optional)
 exports.validateProductUpdate = (req, res, next) => {
   const errors = [];
-  const { slug, basePrice, variants } = req.body;
+  const { slug, basePrice, variants, category, customCategoryName } = req.body;
 
   // Validate slug format if provided
   if (slug !== undefined) {
@@ -103,6 +109,14 @@ exports.validateProductUpdate = (req, res, next) => {
   if (basePrice !== undefined) {
     if (isNaN(basePrice) || basePrice < 0) {
       errors.push("Base price must be a positive number");
+    }
+  }
+
+  if (category && category.trim().toLowerCase() === "other") {
+    if (!customCategoryName || customCategoryName.trim() === "") {
+      errors.push("Custom category name is required when selecting Other");
+    } else if (customCategoryName.trim().length > 60) {
+      errors.push("Custom category name must be 60 characters or fewer");
     }
   }
 

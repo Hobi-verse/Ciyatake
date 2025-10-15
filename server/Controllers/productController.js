@@ -1,6 +1,101 @@
 const Product = require("../models/Product");
 const Category = require("../models/Category");
 
+// Helper utilities for handling dynamic category creation
+const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const slugifyCategory = (value = "") =>
+  value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const formatCategoryName = (value = "") =>
+  value
+    .toString()
+    .trim()
+    .replace(/\s+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+
+const ensureUniqueCategorySlug = async (baseSlug = "") => {
+  const safeBase = baseSlug || `category-${Date.now()}`;
+  let slug = safeBase;
+  let suffix = 1;
+
+  // Continue generating suffixes until we find a free slug
+  // eslint-disable-next-line no-await-in-loop
+  while (await Category.exists({ slug })) {
+    slug = `${safeBase}-${suffix++}`;
+  }
+
+  return slug;
+};
+
+const findCategoryByNameOrSlug = async (name, slugCandidate) => {
+  const queries = [];
+
+  if (slugCandidate) {
+    queries.push({ slug: slugCandidate });
+  }
+
+  if (name) {
+    queries.push({ name: new RegExp(`^${escapeRegex(name)}$`, "i") });
+  }
+
+  if (!queries.length) {
+    return null;
+  }
+
+  return Category.findOne({ $or: queries });
+};
+
+const resolveCustomCategory = async (rawName, targetGender) => {
+  const formattedName = formatCategoryName(rawName);
+  const slugCandidate = slugifyCategory(formattedName);
+
+  const existingCategory = await findCategoryByNameOrSlug(
+    formattedName,
+    slugCandidate
+  );
+
+  if (existingCategory) {
+    let shouldSave = false;
+
+    if (!existingCategory.isActive) {
+      existingCategory.isActive = true;
+      shouldSave = true;
+    }
+
+    if (targetGender && !existingCategory.targetGender) {
+      existingCategory.targetGender = targetGender;
+      shouldSave = true;
+    }
+
+    if (shouldSave) {
+      await existingCategory.save();
+    }
+
+    return existingCategory;
+  }
+
+  const slug = await ensureUniqueCategorySlug(slugCandidate);
+
+  return Category.create({
+    slug,
+    name: formattedName,
+    description: "",
+    targetGender: targetGender || null,
+    isActive: true,
+  });
+};
+
 // @desc    Get all products with filtering, sorting, and pagination
 // @route   GET /api/products
 // @access  Public
@@ -233,6 +328,33 @@ exports.createProduct = async (req, res) => {
   try {
     const productData = req.body;
 
+    if (
+      productData.category &&
+      productData.category.toLowerCase() === "other"
+    ) {
+      const customCategoryName = productData.customCategoryName?.trim();
+
+      if (!customCategoryName) {
+        return res.status(400).json({
+          success: false,
+          message: "New category name is required when selecting Other",
+        });
+      }
+
+      const categoryDoc = await resolveCustomCategory(
+        customCategoryName,
+        productData.targetGender
+      );
+
+      productData.category = categoryDoc.slug;
+    }
+
+    if (productData.category) {
+      productData.category = productData.category.toLowerCase();
+    }
+
+    delete productData.customCategoryName;
+
     // Check if product with same slug exists
     const existingProduct = await Product.findOne({ slug: productData.slug });
     if (existingProduct) {
@@ -285,6 +407,33 @@ exports.updateProduct = async (req, res) => {
         message: "Product not found",
       });
     }
+
+    if (
+      updateData.category &&
+      updateData.category.toLowerCase() === "other"
+    ) {
+      const customCategoryName = updateData.customCategoryName?.trim();
+
+      if (!customCategoryName) {
+        return res.status(400).json({
+          success: false,
+          message: "New category name is required when selecting Other",
+        });
+      }
+
+      const categoryDoc = await resolveCustomCategory(
+        customCategoryName,
+        updateData.targetGender ?? product.targetGender
+      );
+
+      updateData.category = categoryDoc.slug;
+    }
+
+    if (updateData.category) {
+      updateData.category = updateData.category.toLowerCase();
+    }
+
+    delete updateData.customCategoryName;
 
     // Update category count if category changed
     if (updateData.category && updateData.category !== product.category) {

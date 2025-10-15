@@ -18,6 +18,7 @@ const DEFAULT_FORM = {
   gender: "",
   targetGender: "",
   category: "",
+  customCategoryName: "",
   subCategory: "",
   productType: "",
   images: [],
@@ -344,11 +345,18 @@ const prepareProductPayload = (form) => {
     0
   );
 
+  const trimmedCustomCategory =
+    form.category === "other" ? form.customCategoryName?.trim() ?? "" : "";
+  const categoryValue =
+    form.category === "other" && trimmedCustomCategory
+      ? "other"
+      : form.category || "general";
+
   return {
     slug,
     title,
     description: form.description ?? "",
-    category: form.category || "general",
+    category: categoryValue,
     targetGender: form.targetGender || null,
     basePrice: Math.max(0, Number(form.price) || 0),
     media: buildMediaPayload(form),
@@ -362,6 +370,9 @@ const prepareProductPayload = (form) => {
     isActive: form.visibility !== "draft",
     totalStock,
     featured: Boolean(form.featured),
+    ...(categoryValue === "other" && trimmedCustomCategory
+      ? { customCategoryName: trimmedCustomCategory }
+      : {}),
   };
 };
 
@@ -434,6 +445,7 @@ const mapProductToForm = (product) => {
 
 const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
   const initialFormRef = useRef(createInitialForm());
+  const pendingCategorySlugRef = useRef(null);
   const [form, setForm] = useState(() => createInitialForm());
   const [sections, setSections] = useState({
     basic: true,
@@ -451,6 +463,7 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
   const [loadError, setLoadError] = useState(null);
   const [existingProductId, setExistingProductId] = useState(null);
   const [categoryTree, setCategoryTree] = useState([]);
+  const [categoryFetchKey, setCategoryFetchKey] = useState(0);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [categoryError, setCategoryError] = useState(null);
 
@@ -490,7 +503,7 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
     return () => {
       cancelled = true;
     };
-  }, [form.gender]);
+  }, [form.gender, categoryFetchKey]);
 
   const categoryIndex = useMemo(() => {
     const map = new Map();
@@ -519,42 +532,50 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
   }, [categoryTree]);
 
   const availableCategories = useMemo(() => {
-    if (!categoryTree.length) {
-      return [];
-    }
+    let options = [];
 
-    // If gender is selected and categories are filtered by gender on the backend,
-    // the categoryTree already contains only the relevant categories
-    if (form.gender) {
-      // Categories are already filtered by gender from backend
-      return categoryTree.map((category) => ({
-        value: category.slug,
-        label: category.name,
-        productCount: category.productCount ?? null,
-      }));
-    }
-
-    // If no gender is selected, show all main categories
-    const flattened = [];
-    categoryTree.forEach((node) => {
-      if (Array.isArray(node.children) && node.children.length) {
-        node.children.forEach((child) => {
-          flattened.push({
-            value: child.slug,
-            label: child.name,
-            productCount: child.productCount ?? null,
-          });
-        });
+    if (categoryTree.length) {
+      if (form.gender) {
+        options = categoryTree.map((category) => ({
+          value: category.slug,
+          label: category.name,
+          productCount: category.productCount ?? null,
+        }));
       } else {
-        flattened.push({
-          value: node.slug,
-          label: node.name,
-          productCount: node.productCount ?? null,
+        const flattened = [];
+        categoryTree.forEach((node) => {
+          if (Array.isArray(node.children) && node.children.length) {
+            node.children.forEach((child) => {
+              flattened.push({
+                value: child.slug,
+                label: child.name,
+                productCount: child.productCount ?? null,
+              });
+            });
+          } else {
+            flattened.push({
+              value: node.slug,
+              label: node.name,
+              productCount: node.productCount ?? null,
+            });
+          }
         });
+        options = flattened;
       }
-    });
+    }
 
-    return flattened;
+    if (!options.some((option) => option.value === "other")) {
+      options = [
+        ...options,
+        {
+          value: "other",
+          label: "Other (create new)",
+          productCount: null,
+        },
+      ];
+    }
+
+    return options;
   }, [categoryTree, form.gender]);
 
   const availableSubCategories = useMemo(() => {
@@ -656,14 +677,30 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
   );
 
   useEffect(() => {
+    if (loadingCategories) {
+      return;
+    }
+
+    const pendingSlug = pendingCategorySlugRef.current;
+    if (pendingSlug && pendingSlug === form.category) {
+      if (categoryIndex.has(pendingSlug)) {
+        pendingCategorySlugRef.current = null;
+      }
+      return;
+    }
+
     if (!form.category || categoryIndex.size === 0) {
       return;
     }
 
-    if (!categoryIndex.has(form.category)) {
-      updateForm({ category: "", subCategory: "" });
+    if (form.category === "other") {
+      return;
     }
-  }, [categoryIndex, form.category, updateForm]);
+
+    if (!categoryIndex.has(form.category)) {
+      updateForm({ category: "", subCategory: "", customCategoryName: "" });
+    }
+  }, [categoryIndex, form.category, loadingCategories, updateForm]);
 
   useEffect(() => {
     if (!form.subCategory) {
@@ -692,6 +729,7 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
       targetGender: gender, // Set targetGender to match the selected gender
       category: "",
       subCategory: "",
+      customCategoryName: "",
     });
     // Categories will be reloaded automatically by the useEffect dependency on form.gender
   };
@@ -700,6 +738,8 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
     updateForm({
       category: categorySlug,
       subCategory: "",
+      customCategoryName:
+        categorySlug === "other" ? form.customCategoryName : "",
     });
   };
 
@@ -773,6 +813,15 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
     if (!form.description.trim())
       nextErrors.description = "Product description is required";
     if (!form.category) nextErrors.category = "Select a category";
+    if (form.category === "other") {
+      const trimmedName = form.customCategoryName.trim();
+      if (!trimmedName) {
+        nextErrors.customCategoryName = "Enter a name for the new category";
+      } else if (trimmedName.length > 60) {
+        nextErrors.customCategoryName =
+          "Category name must be 60 characters or fewer";
+      }
+    }
 
     if (!form.price || Number(form.price) <= 0) {
       nextErrors.price = "Price must be positive";
@@ -810,6 +859,8 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
     setFeedback(null);
 
     const payload = prepareProductPayload(form);
+    const shouldRefreshCategories =
+      payload.category === "other" && Boolean(payload.customCategoryName);
 
     try {
       if (mode === "edit") {
@@ -819,6 +870,11 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
         }
 
         const updatedProduct = await updateProduct(targetId, payload);
+
+        if (shouldRefreshCategories) {
+          pendingCategorySlugRef.current = updatedProduct?.category ?? null;
+          setCategoryFetchKey((key) => key + 1);
+        }
 
         setFeedback({
           type: "success",
@@ -830,6 +886,11 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
         onSuccess?.(updatedProduct ?? null, { mode: "edit" });
       } else {
         const createdProduct = await createProduct(payload);
+
+        if (shouldRefreshCategories) {
+          pendingCategorySlugRef.current = createdProduct?.category ?? null;
+          setCategoryFetchKey((key) => key + 1);
+        }
 
         setFeedback({
           type: "success",
@@ -1015,7 +1076,7 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
                 <select
                   value={form.category}
                   onChange={(event) => selectCategory(event.target.value)}
-                  disabled={loadingCategories || !availableCategories.length}
+                  disabled={loadingCategories}
                   className="w-full rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:cursor-not-allowed disabled:bg-slate-100"
                 >
                   <option value="">
@@ -1025,7 +1086,7 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
                       ? "Select category"
                       : categoryError
                       ? "No categories available"
-                      : "No categories found"}
+                      : "Choose category or add new"}
                   </option>
                   {availableCategories.map((category) => (
                     <option key={category.value} value={category.value}>
@@ -1040,6 +1101,27 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
                   <p className="mt-2 text-xs text-rose-600">{categoryError}</p>
                 ) : null}
               </FormField>
+
+              {form.category === "other" ? (
+                <FormField
+                  label="New category name"
+                  required
+                  error={errors.customCategoryName}
+                  helpText="We will create this category and keep it for future products."
+                  className="md:col-span-2"
+                >
+                  <input
+                    type="text"
+                    value={form.customCategoryName}
+                    onChange={(event) =>
+                      updateForm("customCategoryName", event.target.value)
+                    }
+                    placeholder="e.g. Festive Wear"
+                    maxLength={60}
+                    className="w-full rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </FormField>
+              ) : null}
 
               <FormField label="Sub-category">
                 <select
