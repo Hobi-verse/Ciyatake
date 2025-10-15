@@ -298,39 +298,37 @@ const ProductReviewsSummary = ({
         onClick={() => toggleRatingFilter(value)}
         className={`group flex items-center gap-3 rounded-2xl border px-3 py-2 text-left transition ${
           isActive
-            ? "border-emerald-300/70 bg-emerald-500/10"
-            : "border-white/5 bg-white/5 hover:border-emerald-200/40"
+            ? "border-[#b8985b] bg-[#b8985b]/15"
+            : "border-[#DCECE9] bg-white hover:border-[#b8985b]/40"
         }`}
       >
-        <span className="w-8 text-sm font-semibold text-emerald-100">
+        <span className="w-8 text-sm font-semibold text-slate-700">
           {value}★
         </span>
-        <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-white/10">
+        <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-[#DCECE9]">
           <span
-            className="absolute inset-y-0 left-0 rounded-full bg-emerald-400/60 transition-all group-hover:bg-emerald-300/80"
+            className="absolute inset-y-0 left-0 rounded-full bg-[#b8985b]/70 transition-all group-hover:bg-[#b8985b]"
             style={{ width: `${percentage}%` }}
           />
         </div>
-        <span className="w-12 text-right text-xs text-emerald-200/70">
-          {count}
-        </span>
+        <span className="w-12 text-right text-xs text-slate-500">{count}</span>
       </button>
     );
   };
 
   return (
-    <section className="rounded-3xl border border-white/5 bg-white/5 p-6">
+    <section className="rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-[0_32px_70px_rgba(15,23,42,0.12)]">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-emerald-200/60">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
               Customer Reviews
             </p>
-            <h2 className="text-xl font-semibold text-white md:text-2xl">
+            <h2 className="text-xl font-semibold text-slate-900 md:text-2xl">
               Hear it from the community
             </h2>
           </div>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-emerald-200/80">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
             <RatingDisplay
               rating={summary.averageRating}
               size="lg"
@@ -346,7 +344,7 @@ const ProductReviewsSummary = ({
             <button
               type="button"
               onClick={() => onRequestReview?.("edit")}
-              className="inline-flex items-center justify-center rounded-full border border-emerald-300/60 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-100 transition hover:border-emerald-200"
+              className="inline-flex items-center justify-center rounded-full border border-[#b8985b] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.3em] text-[#b8985b] transition hover:bg-[#b8985b] hover:text-white"
             >
               Edit your review
             </button>
@@ -354,7 +352,7 @@ const ProductReviewsSummary = ({
           <button
             type="button"
             onClick={() => onRequestReview?.("create")}
-            className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-emerald-950 shadow-lg shadow-emerald-900/30 transition hover:bg-emerald-400"
+            className="inline-flex items-center justify-center rounded-full bg-[#b8985b] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#b8985b]/30 transition hover:bg-[#a9894f]"
           >
             Write a review
           </button>
@@ -362,23 +360,21 @@ const ProductReviewsSummary = ({
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,0.45fr)_minmax(0,1fr)]">
-        <div className="space-y-3 rounded-3xl border border-white/5 bg-[#0c1f18] p-4">
+        <div className="space-y-3 rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-4">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-semibold text-emerald-100">
+              <p className="text-sm font-semibold text-slate-800">
                 Rating breakdown
               </p>
-              <p className="text-xs text-emerald-200/60">
-                Tap to filter by rating
-              </p>
+              <p className="text-xs text-slate-600">Tap to filter by rating</p>
             </div>
             <button
               type="button"
               onClick={toggleVerifiedFilter}
               className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] transition ${
                 verifiedOnly
-                  ? "border-emerald-300/80 text-emerald-100"
-                  : "border-white/10 text-emerald-200/60 hover:border-emerald-200/40"
+                  ? "border-[#b8985b] text-[#b8985b]"
+                  : "border-[#DCECE9] text-slate-500 hover:border-[#b8985b]/50 hover:text-[#b8985b]"
               }`}
             >
               {verifiedOnly ? "Verified only" : "All reviews"}
@@ -395,23 +391,23 @@ const ProductReviewsSummary = ({
               {Array.from({ length: 3 }).map((_, index) => (
                 <div
                   key={index}
-                  className="animate-pulse rounded-3xl border border-white/5 bg-[#0d221c] p-5"
+                  className="animate-pulse rounded-3xl border border-[#DCECE9] bg-[#F2EAE0]/80 p-5"
                 >
-                  <div className="mb-4 h-4 w-1/3 rounded bg-white/10" />
-                  <div className="mb-2 h-4 rounded bg-white/10" />
-                  <div className="h-16 rounded bg-white/10" />
+                  <div className="mb-4 h-4 w-1/3 rounded bg-white/60" />
+                  <div className="mb-2 h-4 rounded bg-white/60" />
+                  <div className="h-16 rounded bg-white/60" />
                 </div>
               ))}
             </div>
           ) : null}
 
           {!loading && error ? (
-            <div className="space-y-3 rounded-3xl border border-rose-300/40 bg-rose-500/10 p-5 text-sm text-rose-100">
+            <div className="space-y-3 rounded-3xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-600">
               <p>{error}</p>
               <button
                 type="button"
                 onClick={() => loadReviews({ page: 1, append: false })}
-                className="rounded-full border border-rose-200/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-100 transition hover:border-rose-100/80"
+                className="rounded-full border border-rose-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-rose-500 transition hover:bg-rose-100"
               >
                 Retry
               </button>
@@ -419,7 +415,7 @@ const ProductReviewsSummary = ({
           ) : null}
 
           {!loading && !error && !hasFilteredReviews ? (
-            <div className="rounded-3xl border border-dashed border-emerald-300/40 bg-[#0d221c] p-6 text-center text-sm text-emerald-200/70">
+            <div className="rounded-3xl border border-dashed border-[#c3dedd] bg-[#F2EAE0] p-6 text-center text-sm text-slate-600">
               {hasAnyReviews
                 ? "No reviews match those filters right now."
                 : "No reviews yet. Be the first to share your thoughts."}
@@ -433,29 +429,29 @@ const ProductReviewsSummary = ({
             return (
               <article
                 key={review.id}
-                className="rounded-3xl border border-white/5 bg-[#0d221c] p-5"
+                className="rounded-3xl border border-[#DCECE9] bg-white p-5 shadow-[0_20px_42px_rgba(15,23,42,0.08)]"
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="flex gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-sm font-semibold text-emerald-200">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#c3dedd] text-sm font-semibold text-[#2f4a55]">
                       {getInitials(review.user?.name || "")}
                     </div>
                     <div className="space-y-2">
                       <div>
-                        <p className="text-sm font-semibold text-emerald-100">
+                        <p className="text-sm font-semibold text-slate-900">
                           {review.user?.name || "Verified customer"}
                         </p>
-                        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.2em] text-emerald-200/60">
+                        <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-500">
                           <span>
                             {formatDate(review.createdAt) || "Recently"}
                           </span>
                           {review.isVerifiedPurchase ? (
-                            <span className="rounded-full border border-emerald-300/40 px-2 py-0.5 text-[0.65rem] text-emerald-200">
+                            <span className="rounded-full border border-[#b8985b]/40 px-2 py-0.5 text-[0.65rem] text-[#b8985b]">
                               Verified purchase
                             </span>
                           ) : null}
                           {isPending ? (
-                            <span className="rounded-full border border-amber-300/40 px-2 py-0.5 text-[0.65rem] text-amber-200">
+                            <span className="rounded-full border border-[#F6C7B3] px-2 py-0.5 text-[0.65rem] text-[#8a4b3c]">
                               Awaiting approval
                             </span>
                           ) : null}
@@ -469,17 +465,17 @@ const ProductReviewsSummary = ({
                       </div>
 
                       {review.title ? (
-                        <p className="text-sm font-semibold text-emerald-100">
+                        <p className="text-sm font-semibold text-slate-900">
                           {review.title}
                         </p>
                       ) : null}
-                      <p className="text-sm leading-relaxed text-emerald-200/80">
+                      <p className="text-sm leading-relaxed text-slate-600">
                         {review.comment}
                       </p>
 
                       {review.adminResponse?.message ? (
-                        <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-xs text-emerald-200/80">
-                          <p className="font-semibold text-emerald-100">
+                        <div className="rounded-2xl border border-[#DCECE9] bg-[#F2EAE0] p-3 text-xs text-slate-600">
+                          <p className="font-semibold text-slate-900">
                             Ciyatake team
                           </p>
                           <p className="mt-1 leading-relaxed">
@@ -496,14 +492,14 @@ const ProductReviewsSummary = ({
                         size="sm"
                         showCount={false}
                       />
-                      <span className="text-xs text-emerald-200/60">
+                      <span className="text-xs text-slate-500">
                         {review.rating.toFixed(1)} / 5
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleHelpfulToggle(review.id)}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-emerald-100 transition hover:border-emerald-200"
+                      className="inline-flex items-center gap-2 rounded-full border border-[#b8985b] px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-[#b8985b] transition hover:bg-[#b8985b] hover:text-white"
                       disabled={busy || isPending}
                     >
                       {busy
@@ -513,7 +509,7 @@ const ProductReviewsSummary = ({
                         : helpfulState[review.id]
                         ? "Undo helpful"
                         : "Helpful"}
-                      <span className="text-emerald-200/70">
+                      <span className="text-slate-500">
                         {review.helpfulVotes}
                       </span>
                     </button>
@@ -529,7 +525,7 @@ const ProductReviewsSummary = ({
                 type="button"
                 onClick={handleLoadMore}
                 disabled={loading}
-                className="inline-flex items-center justify-center rounded-full border border-emerald-300/60 px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-100 transition hover:border-emerald-200 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center rounded-full border border-[#b8985b] px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#b8985b] transition hover:bg-[#b8985b] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? "Loading..." : "Load more"}
               </button>

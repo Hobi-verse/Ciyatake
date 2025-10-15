@@ -10,9 +10,9 @@ import { fetchOrderById } from "../../api/orders.js";
 
 const StatusBadge = ({ status }) => {
   const styles = {
-    complete: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
-    current: "bg-white/10 text-white border-white/20",
-    upcoming: "bg-[#081712] text-emerald-200/60 border-white/5",
+    complete: "bg-[#b8985b]/15 text-[#b8985b] border-[#b8985b]/40",
+    current: "bg-[#DCECE9] text-[#b8985b] border-[#b8985b]/40",
+    upcoming: "bg-white text-slate-500 border-[#DCECE9]",
   };
 
   return (
@@ -36,38 +36,38 @@ const TimelineStep = ({ step, index, isLast }) => (
       <div
         className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold ${
           step.status === "complete"
-            ? "border-emerald-400/60 bg-emerald-500/20 text-emerald-200"
+            ? "border-[#b8985b]/60 bg-[#b8985b]/15 text-[#b8985b]"
             : step.status === "current"
-            ? "border-white/30 bg-white/10 text-white"
-            : "border-white/10 bg-[#0c1e18] text-emerald-200/60"
+            ? "border-[#b8985b]/60 bg-[#F2EAE0] text-[#b8985b]"
+            : "border-[#DCECE9] bg-white text-slate-500"
         }`}
       >
         {index + 1}
       </div>
       {isLast ? null : (
         <div
-          className="mt-1 h-full w-px flex-1 bg-gradient-to-b from-white/10 to-transparent"
+          className="mt-1 h-full w-px flex-1 bg-gradient-to-b from-[#DCECE9] to-transparent"
           aria-hidden
         />
       )}
     </div>
     <div className="space-y-1">
-      <h3 className="text-sm font-semibold text-white">{step.title}</h3>
-      <p className="text-xs text-emerald-200/70">{step.description}</p>
+      <h3 className="text-sm font-semibold text-[#b8985b]">{step.title}</h3>
+      <p className="text-xs text-slate-500">{step.description}</p>
       <StatusBadge status={step.status} />
     </div>
   </article>
 );
 
 const InfoBlock = ({ title, children, description }) => (
-  <section className="space-y-4 rounded-3xl border border-white/5 bg-[#0b1f19] p-6 shadow-[0_16px_40px_rgba(8,35,25,0.35)]">
+  <section className="space-y-4 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-[0_16px_40px_rgba(0,0,0,0.08)]">
     <header className="space-y-1">
-      <h2 className="text-lg font-semibold text-white">{title}</h2>
+      <h2 className="text-lg font-semibold text-[#b8985b]">{title}</h2>
       {description ? (
-        <p className="text-sm text-emerald-200/70">{description}</p>
+        <p className="text-sm text-slate-600">{description}</p>
       ) : null}
     </header>
-    <div className="space-y-4 text-sm text-emerald-100">{children}</div>
+    <div className="space-y-4 text-sm text-slate-700">{children}</div>
   </section>
 );
 
@@ -183,7 +183,7 @@ const ConfirmationPage = () => {
   const greetingName = customer?.name?.split(" ")?.[0] ?? "there";
 
   return (
-    <div className="min-h-screen bg-[#07150f] text-emerald-50">
+    <div className="min-h-screen bg-white text-slate-900">
       <UserNavbar />
       <main className="mx-auto max-w-6xl space-y-10 px-4 py-12">
         <Breadcrumbs
@@ -195,29 +195,29 @@ const ConfirmationPage = () => {
         />
 
         {loading ? (
-          <section className="rounded-3xl border border-white/5 bg-[#0b1f19] p-8 text-sm text-emerald-200/70">
+          <section className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-8 text-sm text-[#b8985b]">
             Finalising your order details...
           </section>
         ) : error ? (
-          <section className="rounded-3xl border border-rose-300/40 bg-rose-500/10 p-8 text-sm text-rose-100">
+          <section className="rounded-3xl border border-rose-200 bg-rose-50 p-8 text-sm text-rose-700">
             We couldn&apos;t load your order confirmation. Please refresh the
             page.
           </section>
         ) : (
-          <section className="space-y-6 rounded-3xl border border-white/5 bg-[#0b1f19] p-8 shadow-[0_26px_60px_rgba(8,35,25,0.45)]">
+          <section className="space-y-6 rounded-3xl border border-[#DCECE9] bg-white p-8 shadow-[0_26px_60px_rgba(0,0,0,0.1)]">
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15 text-3xl text-emerald-300 shadow-inner">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#b8985b]/15 text-3xl text-[#b8985b] shadow-inner">
                   ✓
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-200/70">
+                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
                     Order confirmed
                   </p>
-                  <h1 className="text-3xl font-semibold text-white md:text-4xl">
+                  <h1 className="text-3xl font-semibold text-[#b8985b] md:text-4xl">
                     Thank you, {greetingName}! Your order is on its way.
                   </h1>
-                  <p className="text-sm text-emerald-200/75">
+                  <p className="text-sm text-slate-600">
                     We'll email updates to {customer.email}. Delivery window{" "}
                     {order.deliveryWindow ??
                       confirmationData?.order?.deliveryWindow}
@@ -225,22 +225,22 @@ const ConfirmationPage = () => {
                   </p>
                 </div>
               </div>
-              <div className="rounded-3xl border border-emerald-400/40 bg-emerald-500/10 p-4 text-sm text-emerald-100">
-                <p className="text-xs uppercase tracking-[0.3em] text-emerald-200/70">
+              <div className="rounded-3xl border border-[#b8985b]/40 bg-[#F2EAE0] p-4 text-sm text-[#b8985b]">
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
                   Order ID
                 </p>
-                <p className="mt-1 text-xl font-semibold text-white">
+                <p className="mt-1 text-xl font-semibold text-[#b8985b]">
                   {order.id}
                 </p>
                 {placedOnLabel ? (
-                  <p className="mt-1 text-xs text-emerald-200/70">
+                  <p className="mt-1 text-xs text-slate-500">
                     Placed on {placedOnLabel}
                   </p>
                 ) : null}
                 {order.transactionId ? (
-                  <p className="mt-3 text-xs text-emerald-200/70">
+                  <p className="mt-3 text-xs text-slate-500">
                     Transaction ID:{" "}
-                    <span className="text-emerald-100">
+                    <span className="text-[#b8985b]">
                       {order.transactionId}
                     </span>
                   </p>
@@ -278,38 +278,39 @@ const ConfirmationPage = () => {
             >
               <div className="grid gap-6 sm:grid-cols-2">
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/60">
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
                     Shipping address
                   </p>
-                  <div className="space-y-1 text-sm text-emerald-100">
-                    <p className="font-semibold text-white">{customer.name}</p>
+                  <div className="space-y-1 text-sm text-slate-700">
+                    <p className="font-semibold text-[#b8985b]">
+                      {customer.name}
+                    </p>
                     {shipping.addressLines?.map((line) => (
                       <p key={line}>{line}</p>
                     ))}
-                    <p className="text-emerald-200/70">{customer.phone}</p>
+                    <p className="text-slate-500">{customer.phone}</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/60">
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
                     Payment method
                   </p>
-                  <p className="text-sm text-emerald-100">
+                  <p className="text-sm text-slate-700">
                     {order.paymentMethod ??
                       confirmationData?.order?.paymentMethod ??
                       "Pending"}
                   </p>
                   {order.placedOn ? (
-                    <div className="rounded-2xl border border-white/5 bg-[#0d221c] p-4 text-xs text-emerald-200/70">
+                    <div className="rounded-2xl border border-[#DCECE9] bg-[#F2EAE0] p-4 text-xs text-slate-600">
                       The receipt has been sent to{" "}
-                      <span className="text-emerald-100">{customer.email}</span>
-                      .
+                      <span className="text-[#b8985b]">{customer.email}</span>.
                     </div>
                   ) : null}
                 </div>
               </div>
 
               {shipping.instructions ? (
-                <div className="rounded-2xl border border-dashed border-emerald-400/30 bg-[#0d221c] p-4 text-xs text-emerald-200/70">
+                <div className="rounded-2xl border border-dashed border-[#b8985b]/40 bg-[#F2EAE0] p-4 text-xs text-slate-600">
                   Delivery note: {shipping.instructions}
                 </div>
               ) : null}
@@ -319,16 +320,16 @@ const ConfirmationPage = () => {
               title="Need help?"
               description="We're here Monday to Saturday, 10am - 6pm IST."
             >
-              <div className="space-y-3 text-sm text-emerald-100">
+              <div className="space-y-3 text-sm text-slate-700">
                 <p>
                   Email us at{" "}
-                  <span className="text-white">{support.email}</span> or call{" "}
-                  {support.phone} if there's anything you need.
+                  <span className="text-[#b8985b]">{support.email}</span> or
+                  call {support.phone} if there's anything you need.
                 </p>
                 <button
                   type="button"
                   onClick={handleEmailSupport}
-                  className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/80 transition hover:border-emerald-300/60 hover:text-emerald-100"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#b8985b]/50 bg-[#b8985b]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#b8985b] transition hover:border-[#b8985b] hover:bg-[#b8985b]/20"
                 >
                   Contact support
                   <img
@@ -342,12 +343,12 @@ const ConfirmationPage = () => {
             </InfoBlock>
           </div>
 
-          <aside className="space-y-6 rounded-3xl border border-white/5 bg-[#0b1f19] p-6 shadow-[0_20px_50px_rgba(8,35,25,0.4)]">
+          <aside className="space-y-6 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
             <header className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-200/70">
+              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
                 Order details
               </p>
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-[#b8985b]">
                 Items in this order
               </h2>
             </header>
@@ -358,7 +359,7 @@ const ConfirmationPage = () => {
               ))}
             </div>
 
-            <div className="space-y-3 border-t border-white/5 pt-4 text-sm">
+            <div className="space-y-3 border-t border-[#DCECE9] pt-4 text-sm text-slate-700">
               <OrderSummaryRow label="Subtotal" value={formatINR(subtotal)} />
               <OrderSummaryRow label="Shipping" value={shippingLabel} />
               <OrderSummaryRow label="Tax" value={formatINR(tax)} />
@@ -369,7 +370,7 @@ const ConfirmationPage = () => {
               <button
                 type="button"
                 onClick={handleContinueShopping}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-400"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-[#b8985b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#a0824a]"
               >
                 Continue shopping
                 <img
@@ -382,16 +383,16 @@ const ConfirmationPage = () => {
               <button
                 type="button"
                 onClick={handleEmailSupport}
-                className="flex w-full items-center justify-center gap-2 rounded-full border border-white/10 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:border-white/20 hover:bg-white/5"
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-[#DCECE9] px-5 py-3 text-sm font-semibold text-[#b8985b] transition hover:bg-[#F2EAE0]"
               >
                 Need help with this order?
               </button>
             </div>
 
             {order.transactionId ? (
-              <p className="text-center text-[0.7rem] text-emerald-200/60">
+              <p className="text-center text-[0.7rem] text-slate-500">
                 Payment reference{" "}
-                <span className="text-emerald-100">{order.transactionId}</span>
+                <span className="text-[#b8985b]">{order.transactionId}</span>
               </p>
             ) : null}
           </aside>

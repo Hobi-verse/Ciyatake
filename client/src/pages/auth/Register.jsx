@@ -229,7 +229,7 @@ const Register = () => {
           <div className="space-y-2">
             <label
               htmlFor={phoneId}
-              className="block text-sm font-medium text-emerald-100"
+              className="block text-sm font-medium text-slate-700"
             >
               Mobile number & OTP
             </label>
@@ -248,7 +248,7 @@ const Register = () => {
                 />
                 <Button
                   type="button"
-                  className="w-full bg-emerald-500 text-emerald-950 hover:bg-emerald-400 disabled:opacity-60"
+                  className="w-full disabled:opacity-60"
                   onClick={() =>
                     handleSendOtp(value, () => setFieldValue("otp", ""))
                   }
@@ -277,7 +277,7 @@ const Register = () => {
                 />
                 <Button
                   type="button"
-                  className="w-full border border-emerald-300/60 bg-transparent text-emerald-100 hover:bg-emerald-400/10 disabled:opacity-60"
+                  className="w-full border border-[#b8985b] bg-white text-[#b8985b] hover:bg-[#F2EAE0] disabled:border-[#DCECE9] disabled:text-slate-400 disabled:opacity-60"
                   onClick={() => handleVerifyOtp(value, formData.otp ?? "")}
                   disabled={
                     !isOtpSent ||
@@ -298,10 +298,10 @@ const Register = () => {
               <p
                 className={`text-sm ${
                   otpFeedback.type === "error"
-                    ? "text-red-400"
+                    ? "text-rose-600"
                     : otpFeedback.type === "success"
-                    ? "text-emerald-300"
-                    : "text-emerald-200/80"
+                    ? "text-teal-600"
+                    : "text-slate-500"
                 }`}
               >
                 {otpFeedback.message}
@@ -313,19 +313,23 @@ const Register = () => {
     },
     {
       name: "password",
+      label: "Create password",
       type: "password",
-      placeholder: "Enter the Password",
+      placeholder: "Create a password",
       required: true,
       disabled: !isOtpVerified,
       autoComplete: "new-password",
+      inputClassName: "pr-24",
     },
     {
       name: "confirmPassword",
+      label: "Confirm password",
       type: "password",
-      placeholder: "Confirm Password",
+      placeholder: "Re-enter the password",
       required: true,
       disabled: !isOtpVerified,
       autoComplete: "new-password",
+      inputClassName: "pr-24",
     },
     {
       name: "otp",
@@ -511,7 +515,7 @@ const Register = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#07150f]">
+    <div className="min-h-screen bg-[#f5f2ee]">
       <UserNavbar />
       <AuthForm
         title="Create New Account"

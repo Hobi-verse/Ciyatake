@@ -7,7 +7,7 @@ const Breadcrumbs = ({ items = [], homeLabel = "Home" }) => {
 
   return (
     <nav aria-label="Breadcrumb" className="text-xs sm:text-sm">
-      <ol className="flex flex-wrap items-center gap-1 text-emerald-200/70">
+      <ol className="flex flex-wrap items-center gap-1 text-slate-500">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           const label = item.label ?? item.name ?? homeLabel;
@@ -15,7 +15,11 @@ const Breadcrumbs = ({ items = [], homeLabel = "Home" }) => {
 
           if (isLast || !path) {
             return (
-              <li key={label} className="text-emerald-100" aria-current="page">
+              <li
+                key={label}
+                className="font-semibold text-[#b8985b]"
+                aria-current="page"
+              >
                 {label}
               </li>
             );
@@ -23,10 +27,10 @@ const Breadcrumbs = ({ items = [], homeLabel = "Home" }) => {
 
           return (
             <li key={label} className="flex items-center gap-1">
-              <Link to={path} className="transition hover:text-emerald-100">
+              <Link to={path} className="transition hover:text-[#b8985b]">
                 {label}
               </Link>
-              <span aria-hidden className="opacity-70">
+              <span aria-hidden className="text-slate-400">
                 /
               </span>
             </li>

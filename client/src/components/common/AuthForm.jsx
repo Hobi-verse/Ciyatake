@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Button from "./Button";
 
 const defaultInputClasses =
-  "w-full rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-emerald-50 placeholder-emerald-200/50 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 disabled:cursor-not-allowed disabled:opacity-60";
+  "w-full rounded-lg border border-[#DCECE9] bg-white px-4 py-2 text-slate-700 placeholder:text-slate-400 focus:border-[#b8985b] focus:outline-none focus:ring-2 focus:ring-[#b8985b]/30 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400";
 
 const AuthForm = ({
   title = "Welcome back",
@@ -134,7 +134,7 @@ const AuthForm = ({
         {label ? (
           <label
             htmlFor={inputId}
-            className="mb-1 block text-sm font-medium text-emerald-100"
+            className="mb-1 block text-sm font-medium text-slate-700"
           >
             {label}
           </label>
@@ -158,14 +158,14 @@ const AuthForm = ({
             <button
               type="button"
               onClick={() => toggleVisibility(fieldName)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold uppercase tracking-wide text-emerald-200/80"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold uppercase tracking-wide text-[#b8985b] transition hover:text-[#a9894f]"
             >
               {visibleFields[fieldName] ? "Hide" : "Show"}
             </button>
           ) : null}
         </div>
         {helperText ? (
-          <p className="mt-1 text-xs text-emerald-200/70">{helperText}</p>
+          <p className="mt-1 text-xs text-slate-500">{helperText}</p>
         ) : null}
       </div>
     );
@@ -200,14 +200,12 @@ const AuthForm = ({
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] items-center justify-center bg-[#07150f]">
-      <div className="w-full max-w-md overflow-y-auto rounded-2xl border border-white/15 bg-white/5 p-6 shadow-[0_24px_60px_rgba(8,35,25,0.45)] backdrop-blur">
-        <h2 className="text-center text-2xl font-semibold text-white">
+    <div className="flex h-[calc(100vh-64px)] items-center justify-center bg-[#f5f2ee]">
+      <div className="w-full max-w-md overflow-y-auto rounded-2xl border border-[#DCECE9] bg-white/95 p-8 shadow-[0_36px_80px_rgba(15,23,42,0.14)]">
+        <h2 className="text-center text-2xl font-semibold text-slate-900">
           {title}
         </h2>
-        <p className="mt-1 text-center text-sm text-emerald-200/80">
-          {subtitle}
-        </p>
+        <p className="mt-1 text-center text-sm text-slate-600">{subtitle}</p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           {fields.map((field, index) => renderField(field, index))}
@@ -216,7 +214,7 @@ const AuthForm = ({
             <div className="text-right text-sm">
               <button
                 type="button"
-                className="text-emerald-400 transition hover:text-emerald-300"
+                className="font-semibold text-[#b8985b] transition hover:text-[#a9894f]"
                 onClick={() => navigate("/forget-password")}
               >
                 {forgetPasswordText}
@@ -224,11 +222,7 @@ const AuthForm = ({
             </div>
           ) : null}
 
-          <Button
-            type="submit"
-            disabled={isSubmitDisabled}
-            className="w-full bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
-          >
+          <Button type="submit" disabled={isSubmitDisabled} className="w-full">
             {buttonLabel}
           </Button>
 
@@ -236,10 +230,10 @@ const AuthForm = ({
             <div
               className={`rounded-lg border px-3 py-2 text-sm ${
                 status.type === "error"
-                  ? "border-red-400/60 bg-red-500/10 text-red-200"
+                  ? "border-rose-200 bg-rose-50 text-rose-600"
                   : status.type === "success"
-                  ? "border-emerald-400/50 bg-emerald-500/10 text-emerald-100"
-                  : "border-emerald-200/40 bg-emerald-200/10 text-emerald-50"
+                  ? "border-[#c3dedd] bg-[#c3dedd]/20 text-[#2f4a55]"
+                  : "border-[#DCECE9] bg-[#F2EAE0] text-slate-600"
               }`}
             >
               {status.message}
@@ -249,16 +243,16 @@ const AuthForm = ({
 
         {socialProviders.length ? (
           <>
-            <div className="my-4 flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-emerald-200/60">
-              <div className="h-px flex-1 bg-white/10" />
+            <div className="my-4 flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-slate-500">
+              <div className="h-px flex-1 bg-[#DCECE9]" />
               <span>Or continue with</span>
-              <div className="h-px flex-1 bg-white/10" />
+              <div className="h-px flex-1 bg-[#DCECE9]" />
             </div>
             <div className="flex flex-wrap gap-3">
               {socialProviders.map((provider, index) => (
                 <Button
                   key={`${provider.label}-${index}`}
-                  className="flex-1 border border-white/20 bg-transparent text-emerald-100 hover:border-emerald-300/60 hover:bg-emerald-400/10"
+                  className="flex-1 border border-[#DCECE9] bg-white text-slate-600 hover:border-[#b8985b]/60 hover:bg-[#F2EAE0] hover:text-[#b8985b]"
                   onClick={provider.onClick}
                 >
                   Continue with {provider.label}
@@ -268,11 +262,11 @@ const AuthForm = ({
           </>
         ) : null}
 
-        <p className="mt-6 text-center text-sm text-emerald-200/70">
+        <p className="mt-6 text-center text-sm text-slate-600">
           {footerText}{" "}
           <a
             href={footerLinkHref}
-            className="text-emerald-300 transition hover:text-emerald-100"
+            className="font-semibold text-[#b8985b] transition hover:text-[#a9894f]"
           >
             {footerLinkText}
           </a>

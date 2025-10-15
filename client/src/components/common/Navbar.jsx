@@ -25,7 +25,7 @@ const Navbar = ({
   const mobileActions = navActions.filter((action) => !action?.mobileHidden);
 
   const headerClasses = [
-    "border-b border-white/10 bg-[#0b1d18]/95 text-emerald-50 backdrop-blur",
+    "border-b border-[#DCECE9] bg-white/95 text-slate-900 backdrop-blur",
     sticky ? "sticky top-0 z-40" : "relative",
     className,
   ]
@@ -38,13 +38,13 @@ const Navbar = ({
         <div className="flex items-center gap-4">
           <Link
             to={brandHref}
-            className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight text-emerald-50 transition hover:text-emerald-200"
+            className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight text-[#b8985b] transition hover:text-[#a0824a]"
             onClick={handleNavigate}
           >
             {brand}
           </Link>
 
-          <ul className="hidden lg:flex items-center gap-6 text-sm font-medium text-emerald-100">
+          <ul className="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-600">
             {items.map((link) => {
               const path = link?.to ?? link?.href ?? "#";
               return (
@@ -52,7 +52,7 @@ const Navbar = ({
                   <Link
                     to={path}
                     onClick={handleNavigate}
-                    className="transition hover:text-emerald-300"
+                    className="transition hover:text-[#b8985b]"
                   >
                     {link.label}
                   </Link>
@@ -83,7 +83,7 @@ const Navbar = ({
                           key={key}
                           to={action.to}
                           onClick={action.onClick}
-                          className="inline-flex items-center justify-center rounded-full border border-emerald-300/70 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200 hover:bg-emerald-400/10"
+                          className="inline-flex items-center justify-center rounded-full border border-[#b8985b] px-4 py-2 text-sm font-semibold text-[#b8985b] transition hover:bg-[#F2EAE0]"
                         >
                           {action.label}
                         </Link>
@@ -96,7 +96,7 @@ const Navbar = ({
                           key={key}
                           href={action.href}
                           onClick={action.onClick}
-                          className="inline-flex items-center justify-center rounded-full border border-emerald-300/70 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200 hover:bg-emerald-400/10"
+                          className="inline-flex items-center justify-center rounded-full border border-[#b8985b] px-4 py-2 text-sm font-semibold text-[#b8985b] transition hover:bg-[#F2EAE0]"
                         >
                           {action.label}
                         </a>
@@ -123,7 +123,7 @@ const Navbar = ({
             <button
               type="button"
               onClick={handleToggle}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10 lg:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#DCECE9] bg-white text-slate-600 transition hover:border-[#b8985b] hover:bg-[#F2EAE0] lg:hidden"
               aria-expanded={isOpen}
               aria-label="Toggle navigation menu"
             >
@@ -151,7 +151,7 @@ const Navbar = ({
           ) : null}
 
           {items.length ? (
-            <ul className="flex flex-col gap-3 text-sm font-medium text-emerald-100">
+            <ul className="flex flex-col gap-3 text-sm font-medium text-slate-700">
               {items.map((link) => {
                 const path = link?.to ?? link?.href ?? "#";
                 return (
@@ -159,7 +159,7 @@ const Navbar = ({
                     <Link
                       to={path}
                       onClick={handleNavigate}
-                      className="flex items-center justify-between rounded-xl border border-white/5 bg-white/5 px-3 py-2 transition hover:border-emerald-300/50 hover:bg-emerald-400/10"
+                      className="flex items-center justify-between rounded-xl border border-[#DCECE9] bg-white px-3 py-2 transition hover:border-[#b8985b]/60 hover:bg-[#F2EAE0]"
                     >
                       {link.label}
                       <span aria-hidden>→</span>
@@ -178,7 +178,7 @@ const Navbar = ({
 
                 if (action.variant === "button") {
                   const buttonClasses =
-                    "flex-1 rounded-full border border-emerald-300/70 px-4 py-2 text-center text-sm font-semibold text-emerald-100 transition hover:border-emerald-200 hover:bg-emerald-400/10";
+                    "flex-1 rounded-full border border-[#b8985b] px-4 py-2 text-center text-sm font-semibold text-[#b8985b] transition hover:bg-[#F2EAE0]";
 
                   if (action.to) {
                     return (

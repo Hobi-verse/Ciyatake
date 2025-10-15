@@ -21,12 +21,12 @@ const CheckoutOrderSummary = ({
   const total = subtotal + shippingCost + tax;
 
   return (
-    <aside className="space-y-6 rounded-3xl border border-white/5 bg-[#0b1f19] p-6 shadow-[0_26px_60px_rgba(8,35,25,0.45)]">
+    <aside className="space-y-6 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-[0_28px_64px_rgba(15,23,42,0.12)]">
       <header className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/70">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
           Your order
         </p>
-        <h2 className="text-lg font-semibold text-white">Order Summary</h2>
+        <h2 className="text-lg font-semibold text-slate-900">Order Summary</h2>
       </header>
 
       <div className="space-y-4">
@@ -35,7 +35,7 @@ const CheckoutOrderSummary = ({
         ))}
       </div>
 
-      <div className="space-y-3 border-t border-white/5 pt-4 text-sm">
+      <div className="space-y-3 border-t border-[#DCECE9] pt-4 text-sm text-slate-600">
         <OrderSummaryRow label="Subtotal" value={formatINR(subtotal)} />
         <OrderSummaryRow label="Shipping" value={shippingLabel} />
         <OrderSummaryRow label="Tax" value={formatINR(tax)} />
@@ -50,8 +50,8 @@ const CheckoutOrderSummary = ({
           disabled={isPlacingOrder}
           className={`flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition ${
             isPlacingOrder
-              ? "cursor-not-allowed bg-emerald-500/70 text-emerald-950"
-              : "bg-emerald-500 text-emerald-950 hover:bg-emerald-400"
+              ? "cursor-not-allowed border border-[#DCECE9] bg-[#F2EAE0] text-slate-500"
+              : "border border-transparent bg-[#b8985b] text-white shadow-lg shadow-[#b8985b]/25 hover:bg-[#a9894f]"
           }`}
         >
           {isPlacingOrder ? "Processing order..." : "Place Order"}
@@ -59,7 +59,7 @@ const CheckoutOrderSummary = ({
             <img src={arrowRightIcon} alt="" aria-hidden className="h-4 w-4" />
           )}
         </button>
-        <p className="text-center text-xs text-emerald-200/70">
+        <p className="text-center text-xs text-slate-500">
           Your payment information is encrypted and secure.
         </p>
       </div>

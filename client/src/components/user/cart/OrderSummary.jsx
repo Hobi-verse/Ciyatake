@@ -20,9 +20,9 @@ const OrderSummary = ({
   const hasCoupon = Boolean(couponCode);
 
   return (
-    <aside className="space-y-6 rounded-3xl border border-white/5 bg-[#0b1f19] p-6 shadow-[0_20px_45px_rgba(8,35,25,0.45)]">
+    <aside className="space-y-6 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-[0_28px_60px_rgba(15,23,42,0.12)]">
       <div>
-        <h2 className="text-lg font-semibold text-white">Order Summary</h2>
+        <h2 className="text-lg font-semibold text-slate-900">Order Summary</h2>
       </div>
 
       <div className="space-y-3 text-sm">
@@ -35,7 +35,7 @@ const OrderSummary = ({
         {hasDiscount ? (
           <OrderSummaryRow
             label={
-              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-200/70">
+              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b8985b]">
                 Coupon {couponCode ? `(${couponCode})` : ""}
               </span>
             }
@@ -46,9 +46,7 @@ const OrderSummary = ({
 
       <OrderSummaryRow
         label={
-          <span className="text-sm font-semibold text-emerald-200/80">
-            Total
-          </span>
+          <span className="text-sm font-semibold text-[#b8985b]">Total</span>
         }
         value={formatINR(total)}
         emphasis
@@ -58,7 +56,7 @@ const OrderSummary = ({
         <button
           type="button"
           onClick={onRemoveCoupon}
-          className="w-full rounded-full border border-emerald-300/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80 transition hover:border-emerald-200/70 hover:text-emerald-100"
+          className="w-full rounded-full border border-[#b8985b] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#b8985b] transition hover:bg-[#b8985b] hover:text-white"
         >
           Remove coupon
         </button>
@@ -66,7 +64,7 @@ const OrderSummary = ({
 
       <Link
         to={checkoutPath}
-        className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-400"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-[#b8985b] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#b8985b]/30 transition hover:bg-[#a9894f]"
       >
         Proceed to Checkout
         <img src={arrowRightIcon} alt="" aria-hidden className="h-4 w-4" />

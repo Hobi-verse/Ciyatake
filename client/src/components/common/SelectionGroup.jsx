@@ -26,10 +26,10 @@ const SelectionGroup = ({ items = [], value, onChange, multiple = false }) => {
             type="button"
             onClick={() => handleSelect(item.value)}
             aria-pressed={active}
-            className={`rounded-full border px-3 py-1.5 text-sm font-medium transition focus-visible:outline focus-visible:outline-emerald-300 focus-visible:outline-offset-2 ${
+            className={`rounded-full border px-3 py-1.5 text-sm font-medium transition focus-visible:outline focus-visible:outline-[#b8985b] focus-visible:outline-offset-2 ${
               active
-                ? "border-emerald-300 bg-emerald-400/10 text-emerald-100"
-                : "border-white/10 bg-white/5 text-emerald-200/80 hover:border-emerald-300/40 hover:bg-emerald-400/10"
+                ? "border-[#b8985b] bg-[#b8985b]/15 text-[#b8985b]"
+                : "border-[#DCECE9] bg-white text-slate-600 hover:border-[#b8985b]/50 hover:bg-[#DCECE9]/60"
             }`}
           >
             {item.label}

@@ -67,13 +67,13 @@ const LoginSuccess = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-[#07150f] flex items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center bg-[#f5f2ee]">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-        <h2 className="text-xl font-semibold text-white mb-2">
+        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#b8985b]"></div>
+        <h2 className="mb-2 text-xl font-semibold text-slate-900">
           Completing Google Sign-In
         </h2>
-        <p className="text-emerald-200/80">
+        <p className="text-slate-600">
           Please wait while we set up your account...
         </p>
       </div>

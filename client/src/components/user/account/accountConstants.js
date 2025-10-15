@@ -8,11 +8,11 @@ export const accountSections = [
 ];
 
 export const orderStatusStyles = {
-  "Out for delivery": "bg-emerald-400/15 text-emerald-100",
-  Delivered: "bg-emerald-500/15 text-emerald-100",
-  Processing: "bg-amber-400/15 text-amber-100",
-  Cancelled: "bg-rose-500/20 text-rose-100",
-  Default: "bg-white/10 text-emerald-100",
+  "Out for delivery": "bg-[#c3dedd] text-[#2f4a55]",
+  Delivered: "bg-[#F2EAE0] text-[#b8985b]",
+  Processing: "bg-[#F6C7B3] text-[#8a4b3c]",
+  Cancelled: "bg-rose-100 text-rose-600",
+  Default: "bg-[#DCECE9] text-slate-700",
 };
 
 export const preferenceLabels = {

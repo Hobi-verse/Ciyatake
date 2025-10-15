@@ -20,7 +20,7 @@ const RatingDisplay = ({
 
   return (
     <div
-      className={`flex items-center gap-2 text-xs text-emerald-200/80 ${className}`.trim()}
+      className={`flex items-center gap-2 text-xs text-slate-500 ${className}`.trim()}
     >
       <div className="flex items-center gap-1">
         {Array.from({ length: totalIcons }).map((_, index) => {
@@ -43,9 +43,9 @@ const RatingDisplay = ({
         })}
       </div>
       {showCount ? (
-        <span className="font-medium text-emerald-100">
+        <span className="font-medium text-[#b8985b]">
           {safeRating.toFixed(1)}
-          <span className="ml-1 text-emerald-200/70">
+          <span className="ml-1 text-slate-500">
             ({count.toLocaleString()})
           </span>
         </span>

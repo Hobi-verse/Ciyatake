@@ -7,8 +7,8 @@ const AccountNavigation = ({
   support,
 }) => (
   <aside className="space-y-6">
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-      <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-200/70">
+    <div className="rounded-3xl border border-[#DCECE9] bg-white p-6">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-[#b8985b]">
         Account menu
       </h2>
       <div className="mt-4 flex flex-wrap gap-2 lg:flex-col">
@@ -21,8 +21,8 @@ const AccountNavigation = ({
               onClick={() => onSelect(section.id)}
               className={`rounded-full border px-4 py-2 text-sm transition ${
                 isActive
-                  ? "border-emerald-300/70 bg-emerald-400/10 text-emerald-100"
-                  : "border-white/10 bg-white/5 text-emerald-200/80 hover:border-emerald-200/50 hover:bg-emerald-400/10 hover:text-emerald-100"
+                  ? "border-[#b8985b] bg-[#b8985b]/15 text-[#b8985b]"
+                  : "border-[#DCECE9] bg-white text-slate-600 hover:border-[#b8985b]/50 hover:bg-[#F2EAE0] hover:text-[#b8985b]"
               }`}
             >
               {section.label}
@@ -33,27 +33,25 @@ const AccountNavigation = ({
     </div>
 
     {support ? (
-      <div className="rounded-3xl border border-emerald-300/30 bg-emerald-500/10 p-6 text-sm text-emerald-100">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/70">
+      <div className="rounded-3xl border border-[#b8985b]/40 bg-[#F2EAE0] p-6 text-sm text-slate-700">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#b8985b]">
           Need help?
         </p>
-        <p className="mt-2 text-base font-semibold">
+        <p className="mt-2 text-base font-semibold text-[#b8985b]">
           {support.concierge?.name}
         </p>
-        <p className="text-xs text-emerald-200/80">
-          {support.concierge?.hours}
-        </p>
+        <p className="text-xs text-slate-500">{support.concierge?.hours}</p>
         <div className="mt-4 space-y-2 text-sm">
           <p>Email: {support.concierge?.email}</p>
           <p>Phone: {support.concierge?.phone}</p>
         </div>
         {support.lastTicket ? (
-          <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3 text-xs text-emerald-200/80">
-            <p className="font-semibold text-emerald-100">
+          <div className="mt-4 rounded-2xl border border-[#DCECE9] bg-white p-3 text-xs text-slate-500">
+            <p className="font-semibold text-[#b8985b]">
               Last ticket · {support.lastTicket.status}
             </p>
             <p>{support.lastTicket.subject}</p>
-            <p className="text-[0.7rem] uppercase tracking-[0.3em] text-emerald-200/60">
+            <p className="text-[0.7rem] uppercase tracking-[0.3em] text-slate-400">
               Updated {formatDate(support.lastTicket.updatedOn)}
             </p>
           </div>

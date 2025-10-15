@@ -17,58 +17,68 @@ const ForgetPass = () => {
     alert("otp verified successfully");
     navigate("/");
   };
+  const inputClasses =
+    "w-full rounded-lg border border-[#DCECE9] bg-white px-4 py-2 text-slate-700 placeholder:text-slate-400 focus:border-[#b8985b] focus:outline-none focus:ring-2 focus:ring-[#b8985b]/30";
+
   return (
     <div>
       <UserNavbar />
-      <div className="flex items-center justify-center h-[calc(100vh-64px)] bg-green-300/0">
-        <form className="w-full max-w-md p-6  bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl rounded-2xl overflow-y-auto">
-          <h2 className="text-center mb-10 text-white text-2xl font-bold">
+      <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-[#f5f2ee] px-4">
+        <form className="w-full max-w-md rounded-2xl border border-[#DCECE9] bg-white/95 p-8 shadow-[0_36px_80px_rgba(15,23,42,0.14)]">
+          <h2 className="text-center text-2xl font-semibold text-slate-900">
             Reset Your Password
           </h2>
-          <input
-            type="tel"
-            placeholder="Enter Your Phone Number"
-            value={tel}
-            onChange={(e) => setTel(e.target.value)}
-            required={true}
-            className="w-full mb-2 text-green-300 border border-gray-300 rounded-lg px-4 py-2 focus:ring focus:ring-green-300 focus:border-green-500 outline-none"
-          />
-          <div className="text-right text-sm">
-            <button
-              disabled={tel.length <= 0}
-              className={`text-green-500 text-sm ${
-                tel.length <= 0
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:underline"
-              }`}
-              onClick={handleSent}
+          <p className="mt-2 text-center text-sm text-slate-600">
+            Enter your registered phone number to receive a reset code.
+          </p>
+
+          <div className="mt-6 space-y-4">
+            <input
+              type="tel"
+              placeholder="Enter your phone number"
+              value={tel}
+              onChange={(e) => setTel(e.target.value)}
+              required={true}
+              className={inputClasses}
+            />
+            <div className="text-right text-sm">
+              <button
+                type="button"
+                disabled={tel.length <= 0}
+                className={`font-semibold text-[#b8985b] transition ${
+                  tel.length <= 0
+                    ? "cursor-not-allowed opacity-40"
+                    : "hover:text-[#a9894f]"
+                }`}
+                onClick={handleSent}
+              >
+                Send reset OTP
+              </button>
+            </div>
+            <input
+              type="text"
+              placeholder="Enter the verification code"
+              value={otp}
+              maxLength={6}
+              onChange={(e) => setOtp(e.target.value)}
+              required={true}
+              className={inputClasses}
+            />
+            <Button
+              onClick={handleOtp}
+              disabled={otp.length < 6}
+              className="mt-2 w-full"
             >
-              Send Reset otp
-            </button>
+              Verify code
+            </Button>
           </div>
-          <input
-            type="text"
-            placeholder="Enter Your otp"
-            value={otp}
-            maxLength={6}
-            onChange={(e) => setOtp(e.target.value)}
-            required={true}
-            className="w-full mt-3 text-green-300 border border-gray-300 rounded-lg px-4 py-2 focus:ring focus:ring-green-300 focus:border-green-500 outline-none"
-          />
-          <Button
-            onClick={handleOtp}
-            disabled={otp.length <= 0}
-            className={`w-full mt-7 mb-2 bg-green-600 text-white ${
-              otp.length < 6
-                ? "opacity-50 cursor-not-allowed"
-                : "cursor-pointer"
-            }`}
-          >
-            Verify otp
-          </Button>
-          <div className="text-right text-sm">
-            <a href="/login" className="text-green-500 text-sm text-right">
-              Back to Login
+
+          <div className="mt-6 text-right text-sm">
+            <a
+              href="/login"
+              className="font-semibold text-[#b8985b] transition hover:text-[#a9894f]"
+            >
+              Back to login
             </a>
           </div>
         </form>

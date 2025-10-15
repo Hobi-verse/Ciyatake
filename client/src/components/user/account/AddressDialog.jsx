@@ -141,7 +141,7 @@ const AddressDialog = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="address-dialog-title"
@@ -149,15 +149,15 @@ const AddressDialog = ({
     >
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-2xl rounded-3xl border border-white/10 bg-[#0b2016] p-6 text-emerald-50 shadow-2xl"
+        className="w-full max-w-2xl rounded-3xl border border-[#DCECE9] bg-white p-6 text-slate-700 shadow-[0_36px_60px_rgba(15,23,42,0.12)]"
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/70">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
               Shipping details
             </p>
             <h2
-              className="mt-2 text-2xl font-semibold text-white"
+              className="mt-2 text-2xl font-semibold text-slate-900"
               id="address-dialog-title"
             >
               {dialogTitle}
@@ -166,7 +166,7 @@ const AddressDialog = ({
           <button
             type="button"
             onClick={() => onClose?.()}
-            className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-100 transition hover:border-emerald-200"
+            className="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600 transition hover:border-[#b8985b] hover:text-[#b8985b]"
           >
             Close
           </button>
@@ -174,33 +174,33 @@ const AddressDialog = ({
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <label className="text-sm">
-            <span className="mb-2 block text-emerald-100/80">Label</span>
+            <span className="mb-2 block text-slate-600">Label</span>
             <input
               type="text"
               name="label"
               value={formValues.label}
               onChange={handleChange}
               placeholder="Home, Office..."
-              className="w-full rounded-2xl border border-white/10 bg-[#07150f] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/70"
+              className="w-full rounded-2xl border border-[#DCECE9] bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#b8985b] focus:ring-2 focus:ring-[#b8985b]/20"
               required
             />
           </label>
 
           <label className="text-sm">
-            <span className="mb-2 block text-emerald-100/80">Recipient</span>
+            <span className="mb-2 block text-slate-600">Recipient</span>
             <input
               type="text"
               name="recipient"
               value={formValues.recipient}
               onChange={handleChange}
               placeholder="Full name"
-              className="w-full rounded-2xl border border-white/10 bg-[#07150f] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/70"
+              className="w-full rounded-2xl border border-[#DCECE9] bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#b8985b] focus:ring-2 focus:ring-[#b8985b]/20"
               required
             />
           </label>
 
           <label className="text-sm">
-            <span className="mb-2 block text-emerald-100/80">Phone</span>
+            <span className="mb-2 block text-slate-600">Phone</span>
             <input
               type="tel"
               name="phone"
@@ -209,18 +209,18 @@ const AddressDialog = ({
               value={formValues.phone}
               onChange={handleChange}
               placeholder="10-digit mobile"
-              className="w-full rounded-2xl border border-white/10 bg-[#07150f] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/70"
+              className="w-full rounded-2xl border border-[#DCECE9] bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#b8985b] focus:ring-2 focus:ring-[#b8985b]/20"
               required
             />
           </label>
 
           <label className="text-sm">
-            <span className="mb-2 block text-emerald-100/80">Type</span>
+            <span className="mb-2 block text-slate-600">Type</span>
             <select
               name="type"
               value={formValues.type}
               onChange={handleChange}
-              className="w-full rounded-2xl border border-white/10 bg-[#07150f] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/70"
+              className="w-full rounded-2xl border border-[#DCECE9] bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#b8985b] focus:ring-2 focus:ring-[#b8985b]/20"
             >
               {ADDRESS_TYPES.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -231,60 +231,56 @@ const AddressDialog = ({
           </label>
 
           <label className="md:col-span-2 text-sm">
-            <span className="mb-2 block text-emerald-100/80">
-              Address line 1
-            </span>
+            <span className="mb-2 block text-slate-600">Address line 1</span>
             <input
               type="text"
               name="addressLine1"
               value={formValues.addressLine1}
               onChange={handleChange}
               placeholder="Flat, house no., building"
-              className="w-full rounded-2xl border border-white/10 bg-[#07150f] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/70"
+              className="w-full rounded-2xl border border-[#DCECE9] bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#b8985b] focus:ring-2 focus:ring-[#b8985b]/20"
               required
             />
           </label>
 
           <label className="md:col-span-2 text-sm">
-            <span className="mb-2 block text-emerald-100/80">
-              Address line 2
-            </span>
+            <span className="mb-2 block text-slate-600">Address line 2</span>
             <input
               type="text"
               name="addressLine2"
               value={formValues.addressLine2}
               onChange={handleChange}
               placeholder="Area, landmark (optional)"
-              className="w-full rounded-2xl border border-white/10 bg-[#07150f] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/70"
+              className="w-full rounded-2xl border border-[#DCECE9] bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#b8985b] focus:ring-2 focus:ring-[#b8985b]/20"
             />
           </label>
 
           <label className="text-sm">
-            <span className="mb-2 block text-emerald-100/80">City</span>
+            <span className="mb-2 block text-slate-600">City</span>
             <input
               type="text"
               name="city"
               value={formValues.city}
               onChange={handleChange}
-              className="w-full rounded-2xl border border-white/10 bg-[#07150f] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/70"
+              className="w-full rounded-2xl border border-[#DCECE9] bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#b8985b] focus:ring-2 focus:ring-[#b8985b]/20"
               required
             />
           </label>
 
           <label className="text-sm">
-            <span className="mb-2 block text-emerald-100/80">State</span>
+            <span className="mb-2 block text-slate-600">State</span>
             <input
               type="text"
               name="state"
               value={formValues.state}
               onChange={handleChange}
-              className="w-full rounded-2xl border border-white/10 bg-[#07150f] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/70"
+              className="w-full rounded-2xl border border-[#DCECE9] bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#b8985b] focus:ring-2 focus:ring-[#b8985b]/20"
               required
             />
           </label>
 
           <label className="text-sm">
-            <span className="mb-2 block text-emerald-100/80">PIN code</span>
+            <span className="mb-2 block text-slate-600">PIN code</span>
             <input
               type="text"
               name="postalCode"
@@ -293,24 +289,24 @@ const AddressDialog = ({
               maxLength={6}
               pattern="\d{6}"
               placeholder="6-digit"
-              className="w-full rounded-2xl border border-white/10 bg-[#07150f] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/70"
+              className="w-full rounded-2xl border border-[#DCECE9] bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#b8985b] focus:ring-2 focus:ring-[#b8985b]/20"
               required
             />
           </label>
 
           <label className="text-sm">
-            <span className="mb-2 block text-emerald-100/80">Country</span>
+            <span className="mb-2 block text-slate-600">Country</span>
             <input
               type="text"
               name="country"
               value={formValues.country}
               onChange={handleChange}
-              className="w-full rounded-2xl border border-white/10 bg-[#07150f] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/70"
+              className="w-full rounded-2xl border border-[#DCECE9] bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#b8985b] focus:ring-2 focus:ring-[#b8985b]/20"
             />
           </label>
 
           <label className="md:col-span-2 text-sm">
-            <span className="mb-2 block text-emerald-100/80">
+            <span className="mb-2 block text-slate-600">
               Delivery instructions
             </span>
             <textarea
@@ -319,36 +315,36 @@ const AddressDialog = ({
               onChange={handleChange}
               rows={2}
               placeholder="Share any notes for the courier (optional)"
-              className="w-full rounded-2xl border border-white/10 bg-[#07150f] px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300/70"
+              className="w-full rounded-2xl border border-[#DCECE9] bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#b8985b] focus:ring-2 focus:ring-[#b8985b]/20"
             />
           </label>
 
-          <label className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80 md:col-span-2">
+          <label className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 md:col-span-2">
             <input
               type="checkbox"
               name="isDefault"
               checked={formValues.isDefault}
               onChange={handleChange}
-              className="h-4 w-4 rounded border border-white/30 bg-transparent text-emerald-500 focus:ring-emerald-500"
+              className="h-4 w-4 rounded border border-slate-300 text-[#b8985b] focus:ring-[#b8985b]/30"
             />
             Make this my default address
           </label>
         </div>
 
         {formError ? (
-          <p className="mt-4 text-sm text-rose-200">{formError}</p>
+          <p className="mt-4 text-sm text-rose-500">{formError}</p>
         ) : null}
-        {error ? <p className="mt-1 text-sm text-rose-200">{error}</p> : null}
+        {error ? <p className="mt-1 text-sm text-rose-500">{error}</p> : null}
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs text-emerald-100/60">
+          <p className="text-xs text-slate-500">
             We deliver to most Indian PIN codes. Double-check before you place
             an order.
           </p>
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex min-w-[8rem] items-center justify-center rounded-full border border-emerald-300/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-50 transition hover:border-emerald-200 disabled:opacity-60"
+            className="inline-flex min-w-[8rem] items-center justify-center rounded-full border border-[#b8985b] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#b8985b] transition hover:bg-[#b8985b] hover:text-white disabled:opacity-60"
           >
             {saving
               ? "Saving..."

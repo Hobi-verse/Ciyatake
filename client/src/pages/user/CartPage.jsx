@@ -391,7 +391,7 @@ const CartPage = ({ isLoggedIn = false }) => {
   ]);
 
   return (
-    <div className="min-h-screen bg-[#07150f] text-emerald-50">
+    <div className="min-h-screen bg-white text-slate-900">
       <UserNavbar isLoggedIn={isLoggedIn} />
       <main className="mx-auto max-w-6xl space-y-10 px-4 py-12">
         <Breadcrumbs
@@ -399,10 +399,10 @@ const CartPage = ({ isLoggedIn = false }) => {
         />
 
         <header className="space-y-2">
-          <h1 className="text-3xl font-semibold text-white md:text-4xl">
+          <h1 className="text-3xl font-semibold text-[#b8985b] md:text-4xl">
             Shopping Cart
           </h1>
-          <p className="text-sm text-emerald-200/80">
+          <p className="text-sm text-slate-600">
             Review your items before heading to checkout.
           </p>
         </header>
@@ -410,18 +410,18 @@ const CartPage = ({ isLoggedIn = false }) => {
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.55fr)]">
           <div className="space-y-4">
             {error ? (
-              <div className="rounded-3xl border border-rose-300/40 bg-rose-500/10 p-10 text-center text-sm text-rose-100">
+              <div className="rounded-3xl border border-rose-200 bg-rose-50 p-10 text-center text-sm text-rose-700">
                 We couldn&apos;t load your cart. Please try again.
                 <button
                   type="button"
                   onClick={() => refreshCart()}
-                  className="mt-4 inline-flex items-center justify-center rounded-full border border-rose-200/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-100 transition hover:border-rose-100 hover:bg-rose-100/10"
+                  className="mt-4 inline-flex items-center justify-center rounded-full border border-rose-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-700 transition hover:border-rose-400 hover:bg-rose-100"
                 >
                   Retry
                 </button>
               </div>
             ) : loading ? (
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-sm text-emerald-200/70">
+              <div className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-10 text-center text-sm text-[#b8985b]">
                 Loading your cart...
               </div>
             ) : cartItems.length ? (
@@ -435,7 +435,7 @@ const CartPage = ({ isLoggedIn = false }) => {
                 />
               ))
             ) : (
-              <div className="rounded-3xl border border-dashed border-emerald-300/40 bg-white/5 p-10 text-center text-sm text-emerald-200/70">
+              <div className="rounded-3xl border border-dashed border-[#DCECE9] bg-[#DCECE9]/40 p-10 text-center text-sm text-slate-600">
                 Your cart is empty. Browse products to add them here.
               </div>
             )}
@@ -468,23 +468,23 @@ const CartPage = ({ isLoggedIn = false }) => {
         </section>
 
         {actionError ? (
-          <div className="rounded-3xl border border-rose-300/40 bg-rose-500/10 p-6 text-sm text-rose-100">
+          <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
             {actionError}
           </div>
         ) : null}
 
-        <section className="rounded-3xl border border-white/5 bg-white/5 p-6 shadow-[0_16px_40px_rgba(8,35,25,0.25)]">
+        <section className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-6 shadow-[0_20px_45px_rgba(0,0,0,0.08)]">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="text-xl font-semibold text-[#b8985b]">
                 Saved for later
               </h2>
-              <p className="text-sm text-emerald-200/75">
+              <p className="text-sm text-slate-600">
                 Items you love, ready whenever you are.
               </p>
             </div>
             {savedItems.length ? (
-              <span className="rounded-full border border-emerald-300/40 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-emerald-200/70">
+              <span className="rounded-full border border-[#b8985b] px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-[#b8985b]">
                 {savedItems.length} item{savedItems.length > 1 ? "s" : ""}
               </span>
             ) : null}
@@ -501,7 +501,7 @@ const CartPage = ({ isLoggedIn = false }) => {
                 />
               ))
             ) : (
-              <div className="rounded-2xl border border-dashed border-emerald-300/40 bg-[#0d221c] p-8 text-center text-sm text-emerald-200/70">
+              <div className="rounded-2xl border border-dashed border-[#DCECE9] bg-white p-8 text-center text-sm text-slate-600">
                 No items saved for later yet. Tap "Save for later" on any
                 product to add it here.
               </div>

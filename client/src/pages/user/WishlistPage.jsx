@@ -178,7 +178,7 @@ const WishlistPage = ({ isLoggedIn = false }) => {
   }, [catalogProducts, items]);
 
   return (
-    <div className="min-h-screen bg-[#07150f] text-emerald-50">
+    <div className="min-h-screen bg-white text-slate-900">
       <UserNavbar isLoggedIn={isLoggedIn} />
       <main className="mx-auto max-w-6xl space-y-12 px-4 py-12">
         <Breadcrumbs
@@ -186,14 +186,14 @@ const WishlistPage = ({ isLoggedIn = false }) => {
         />
 
         <header className="space-y-3">
-          <h1 className="text-3xl font-semibold text-white md:text-4xl">
+          <h1 className="text-3xl font-semibold text-[#b8985b] md:text-4xl">
             Wishlist
           </h1>
-          <p className="text-sm text-emerald-200/75">
+          <p className="text-sm text-slate-600">
             Save items you love and move them to your cart whenever you’re
             ready.
           </p>
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/80">
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#DCECE9] bg-[#F2EAE0] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#b8985b]">
             <img src={heartIcon} alt="" className="h-4 w-4" aria-hidden />
             {wishlist.itemCount ?? items.length} saved
           </span>
@@ -201,18 +201,18 @@ const WishlistPage = ({ isLoggedIn = false }) => {
 
         <section className="space-y-4">
           {error ? (
-            <div className="rounded-3xl border border-rose-300/40 bg-rose-500/10 p-10 text-center text-sm text-rose-100">
+            <div className="rounded-3xl border border-rose-200 bg-rose-50 p-10 text-center text-sm text-rose-700">
               We couldn&apos;t load your wishlist. Please try again.
               <button
                 type="button"
                 onClick={loadWishlist}
-                className="mt-4 inline-flex items-center justify-center rounded-full border border-rose-200/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-100 transition hover:border-rose-100 hover:bg-rose-100/10"
+                className="mt-4 inline-flex items-center justify-center rounded-full border border-rose-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-700 transition hover:border-rose-400 hover:bg-rose-100"
               >
                 Retry
               </button>
             </div>
           ) : loading ? (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center text-sm text-emerald-200/70">
+            <div className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-10 text-center text-sm text-[#b8985b]">
               Loading your saved items...
             </div>
           ) : items.length ? (
@@ -225,7 +225,7 @@ const WishlistPage = ({ isLoggedIn = false }) => {
               />
             ))
           ) : (
-            <div className="rounded-3xl border border-dashed border-emerald-300/40 bg-white/5 p-10 text-center text-sm text-emerald-200/70">
+            <div className="rounded-3xl border border-dashed border-[#DCECE9] bg-[#DCECE9]/40 p-10 text-center text-sm text-slate-600">
               Your wishlist is empty. Browse products and tap the heart icon to
               save them here.
             </div>
@@ -235,10 +235,10 @@ const WishlistPage = ({ isLoggedIn = false }) => {
         {recommendedProducts.length ? (
           <section className="space-y-6">
             <div>
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="text-xl font-semibold text-[#b8985b]">
                 You might also like
               </h2>
-              <p className="text-sm text-emerald-200/75">
+              <p className="text-sm text-slate-600">
                 Customers who saved these items also considered these picks.
               </p>
             </div>
@@ -249,7 +249,7 @@ const WishlistPage = ({ isLoggedIn = false }) => {
 
       {actionError ? (
         <div className="fixed inset-x-0 bottom-24 z-40 flex justify-center px-4">
-          <div className="max-w-xl rounded-full border border-rose-300/60 bg-rose-500/20 px-4 py-3 text-center text-sm font-medium text-rose-100 shadow-lg">
+          <div className="max-w-xl rounded-full border border-rose-300 bg-rose-100 px-4 py-3 text-center text-sm font-medium text-rose-700 shadow-lg">
             {actionError}
           </div>
         </div>
@@ -257,7 +257,7 @@ const WishlistPage = ({ isLoggedIn = false }) => {
 
       {toastMessage ? (
         <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
-          <div className="max-w-sm rounded-full border border-emerald-300/60 bg-emerald-400/20 px-4 py-3 text-center text-sm font-medium text-emerald-50 shadow-lg">
+          <div className="max-w-sm rounded-full border border-[#b8985b]/50 bg-[#b8985b]/15 px-4 py-3 text-center text-sm font-medium text-[#b8985b] shadow-lg">
             {toastMessage}
           </div>
         </div>

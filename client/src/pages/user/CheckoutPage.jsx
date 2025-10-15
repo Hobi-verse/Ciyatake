@@ -34,7 +34,7 @@ const EMPTY_ADDRESS_FORM = {
 };
 
 const TEXTAREA_FIELD_CLASSES =
-  "w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-emerald-200/40 focus:border-emerald-400/70 focus:outline-none focus:ring-2 focus:ring-emerald-400/20 transition";
+  "w-full rounded-2xl border border-[#DCECE9] bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#b8985b] focus:outline-none focus:ring-2 focus:ring-[#b8985b]/25 transition";
 
 const computePricing = (cart) => {
   const subtotalFromTotals = Number(cart?.totals?.subtotal);
@@ -553,7 +553,7 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#07150f] text-emerald-50">
+    <div className="min-h-screen bg-white text-slate-900">
       <UserNavbar />
       <main className="mx-auto max-w-6xl space-y-10 px-4 py-12">
         <Breadcrumbs
@@ -565,20 +565,20 @@ const CheckoutPage = () => {
         />
 
         <header className="space-y-2">
-          <h1 className="text-3xl font-semibold text-white md:text-4xl">
+          <h1 className="text-3xl font-semibold text-[#b8985b] md:text-4xl">
             Checkout
           </h1>
-          <p className="text-sm text-emerald-200/80">
+          <p className="text-sm text-slate-600">
             Complete your purchase in a few simple steps.
           </p>
         </header>
 
         {loading ? (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-emerald-200/70">
+          <div className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-6 text-sm text-[#b8985b]">
             Loading your checkout details...
           </div>
         ) : error ? (
-          <div className="rounded-3xl border border-rose-300/40 bg-rose-500/10 p-6 text-sm text-rose-100">
+          <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
             We couldn't load your checkout information. Please refresh the page.
           </div>
         ) : (
@@ -640,15 +640,15 @@ const CheckoutPage = () => {
                   onChange={handleAddressSelection}
                 />
               ) : (
-                <div className="rounded-2xl border border-amber-300/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
                   We don't have a saved address yet. Add a new one below to
                   continue.
                 </div>
               )}
 
               {!useNewAddress && selectedAddress ? (
-                <div className="mt-4 space-y-1 rounded-2xl border border-white/10 bg-[#0b1f19] p-4 text-sm text-emerald-200/80">
-                  <p className="text-sm font-semibold text-white">
+                <div className="mt-4 space-y-1 rounded-2xl border border-[#DCECE9] bg-white p-4 text-sm text-slate-700">
+                  <p className="text-sm font-semibold text-[#b8985b]">
                     {selectedAddress.recipient ?? "Primary recipient"}
                   </p>
                   <p>{selectedAddress.addressLine1}</p>
@@ -666,7 +666,7 @@ const CheckoutPage = () => {
                   </p>
                   <p>{selectedAddress.country}</p>
                   {selectedAddress.phone ? (
-                    <p className="text-xs text-emerald-200/60">
+                    <p className="text-xs text-slate-500">
                       Phone: {selectedAddress.phone}
                     </p>
                   ) : null}
@@ -740,9 +740,9 @@ const CheckoutPage = () => {
                   </div>
 
                   <label className="flex flex-col gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/70">
+                    <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#b8985b]">
                       Delivery instructions
-                      <span className="ml-2 text-[0.7rem] font-medium lowercase text-emerald-200/50">
+                      <span className="ml-2 text-[0.7rem] font-medium lowercase text-slate-400">
                         optional
                       </span>
                     </span>
@@ -759,7 +759,7 @@ const CheckoutPage = () => {
               ) : null}
 
               {checkoutIssues.length ? (
-                <div className="mt-6 space-y-2 text-sm text-amber-200/80">
+                <div className="mt-6 space-y-2 text-sm text-amber-700">
                   {checkoutIssues.map((issue) => (
                     <p key={`${issue?.type}-${issue?.itemId ?? "global"}`}>
                       {issue?.message ??
@@ -774,7 +774,7 @@ const CheckoutPage = () => {
           {order ? (
             <div className="space-y-4">
               {orderError ? (
-                <div className="rounded-2xl border border-rose-300/40 bg-rose-500/10 p-4 text-sm text-rose-100">
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
                   {orderError}
                 </div>
               ) : null}
@@ -785,7 +785,7 @@ const CheckoutPage = () => {
               />
             </div>
           ) : (
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-emerald-200/70">
+            <div className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-6 text-sm text-[#b8985b]">
               No items in your order yet.
             </div>
           )}

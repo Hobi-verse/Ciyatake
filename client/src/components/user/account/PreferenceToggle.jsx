@@ -9,14 +9,14 @@ const PreferenceToggle = ({
 }) => (
   <label
     htmlFor={id}
-    className={`flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 transition ${
-      disabled ? "opacity-60" : "hover:border-emerald-200/60"
+    className={`flex items-center justify-between gap-4 rounded-2xl border border-[#DCECE9] bg-white p-4 transition ${
+      disabled ? "opacity-60" : "hover:border-[#b8985b]/70"
     }`}
   >
     <div className="space-y-1">
-      <p className="text-sm font-semibold text-white">{label}</p>
+      <p className="text-sm font-semibold text-slate-900">{label}</p>
       {description ? (
-        <p className="text-xs text-emerald-200/70">{description}</p>
+        <p className="text-xs text-slate-500">{description}</p>
       ) : null}
     </div>
     <div className="relative">
@@ -30,7 +30,7 @@ const PreferenceToggle = ({
       />
       <div
         className={`h-6 w-12 rounded-full transition ${
-          checked ? "bg-emerald-400/80" : "bg-white/15"
+          checked ? "bg-[#b8985b]" : "bg-slate-200"
         } ${busy ? "animate-pulse" : ""}`}
       />
       <div

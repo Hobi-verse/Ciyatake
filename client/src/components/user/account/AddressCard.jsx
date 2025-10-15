@@ -22,38 +22,40 @@ const AddressCard = ({
   const showEdit = typeof onEdit === "function";
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+    <div className="rounded-2xl border border-[#DCECE9] bg-white p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-white">{address.label}</p>
-          <p className="text-xs text-emerald-200/70">{address.recipient}</p>
+          <p className="text-sm font-semibold text-[#b8985b]">
+            {address.label}
+          </p>
+          <p className="text-xs text-slate-500">{address.recipient}</p>
         </div>
         {address.isDefault ? (
-          <span className="rounded-full border border-emerald-300/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100">
+          <span className="rounded-full border border-[#b8985b] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#b8985b]">
             Default
           </span>
         ) : null}
       </div>
-      <p className="mt-3 text-sm text-emerald-100">
+      <p className="mt-3 text-sm text-slate-700">
         {address.addressLine1}
         {address.addressLine2 ? `, ${address.addressLine2}` : ""}
       </p>
-      <p className="text-sm text-emerald-100">
+      <p className="text-sm text-slate-700">
         {address.city}, {address.state} {address.postalCode}
       </p>
-      <p className="text-xs text-emerald-200/70">{address.country}</p>
-      <p className="mt-2 text-xs text-emerald-200/70">Phone: {address.phone}</p>
+      <p className="text-xs text-slate-500">{address.country}</p>
+      <p className="mt-2 text-xs text-slate-500">Phone: {address.phone}</p>
       {address.type ? (
-        <p className="mt-1 text-xs uppercase tracking-[0.25em] text-emerald-200/50">
+        <p className="mt-1 text-xs uppercase tracking-[0.25em] text-slate-400">
           {address.type}
         </p>
       ) : null}
-      <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/80">
+      <div className="mt-4 flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
         {showEdit ? (
           <button
             type="button"
             onClick={handleEdit}
-            className="rounded-full border border-white/10 px-3 py-1 transition hover:border-emerald-200/70 hover:text-emerald-100"
+            className="rounded-full border border-[#DCECE9] px-3 py-1 transition hover:border-[#b8985b] hover:text-[#b8985b]"
             disabled={isPending === "delete"}
           >
             Edit
@@ -64,7 +66,7 @@ const AddressCard = ({
             type="button"
             onClick={handleSetDefault}
             disabled={isPending === "set-default" || isPending === "delete"}
-            className="rounded-full border border-white/10 px-3 py-1 transition hover:border-emerald-200/70 hover:text-emerald-100 disabled:cursor-not-allowed disabled:border-white/5 disabled:text-emerald-200/40"
+            className="rounded-full border border-[#DCECE9] px-3 py-1 transition hover:border-[#b8985b] hover:text-[#b8985b] disabled:cursor-not-allowed disabled:border-[#DCECE9] disabled:text-slate-300"
           >
             {isPending === "set-default" ? "Setting..." : "Set default"}
           </button>
@@ -74,7 +76,7 @@ const AddressCard = ({
             type="button"
             onClick={handleDelete}
             disabled={isPending === "delete"}
-            className="rounded-full border border-rose-300/30 px-3 py-1 text-rose-200/80 transition hover:border-rose-200/60 hover:text-rose-100 disabled:cursor-not-allowed disabled:border-rose-200/20 disabled:text-rose-200/40"
+            className="rounded-full border border-rose-300 px-3 py-1 text-rose-600 transition hover:border-rose-400 hover:text-rose-500 disabled:cursor-not-allowed disabled:border-rose-200 disabled:text-rose-300"
           >
             {isPending === "delete" ? "Deleting..." : "Delete"}
           </button>

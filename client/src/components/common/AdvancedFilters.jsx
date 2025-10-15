@@ -51,10 +51,10 @@ const RATING_OPTIONS = [
 ];
 
 const FilterSection = ({ title, children, isOpen, onToggle }) => (
-  <div className="border-b border-emerald-900/60 pb-4 last:border-b-0">
+  <div className="border-b border-[#DCECE9] pb-4 last:border-b-0">
     <button
       onClick={onToggle}
-      className="flex w-full items-center justify-between py-3 text-left text-sm font-semibold text-emerald-100 transition-colors hover:text-emerald-300"
+      className="flex w-full items-center justify-between py-3 text-left text-sm font-semibold text-slate-700 transition-colors hover:text-[#b8985b]"
     >
       {title}
       <svg
@@ -216,33 +216,33 @@ const AdvancedFilters = ({
   return (
     <div className="w-full lg:w-80">
       <div className="sticky top-4">
-        <div className="rounded-xl border border-emerald-900 bg-[#132e26] shadow-lg shadow-emerald-900/40">
-          <div className="border-b border-emerald-900/60 p-6">
+        <div className="rounded-xl border border-[#DCECE9] bg-white shadow-[0_20px_45px_rgba(0,0,0,0.08)]">
+          <div className="border-b border-[#DCECE9] p-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-emerald-100">FILTERS</h2>
+              <h2 className="text-lg font-bold text-[#b8985b]">FILTERS</h2>
               {hasActiveFilters && (
                 <button
                   onClick={onClearFilters}
-                  className="text-sm font-medium text-emerald-300 transition-colors hover:text-emerald-200"
+                  className="text-sm font-medium text-[#b8985b] transition-colors hover:text-[#a0824a]"
                 >
                   Clear All
                 </button>
               )}
             </div>
-            <p className="mt-2 text-sm text-emerald-200">
+            <p className="mt-2 text-sm text-slate-500">
               {productCount}+ Products
             </p>
           </div>
 
-          <div className="space-y-6 p-6 text-emerald-100">
+          <div className="space-y-6 p-6 text-slate-700">
             {/* All Products Button */}
             <div className="pb-4">
               <button
                 onClick={() => onClearFilters()}
                 className={`w-full rounded-lg py-3 px-4 text-left font-semibold transition-all ${
                   !hasActiveFilters
-                    ? "bg-emerald-500 text-emerald-50 shadow-md hover:bg-emerald-400"
-                    : "bg-[#1c3b33] text-emerald-200 hover:bg-[#21453c]"
+                    ? "bg-[#b8985b] text-white shadow-md hover:bg-[#a0824a]"
+                    : "bg-[#F2EAE0] text-[#b8985b] hover:bg-[#DCECE9]"
                 }`}
               >
                 All Products
@@ -259,7 +259,7 @@ const AdvancedFilters = ({
                 {GENDER_OPTIONS.map((gender) => (
                   <label
                     key={gender.value}
-                    className="flex items-center cursor-pointer group"
+                    className="group flex cursor-pointer items-center"
                   >
                     <input
                       type="radio"
@@ -267,9 +267,9 @@ const AdvancedFilters = ({
                       value={gender.value}
                       checked={filters.gender === gender.value}
                       onChange={(e) => updateFilter("gender", e.target.value)}
-                      className="mr-3 h-4 w-4 border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
+                      className="mr-3 h-4 w-4 cursor-pointer border-[#DCECE9] bg-white text-[#b8985b] focus:ring-[#b8985b]"
                     />
-                    <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                    <span className="text-sm text-slate-700 transition-colors group-hover:text-[#b8985b]">
                       {gender.label}
                     </span>
                   </label>
@@ -284,9 +284,7 @@ const AdvancedFilters = ({
               onToggle={() => toggleSection("category")}
             >
               {loadingCategories ? (
-                <p className="text-sm text-emerald-300">
-                  Loading categories...
-                </p>
+                <p className="text-sm text-[#b8985b]">Loading categories...</p>
               ) : (
                 <div className="space-y-2">
                   <label className="flex items-center cursor-pointer group">
@@ -296,9 +294,9 @@ const AdvancedFilters = ({
                       value="all"
                       checked={filters.category === "all"}
                       onChange={(e) => updateFilter("category", e.target.value)}
-                      className="mr-3 h-4 w-4 border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
+                      className="mr-3 h-4 w-4 cursor-pointer border-[#DCECE9] bg-white text-[#b8985b] focus:ring-[#b8985b]"
                     />
-                    <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                    <span className="text-sm text-slate-700 transition-colors group-hover:text-[#b8985b]">
                       All Categories
                     </span>
                   </label>
@@ -315,9 +313,9 @@ const AdvancedFilters = ({
                         onChange={(e) =>
                           updateFilter("category", e.target.value)
                         }
-                        className="mr-3 h-4 w-4 border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
+                        className="mr-3 h-4 w-4 cursor-pointer border-[#DCECE9] bg-white text-[#b8985b] focus:ring-[#b8985b]"
                       />
-                      <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                      <span className="text-sm text-slate-700 transition-colors group-hover:text-[#b8985b]">
                         {category.label}
                       </span>
                     </label>
@@ -345,9 +343,9 @@ const AdvancedFilters = ({
                         onChange={(e) =>
                           updateFilter("subcategory", e.target.value)
                         }
-                        className="mr-3 h-4 w-4 border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
+                        className="mr-3 h-4 w-4 cursor-pointer border-[#DCECE9] bg-white text-[#b8985b] focus:ring-[#b8985b]"
                       />
-                      <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                      <span className="text-sm text-slate-700 transition-colors group-hover:text-[#b8985b]">
                         All Subcategories
                       </span>
                     </label>
@@ -364,9 +362,9 @@ const AdvancedFilters = ({
                           onChange={(e) =>
                             updateFilter("subcategory", e.target.value)
                           }
-                          className="mr-3 h-4 w-4 border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
+                          className="mr-3 h-4 w-4 cursor-pointer border-[#DCECE9] bg-white text-[#b8985b] focus:ring-[#b8985b]"
                         />
-                        <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                        <span className="text-sm text-slate-700 transition-colors group-hover:text-[#b8985b]">
                           {subcategory.label}
                         </span>
                       </label>
@@ -388,8 +386,8 @@ const AdvancedFilters = ({
                     onClick={() => toggleArrayFilter("colors", color.name)}
                     className={`group relative flex h-12 w-12 items-center justify-center rounded-lg border-2 transition-all hover:scale-105 ${
                       filters.colors?.includes(color.name)
-                        ? "border-emerald-400 ring-2 ring-emerald-500/30"
-                        : "border-emerald-900/60 hover:border-emerald-700"
+                        ? "border-[#b8985b] ring-2 ring-[#b8985b]/30"
+                        : "border-[#DCECE9] hover:border-[#b8985b]/60"
                     }`}
                     title={
                       color.name.charAt(0).toUpperCase() + color.name.slice(1)
@@ -398,8 +396,8 @@ const AdvancedFilters = ({
                     <div
                       className={`h-8 w-8 rounded-md ${
                         color.name === "white"
-                          ? "border-2 border-emerald-200/70"
-                          : "border border-emerald-900/60"
+                          ? "border-2 border-[#DCECE9]"
+                          : "border border-[#DCECE9]"
                       }`}
                       style={{ backgroundColor: color.hex }}
                     />
@@ -407,7 +405,7 @@ const AdvancedFilters = ({
                       <svg
                         className={`absolute h-5 w-5 ${
                           color.name === "white" || color.name === "yellow"
-                            ? "text-emerald-900"
+                            ? "text-slate-700"
                             : "text-white"
                         } drop-shadow-lg`}
                         fill="currentColor"
@@ -438,8 +436,8 @@ const AdvancedFilters = ({
                     onClick={() => toggleArrayFilter("sizes", size)}
                     className={`rounded-lg border py-2.5 px-3 text-sm font-semibold transition-all hover:scale-105 ${
                       filters.sizes?.includes(size)
-                        ? "border-emerald-400 bg-emerald-500/15 text-emerald-200 shadow-sm"
-                        : "border-emerald-900/60 text-emerald-100 hover:border-emerald-700 hover:bg-[#1a352e]"
+                        ? "border-[#b8985b] bg-[#b8985b]/10 text-[#b8985b] shadow-sm"
+                        : "border-[#DCECE9] text-slate-700 hover:border-[#b8985b] hover:bg-[#F2EAE0]"
                     }`}
                   >
                     {size}
@@ -458,7 +456,7 @@ const AdvancedFilters = ({
                 {PRICE_RANGES.map((range, index) => (
                   <label
                     key={index}
-                    className="flex items-center cursor-pointer group"
+                    className="group flex cursor-pointer items-center"
                   >
                     <input
                       type="checkbox"
@@ -482,9 +480,9 @@ const AdvancedFilters = ({
                           );
                         }
                       }}
-                      className="mr-3 h-4 w-4 rounded border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
+                      className="mr-3 h-4 w-4 cursor-pointer rounded border-[#DCECE9] bg-white text-[#b8985b] focus:ring-[#b8985b]"
                     />
-                    <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                    <span className="text-sm text-slate-700 transition-colors group-hover:text-[#b8985b]">
                       {range.label}
                     </span>
                   </label>
@@ -502,7 +500,7 @@ const AdvancedFilters = ({
                 {RATING_OPTIONS.map((rating) => (
                   <label
                     key={rating.value}
-                    className="flex items-center cursor-pointer group"
+                    className="group flex cursor-pointer items-center"
                   >
                     <input
                       type="radio"
@@ -512,9 +510,9 @@ const AdvancedFilters = ({
                       onChange={(e) =>
                         updateFilter("minRating", Number(e.target.value))
                       }
-                      className="mr-3 h-4 w-4 border-emerald-900/60 bg-[#10251f] text-emerald-400 focus:ring-emerald-400 cursor-pointer"
+                      className="mr-3 h-4 w-4 cursor-pointer border-[#DCECE9] bg-white text-[#b8985b] focus:ring-[#b8985b]"
                     />
-                    <span className="text-sm text-emerald-100 transition-colors group-hover:text-emerald-300">
+                    <span className="text-sm text-slate-700 transition-colors group-hover:text-[#b8985b]">
                       {rating.label}
                     </span>
                   </label>

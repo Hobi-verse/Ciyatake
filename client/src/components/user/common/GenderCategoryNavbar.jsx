@@ -83,13 +83,13 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
         {/* Women Ethnic Section */}
         {ethnicCategory && (
           <div className="col-span-8">
-            <h3 className="mb-4 border-b border-emerald-500/40 pb-1 text-sm font-bold uppercase tracking-wide text-emerald-200">
+            <h3 className="mb-4 border-b border-[#DCECE9] pb-1 text-sm font-semibold uppercase tracking-[0.25em] text-[#b8985b]">
               {ethnicCategory.title}
             </h3>
             <div className="grid grid-cols-6 gap-4">
               {/* Sarees */}
               <div className="space-y-1">
-                <h4 className="mb-2 text-xs font-semibold text-emerald-100">
+                <h4 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
                   Sarees
                 </h4>
                 {ethnicCategory.subcategories
@@ -99,7 +99,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
+                      className="block py-0.5 text-xs text-slate-500 transition hover:text-[#b8985b]"
                       onClick={onClose}
                     >
                       {subcategory.name}
@@ -109,7 +109,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
 
               {/* Kurtis */}
               <div className="space-y-1">
-                <h4 className="mb-2 text-xs font-semibold text-emerald-100">
+                <h4 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
                   Kurtis
                 </h4>
                 {ethnicCategory.subcategories
@@ -119,7 +119,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
+                      className="block py-0.5 text-xs text-slate-500 transition hover:text-[#b8985b]"
                       onClick={onClose}
                     >
                       {subcategory.name}
@@ -129,7 +129,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
 
               {/* Kurta Sets */}
               <div className="space-y-1">
-                <h4 className="mb-2 text-xs font-semibold text-emerald-100">
+                <h4 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
                   Kurta Sets
                 </h4>
                 {ethnicCategory.subcategories
@@ -143,7 +143,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
+                      className="block py-0.5 text-xs text-slate-500 transition hover:text-[#b8985b]"
                       onClick={onClose}
                     >
                       {subcategory.name}
@@ -153,7 +153,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
 
               {/* Dupatta Sets */}
               <div className="space-y-1">
-                <h4 className="mb-2 text-xs font-semibold text-emerald-100">
+                <h4 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
                   Dupatta Sets
                 </h4>
                 {ethnicCategory.subcategories
@@ -167,7 +167,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
+                      className="block py-0.5 text-xs text-slate-500 transition hover:text-[#b8985b]"
                       onClick={onClose}
                     >
                       {subcategory.name}
@@ -177,7 +177,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
 
               {/* Suits & Dress Material */}
               <div className="space-y-1">
-                <h4 className="mb-2 text-xs font-semibold text-emerald-100">
+                <h4 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
                   Suits & Dress Material
                 </h4>
                 {ethnicCategory.subcategories
@@ -191,7 +191,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
+                      className="block py-0.5 text-xs text-slate-500 transition hover:text-[#b8985b]"
                       onClick={onClose}
                     >
                       {subcategory.name}
@@ -201,7 +201,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
 
               {/* Lehengas & Other Ethnic */}
               <div className="space-y-1">
-                <h4 className="mb-2 text-xs font-semibold text-emerald-100">
+                <h4 className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
                   Lehengas & Other Ethnic
                 </h4>
                 {ethnicCategory.subcategories
@@ -218,7 +218,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
+                      className="block py-0.5 text-xs text-slate-500 transition hover:text-[#b8985b]"
                       onClick={onClose}
                     >
                       {subcategory.name}
@@ -232,7 +232,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
         {/* Women Western Section */}
         {westernCategory && (
           <div className="col-span-4">
-            <h3 className="mb-4 border-b border-emerald-500/40 pb-1 text-sm font-bold uppercase tracking-wide text-emerald-200">
+            <h3 className="mb-4 border-b border-[#DCECE9] pb-1 text-sm font-semibold uppercase tracking-[0.25em] text-[#b8985b]">
               {westernCategory.title}
             </h3>
             <div className="grid grid-cols-2 gap-4">
@@ -243,7 +243,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
                     <Link
                       key={subcategory.slug}
                       to={`/category/${subcategory.slug}`}
-                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
+                      className="block py-0.5 text-xs text-slate-500 transition hover:text-[#b8985b]"
                       onClick={onClose}
                     >
                       {subcategory.name}
@@ -255,7 +255,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
                   <Link
                     key={subcategory.slug}
                     to={`/category/${subcategory.slug}`}
-                    className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
+                    className="block py-0.5 text-xs text-slate-500 transition hover:text-[#b8985b]"
                     onClick={onClose}
                   >
                     {subcategory.name}
@@ -285,14 +285,14 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
             key={group.mainCategory?.slug || groupIndex}
             className="space-y-2"
           >
-            <h3 className="mb-2 border-b border-emerald-500/40 pb-1 text-sm font-medium uppercase tracking-wide text-emerald-200">
+            <h3 className="mb-2 border-b border-[#DCECE9] pb-1 text-sm font-semibold uppercase tracking-[0.25em] text-[#b8985b]">
               {group.title}
             </h3>
 
             <div className="space-y-1">
               <Link
                 to={`/category/${group.mainCategory?.slug}?gender=${gender}`}
-                className="block py-0.5 text-xs font-medium text-emerald-100 transition-colors hover:text-emerald-200 hover:underline"
+                className="block py-0.5 text-xs font-semibold text-slate-700 transition hover:text-[#b8985b]"
                 onClick={onClose}
               >
                 All {group.mainCategory?.name}
@@ -304,7 +304,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
                     <Link
                       key={subcategory.slug || subcategory.id}
                       to={`/category/${subcategory.slug}?gender=${gender}`}
-                      className="block py-0.5 text-xs text-emerald-300 transition-colors hover:text-emerald-200 hover:underline"
+                      className="block py-0.5 text-xs text-slate-500 transition hover:text-[#b8985b]"
                       onClick={onClose}
                     >
                       {subcategory.name}
@@ -322,7 +322,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
   return (
     <div
       ref={dropdownRef}
-      className="absolute left-0 top-full z-50 mt-2 w-full rounded-2xl border border-emerald-900/60 bg-[#10241e] shadow-xl shadow-emerald-900/40 backdrop-blur"
+      className="absolute left-0 top-full z-50 mt-2 w-full rounded-3xl border border-[#DCECE9] bg-white shadow-[0_32px_72px_rgba(15,23,42,0.16)]"
       style={{
         width: "90%",
         minWidth: "1000px",
@@ -332,7 +332,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
     >
       <div className="px-8 py-6">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-emerald-100">
+          <h2 className="text-lg font-semibold text-slate-900">
             {gender === "Women"
               ? "Women's Fashion"
               : gender === "Men"
@@ -341,7 +341,7 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
           </h2>
           <button
             onClick={onClose}
-            className="text-emerald-300 transition-colors hover:text-emerald-100"
+            className="text-slate-400 transition hover:text-slate-600"
           >
             ✕
           </button>
@@ -350,17 +350,17 @@ const CategoryDropdown = ({ gender, categories, isVisible, onClose }) => {
         {/* Category Content */}
         {gender === "Women" ? renderWomenDropdown() : renderStandardDropdown()}
 
-        <div className="mt-6 flex gap-4 border-t border-emerald-900/60 pt-4">
+        <div className="mt-6 flex gap-4 border-t border-[#DCECE9] pt-4">
           <Link
             to={`/${gender.toLowerCase()}`}
-            className="inline-block rounded-lg border border-emerald-500/40 px-6 py-2 text-center text-sm font-medium text-emerald-100 transition-colors hover:border-emerald-300/70 hover:bg-emerald-500/10"
+            className="inline-block rounded-full border border-[#b8985b] px-6 py-2 text-center text-sm font-medium text-[#b8985b] transition hover:bg-[#b8985b] hover:text-white"
             onClick={onClose}
           >
             Shop All {gender}'s Items
           </Link>
           <Link
             to="/offers"
-            className="inline-block rounded-lg border border-emerald-500/40 px-6 py-2 text-center text-sm font-medium text-emerald-100 transition-colors hover:border-emerald-300/70 hover:bg-emerald-500/10"
+            className="inline-block rounded-full border border-[#b8985b] px-6 py-2 text-center text-sm font-medium text-[#b8985b] transition hover:bg-[#b8985b] hover:text-white"
             onClick={onClose}
           >
             Special Offers
@@ -544,13 +544,13 @@ const GenderCategoryNavbar = ({
   const actions = [...commonActions, ...authActions];
 
   return (
-    <header className="border-b border-white/10 bg-[#0b1d18]/95 text-emerald-50 backdrop-blur sticky top-0 z-50">
-      <nav className="mx-auto max-w-7xl px-4 py-4 relative">
+    <header className="sticky top-0 z-50 border-b border-[#DCECE9] bg-white/95 text-slate-900 backdrop-blur">
+      <nav className="relative mx-auto max-w-7xl px-4 py-4">
         <div className="flex items-center gap-4">
           {/* Brand */}
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight text-emerald-50 transition hover:text-emerald-200"
+            className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight text-[#b8985b] transition hover:text-[#a9894f]"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <img
@@ -558,13 +558,13 @@ const GenderCategoryNavbar = ({
               alt="Ciyatake"
               className="h-8 w-auto md:h-10"
             />
-            <span className="text-base font-semibold tracking-tight text-emerald-50 md:text-lg">
+            <span className="text-base font-semibold tracking-tight md:text-lg">
               Ciyatake
             </span>
           </Link>
 
           {/* Desktop Navigation with Hover Dropdowns */}
-          <div className="hidden lg:flex items-center gap-6 text-sm font-medium text-emerald-100">
+          <div className="hidden items-center gap-6 text-sm font-medium text-slate-600 lg:flex">
             {genderLinks.map((link) => (
               <div
                 key={link.value}
@@ -573,7 +573,7 @@ const GenderCategoryNavbar = ({
               >
                 <Link
                   to={link.to}
-                  className="transition hover:text-emerald-300 hover:underline py-2 px-2"
+                  className="px-2 py-2 transition hover:text-[#b8985b]"
                 >
                   {link.label}
                 </Link>
@@ -582,14 +582,14 @@ const GenderCategoryNavbar = ({
 
             <Link
               to="/accessories"
-              className="transition hover:text-emerald-300 hover:underline py-2 px-2"
+              className="px-2 py-2 transition hover:text-[#b8985b]"
             >
               Accessories
             </Link>
 
             <Link
               to="/home-living"
-              className="transition hover:text-emerald-300 hover:underline py-2 px-2"
+              className="px-2 py-2 transition hover:text-[#b8985b]"
             >
               Home & Living
             </Link>
@@ -627,19 +627,19 @@ const GenderCategoryNavbar = ({
                       onSearchSubmit?.(searchTerm);
                     }
                   }}
-                  className="w-full rounded-full border border-white/20 bg-white/10 px-4 py-2 pl-10 text-sm text-emerald-50 placeholder-emerald-300/60 backdrop-blur transition focus:border-emerald-300 focus:bg-white/20 focus:outline-none"
+                  className="w-full rounded-full border border-[#DCECE9] bg-white px-4 py-2 pl-10 text-sm text-slate-700 placeholder:text-slate-400 transition focus:border-[#b8985b] focus:outline-none focus:ring-2 focus:ring-[#b8985b]/25"
                 />
                 <img
                   src={searchIcon}
                   alt=""
-                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-300/60"
+                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
                   aria-hidden="true"
                 />
               </div>
             </div>
 
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden items-center gap-2 md:flex">
               {actions.map((action, index) => {
                 const key =
                   action.key ?? `${action.label ?? "action"}-${index}`;
@@ -650,7 +650,7 @@ const GenderCategoryNavbar = ({
                       key={key}
                       to={action.to}
                       onClick={action.onClick}
-                      className="inline-flex items-center justify-center rounded-full border border-emerald-300/70 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200 hover:bg-emerald-400/10"
+                      className="inline-flex items-center justify-center rounded-full border border-[#b8985b] px-4 py-2 text-sm font-semibold text-[#b8985b] transition hover:bg-[#F2EAE0]"
                     >
                       {action.label}
                     </Link>
@@ -663,7 +663,7 @@ const GenderCategoryNavbar = ({
                       key={key}
                       to={action.to}
                       onClick={action.onClick}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#DCECE9] bg-white text-slate-600 transition hover:border-[#b8985b] hover:bg-[#F2EAE0]"
                       title={action.label}
                     >
                       <action.icon className="h-5 w-5" />
@@ -677,7 +677,7 @@ const GenderCategoryNavbar = ({
                     type="button"
                     onClick={action.onClick}
                     disabled={isLoggingOut}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#DCECE9] bg-white text-slate-600 transition hover:border-[#b8985b] hover:bg-[#F2EAE0] disabled:cursor-not-allowed disabled:border-[#DCECE9] disabled:text-slate-400"
                     title={isLoggingOut ? "Logging out..." : action.label}
                   >
                     <action.icon className="h-5 w-5" />
@@ -690,7 +690,7 @@ const GenderCategoryNavbar = ({
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10 lg:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#DCECE9] bg-white text-slate-600 transition hover:border-[#b8985b] hover:bg-[#F2EAE0] lg:hidden"
               aria-expanded={isMobileMenuOpen}
               aria-label="Toggle navigation menu"
             >
@@ -722,24 +722,24 @@ const GenderCategoryNavbar = ({
                   onSearchSubmit?.(searchTerm);
                 }
               }}
-              className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 pl-10 text-sm text-emerald-50 placeholder-emerald-300/60 backdrop-blur transition focus:border-emerald-300 focus:bg-white/20 focus:outline-none"
+              className="w-full rounded-xl border border-[#DCECE9] bg-white px-4 py-3 pl-10 text-sm text-slate-700 placeholder:text-slate-400 transition focus:border-[#b8985b] focus:outline-none focus:ring-2 focus:ring-[#b8985b]/25"
             />
             <img
               src={searchIcon}
               alt=""
-              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-300/60"
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
               aria-hidden="true"
             />
           </div>
 
           {/* Mobile Navigation Links */}
-          <ul className="flex flex-col gap-3 text-sm font-medium text-emerald-100">
+          <ul className="flex flex-col gap-3 text-sm font-medium text-slate-700">
             {genderLinks.map((link) => (
               <li key={link.value}>
                 <Link
                   to={link.to}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-between rounded-xl border border-white/5 bg-white/5 px-3 py-2 transition hover:border-emerald-300/50 hover:bg-emerald-400/10"
+                  className="flex items-center justify-between rounded-xl border border-[#DCECE9] bg-white px-3 py-2 transition hover:border-[#b8985b]/60 hover:bg-[#F2EAE0]"
                 >
                   {link.label}
                   <span aria-hidden>→</span>
@@ -750,7 +750,7 @@ const GenderCategoryNavbar = ({
               <Link
                 to="/accessories"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center justify-between rounded-xl border border-white/5 bg-white/5 px-3 py-2 transition hover:border-emerald-300/50 hover:bg-emerald-400/10"
+                className="flex items-center justify-between rounded-xl border border-[#DCECE9] bg-white px-3 py-2 transition hover:border-[#b8985b]/60 hover:bg-[#F2EAE0]"
               >
                 Accessories
                 <span aria-hidden>→</span>
@@ -760,7 +760,7 @@ const GenderCategoryNavbar = ({
               <Link
                 to="/home-living"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center justify-between rounded-xl border border-white/5 bg-white/5 px-3 py-2 transition hover:border-emerald-300/50 hover:bg-emerald-400/10"
+                className="flex items-center justify-between rounded-xl border border-[#DCECE9] bg-white px-3 py-2 transition hover:border-[#b8985b]/60 hover:bg-[#F2EAE0]"
               >
                 Home & Living
                 <span aria-hidden>→</span>
@@ -780,7 +780,7 @@ const GenderCategoryNavbar = ({
                     key={key}
                     to={action.to}
                     onClick={action.onClick}
-                    className="flex-1 rounded-full border border-emerald-300/70 px-4 py-2 text-center text-sm font-semibold text-emerald-100 transition hover:border-emerald-200 hover:bg-emerald-400/10"
+                    className="flex-1 rounded-full border border-[#b8985b] px-4 py-2 text-center text-sm font-semibold text-[#b8985b] transition hover:bg-[#F2EAE0]"
                   >
                     {action.label}
                   </Link>
@@ -793,7 +793,7 @@ const GenderCategoryNavbar = ({
                     key={key}
                     to={action.to}
                     onClick={action.onClick}
-                    className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10"
+                    className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#DCECE9] bg-white text-slate-600 transition hover:border-[#b8985b] hover:bg-[#F2EAE0]"
                     title={action.label}
                   >
                     <action.icon className="h-6 w-6" />
@@ -807,7 +807,7 @@ const GenderCategoryNavbar = ({
                   type="button"
                   onClick={action.onClick}
                   disabled={isLoggingOut}
-                  className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#DCECE9] bg-white text-slate-600 transition hover:border-[#b8985b] hover:bg-[#F2EAE0] disabled:cursor-not-allowed disabled:border-[#DCECE9] disabled:text-slate-400"
                   title={isLoggingOut ? "Logging out..." : action.label}
                 >
                   <action.icon className="h-6 w-6" />

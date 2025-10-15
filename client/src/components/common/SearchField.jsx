@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 
 const baseInputStyles =
-  "w-full appearance-none rounded-full border border-white/10 bg-white/10 px-4 py-2.5 text-sm text-emerald-50 placeholder:text-emerald-200/60 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-400/70 transition";
+  "w-full appearance-none rounded-full border border-[#DCECE9] bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#b8985b] focus:outline-none focus:ring-2 focus:ring-[#b8985b]/30 transition";
 
 const SearchField = ({
   placeholder = "Search...",
@@ -41,7 +41,7 @@ const SearchField = ({
   return (
     <form onSubmit={handleSubmit} className={`relative ${className}`.trim()}>
       {icon ? (
-        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-emerald-200/70">
+        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
           {renderIcon()}
         </span>
       ) : null}

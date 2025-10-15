@@ -121,7 +121,7 @@ const UserNavbar = ({
             alt="Ciyatake"
             className="h-8 w-auto md:h-10"
           />
-          <span className="text-base font-semibold tracking-tight text-emerald-50 md:text-lg">
+          <span className="text-base font-semibold tracking-tight text-[#b8985b] md:text-lg">
             Ciyatake
           </span>
         </>

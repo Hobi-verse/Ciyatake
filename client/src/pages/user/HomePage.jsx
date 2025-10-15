@@ -375,7 +375,7 @@ const HomePage = ({ isLoggedIn }) => {
   const isDefaultView = !hasActiveFilters && searchTerm.trim() === "";
 
   return (
-    <div className="min-h-screen bg-[#0f231d] text-emerald-100">
+    <div className="min-h-screen bg-white text-slate-900">
       <GenderCategoryNavbar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -386,10 +386,10 @@ const HomePage = ({ isLoggedIn }) => {
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         {/* Header Section */}
         <div className="mb-10 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-emerald-50">
+          <h1 className="text-4xl font-bold tracking-tight text-[#b8985b]">
             Products For You
           </h1>
-          <p className="mt-3 text-base text-emerald-300">
+          <p className="mt-3 text-base text-slate-600">
             Discover our complete collection with advanced filters
           </p>
         </div>
@@ -404,10 +404,10 @@ const HomePage = ({ isLoggedIn }) => {
           />
 
           {/* Main Content */}
-          <div className="flex-1 space-y-6 rounded-2xl border border-emerald-900/60 bg-[#132e26] p-6 shadow-lg shadow-emerald-900/40">
+          <div className="flex-1 space-y-6 rounded-2xl border border-[#DCECE9] bg-[#F2EAE0] p-6 shadow-[0_20px_45px_rgba(0,0,0,0.08)]">
             {/* Sort and Results Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-4 text-sm text-emerald-200">
+              <div className="flex items-center gap-4 text-sm text-slate-600">
                 <p>
                   Showing {displayedCount} of {totalCount} products
                 </p>
@@ -418,7 +418,7 @@ const HomePage = ({ isLoggedIn }) => {
                   <button
                     type="button"
                     onClick={handleClearFilters}
-                    className="text-sm font-semibold text-emerald-300 transition-colors hover:text-emerald-200"
+                    className="text-sm font-semibold text-[#b8985b] transition-colors hover:text-[#a0824a]"
                   >
                     Clear all filters
                   </button>
@@ -432,7 +432,7 @@ const HomePage = ({ isLoggedIn }) => {
                     id="homepage-sort"
                     value={sortOption}
                     onChange={(event) => setSortOption(event.target.value)}
-                    className="w-full rounded-lg border border-emerald-900/60 bg-[#0f231d] px-3 py-2 text-sm text-emerald-200 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+                    className="w-full rounded-lg border border-[#DCECE9] bg-white px-3 py-2 text-sm text-slate-700 focus:border-[#b8985b] focus:outline-none focus:ring-1 focus:ring-[#b8985b]"
                   >
                     {SORT_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -446,7 +446,7 @@ const HomePage = ({ isLoggedIn }) => {
 
             {/* Loading States */}
             {categoryLoading && (
-              <p className="text-sm text-emerald-300">Loading categories…</p>
+              <p className="text-sm text-[#b8985b]">Loading categories…</p>
             )}
 
             {categoryError && (
@@ -466,7 +466,7 @@ const HomePage = ({ isLoggedIn }) => {
 
             {/* Products Grid */}
             {loading ? (
-              <div className="flex min-h-[16rem] items-center justify-center text-emerald-300">
+              <div className="flex min-h-[16rem] items-center justify-center text-[#b8985b]">
                 Loading products...
               </div>
             ) : error ? (
@@ -485,14 +485,14 @@ const HomePage = ({ isLoggedIn }) => {
             ) : filteredProducts.length ? (
               <ProductGrid products={filteredProducts} />
             ) : (
-              <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-emerald-900/60 bg-[#0f231d] p-12 text-center">
-                <p className="text-emerald-200">
+              <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-[#DCECE9] bg-white p-12 text-center">
+                <p className="text-slate-600">
                   No products match your current filters.
                 </p>
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="rounded-lg bg-emerald-500 px-4 py-2 font-semibold text-emerald-50 transition-colors hover:bg-emerald-400"
+                  className="rounded-lg bg-[#b8985b] px-4 py-2 font-semibold text-white transition-colors hover:bg-[#a0824a]"
                 >
                   Clear filters
                 </button>
@@ -507,7 +507,7 @@ const HomePage = ({ isLoggedIn }) => {
                   <button
                     type="button"
                     onClick={handleLoadMoreItems}
-                    className="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-5 py-2 text-sm font-semibold text-emerald-50 transition-colors hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#132e26]"
+                    className="inline-flex items-center justify-center rounded-lg bg-[#b8985b] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#a0824a] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#b8985b] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F2EAE0]"
                   >
                     More Items
                   </button>
@@ -521,7 +521,7 @@ const HomePage = ({ isLoggedIn }) => {
           type="button"
           onClick={handleScrollToTop}
           aria-label="Back to top"
-          className="fixed bottom-6 right-6 inline-flex h-12 w-12 items-center justify-center rounded-full border border-emerald-500/60 bg-emerald-500 text-emerald-50 shadow-lg shadow-emerald-900/40 transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+          className="fixed bottom-6 right-6 inline-flex h-12 w-12 items-center justify-center rounded-full border border-[#b8985b]/60 bg-[#b8985b] text-white shadow-[0_10px_30px_rgba(185,152,91,0.35)] transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#DCECE9]"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

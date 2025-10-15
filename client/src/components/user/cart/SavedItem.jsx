@@ -7,11 +7,11 @@ const SavedItem = ({ item, onMoveToCart, onRemove }) => {
   if (!item) return null;
 
   return (
-    <article className="flex flex-col gap-4 rounded-3xl border border-white/5 bg-white/5 p-5 shadow-[0_16px_36px_rgba(8,35,25,0.28)] sm:flex-row sm:items-center sm:justify-between">
+    <article className="flex flex-col gap-4 rounded-3xl border border-[#DCECE9] bg-white p-5 shadow-[0_24px_50px_rgba(15,23,42,0.08)] sm:flex-row sm:items-center sm:justify-between">
       <div className="flex gap-4">
         <Link
           to={`/products/${item.productId ?? item.id}`}
-          className="block h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-emerald-900/30"
+          className="block h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-[#DCECE9] bg-[#F2EAE0]"
         >
           {item.imageUrl ? (
             <img
@@ -24,24 +24,26 @@ const SavedItem = ({ item, onMoveToCart, onRemove }) => {
         </Link>
         <div className="space-y-2">
           <div>
-            <h3 className="text-base font-semibold text-white">{item.title}</h3>
+            <h3 className="text-base font-semibold text-slate-900">
+              {item.title}
+            </h3>
             {item.size ? (
-              <p className="text-xs uppercase tracking-[0.2em] text-emerald-200/60">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
                 Size {item.size}
               </p>
             ) : null}
           </div>
-          <p className="text-sm font-semibold text-emerald-100">
+          <p className="text-sm font-semibold text-[#b8985b]">
             {formatINR(item.price)}
           </p>
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 text-sm font-medium text-emerald-200/80 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 text-sm font-medium text-slate-600 sm:flex-row sm:items-center">
         <button
           type="button"
           onClick={() => onMoveToCart?.(item.id)}
-          className="inline-flex items-center gap-2 rounded-full border border-emerald-300/60 px-4 py-2 text-emerald-100 transition hover:border-emerald-200 hover:bg-emerald-400/10"
+          className="inline-flex items-center gap-2 rounded-full border border-[#b8985b] px-4 py-2 text-[#b8985b] transition hover:bg-[#F2EAE0]"
         >
           <img src={bagIcon} alt="" aria-hidden className="h-4 w-4" />
           Move to cart
@@ -49,7 +51,7 @@ const SavedItem = ({ item, onMoveToCart, onRemove }) => {
         <button
           type="button"
           onClick={() => onRemove?.(item.id)}
-          className="inline-flex items-center gap-2 rounded-full px-4 py-2 transition hover:text-emerald-100"
+          className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-slate-500 transition hover:text-[#b8985b]"
         >
           <img src={trashIcon} alt="" aria-hidden className="h-4 w-4" />
           Remove

@@ -271,16 +271,16 @@ const ProductSummary = ({
     : "Write a review";
 
   return (
-    <section className="space-y-6 rounded-3xl border border-white/5 bg-white/5 p-6 shadow-xl">
+    <section className="space-y-6 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-[0_36px_72px_rgba(15,23,42,0.12)]">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <header className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/70">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
             {product.category}
           </p>
-          <h1 className="text-3xl font-semibold text-white sm:text-4xl">
+          <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
             {product.title}
           </h1>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-emerald-100/80">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
             <RatingDisplay rating={ratingValue} count={reviewCountValue} />
             {onRequestReview ? (
               <button
@@ -288,7 +288,7 @@ const ProductSummary = ({
                 onClick={() =>
                   onRequestReview(hasExistingReview ? "edit" : "create")
                 }
-                className="rounded-full border border-emerald-300/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-100 transition hover:border-emerald-200"
+                className="rounded-full border border-[#b8985b] px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#b8985b] transition hover:bg-[#b8985b] hover:text-white"
               >
                 {reviewButtonLabel}
               </button>
@@ -303,16 +303,16 @@ const ProductSummary = ({
             disabled={wishlistButtonDisabled}
             className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] transition ${
               wishlistState?.inWishlist
-                ? "border-emerald-300/80 bg-emerald-400/20 text-emerald-100"
-                : "border-white/15 bg-white/5 text-emerald-200/80 hover:border-emerald-300/60 hover:text-emerald-100"
-            } disabled:cursor-not-allowed disabled:border-white/10 disabled:text-emerald-200/40`}
+                ? "border-[#b8985b] bg-[#b8985b]/15 text-[#b8985b]"
+                : "border-slate-300 bg-white text-slate-500 hover:border-[#b8985b] hover:text-[#b8985b]"
+            } disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400`}
           >
             <img
               src={heartIcon}
               alt=""
               aria-hidden
               className={`h-4 w-4 ${
-                wishlistState?.inWishlist ? "opacity-100" : "opacity-80"
+                wishlistState?.inWishlist ? "opacity-100" : "opacity-60"
               }`}
             />
             {wishlistState?.loading ? "Saving…" : wishlistButtonLabel}
@@ -320,17 +320,15 @@ const ProductSummary = ({
         ) : null}
       </div>
 
-      <p className="text-sm leading-relaxed text-emerald-100/80">
-        {summaryText}
-      </p>
+      <p className="text-sm leading-relaxed text-slate-600">{summaryText}</p>
 
-      <div className="rounded-2xl bg-[#0d221c] p-4 text-lg font-semibold text-emerald-100">
-        <span className="text-sm uppercase tracking-[0.2em] text-emerald-200/70">
+      <div className="rounded-2xl border border-[#DCECE9] bg-[#F2EAE0] p-4 text-lg font-semibold text-[#b8985b]">
+        <span className="text-sm uppercase tracking-[0.2em] text-slate-600">
           Price
         </span>
-        <p className="text-3xl text-emerald-200">{formatINR(displayedPrice)}</p>
+        <p className="text-3xl text-[#b8985b]">{formatINR(displayedPrice)}</p>
         {product.discount ? (
-          <p className="text-sm text-emerald-200/70">
+          <p className="text-sm text-slate-600">
             {product.discount}% off today
           </p>
         ) : null}
@@ -338,13 +336,13 @@ const ProductSummary = ({
 
       {sizeOptions.length ? (
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/60">
+          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             <span>Size</span>
             {product.sizeGuide ? (
               <button
                 type="button"
                 onClick={() => product.onOpenSizeGuide?.()}
-                className="text-emerald-200 transition hover:text-emerald-100"
+                className="text-[#b8985b] transition hover:text-[#a9894f]"
               >
                 Size Guide
               </button>
@@ -356,7 +354,7 @@ const ProductSummary = ({
 
       {colorOptions.length ? (
         <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/60">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             Color
           </p>
           <ColorSwatchGroup
@@ -368,7 +366,7 @@ const ProductSummary = ({
       ) : null}
 
       <div className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/60">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
           Quantity
         </p>
         <QuantitySelector
@@ -383,7 +381,7 @@ const ProductSummary = ({
           type="button"
           onClick={handleAddToCart}
           disabled={addButtonDisabled}
-          className="inline-flex flex-1 items-center justify-center rounded-full border border-emerald-300/70 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100 transition hover:border-emerald-200 hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:border-emerald-300/20 disabled:bg-emerald-900/40 disabled:text-emerald-400/60"
+          className="inline-flex flex-1 items-center justify-center rounded-full border border-[#b8985b] bg-[#F2EAE0] px-4 py-3 text-sm font-semibold text-[#b8985b] transition hover:bg-[#b8985b] hover:text-white disabled:cursor-not-allowed disabled:border-[#DCECE9] disabled:bg-white disabled:text-slate-400"
         >
           {isProcessing && actionStatus?.context !== "buy"
             ? "Adding…"
@@ -393,7 +391,7 @@ const ProductSummary = ({
           type="button"
           onClick={handleBuyNow}
           disabled={isProcessing}
-          className="inline-flex flex-1 items-center justify-center rounded-full border border-transparent bg-emerald-400 px-4 py-3 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:bg-emerald-300/60 disabled:text-emerald-950/40"
+          className="inline-flex flex-1 items-center justify-center rounded-full border border-transparent bg-[#b8985b] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#b8985b]/25 transition hover:bg-[#a9894f] disabled:cursor-not-allowed disabled:bg-[#b8985b]/60 disabled:text-white/80"
         >
           {isProcessing && actionStatus?.context === "buy"
             ? "Processing…"
@@ -402,18 +400,16 @@ const ProductSummary = ({
       </div>
 
       {benefits.length ? (
-        <ul className="space-y-3 rounded-2xl bg-[#0d221c] p-4 text-sm text-emerald-100/80">
+        <ul className="space-y-3 rounded-2xl border border-[#DCECE9] bg-[#F2EAE0] p-4 text-sm text-slate-700">
           {benefits.map((benefit, index) => (
             <li key={`${benefit.title}-${index}`} className="flex gap-3">
-              <span aria-hidden className="mt-1 text-emerald-300">
+              <span aria-hidden className="mt-1 text-[#b8985b]">
                 •
               </span>
               <div>
-                <p className="font-semibold text-emerald-100">
-                  {benefit.title}
-                </p>
+                <p className="font-semibold text-slate-900">{benefit.title}</p>
                 {benefit.description ? (
-                  <p className="text-emerald-200/80">{benefit.description}</p>
+                  <p className="text-slate-600">{benefit.description}</p>
                 ) : null}
               </div>
             </li>
@@ -425,8 +421,8 @@ const ProductSummary = ({
         <div
           className={`rounded-2xl border px-4 py-3 text-sm ${
             actionStatus.status === "error"
-              ? "border-rose-200/60 bg-rose-500/10 text-rose-100"
-              : "border-emerald-300/40 bg-emerald-400/10 text-emerald-100"
+              ? "border-rose-200 bg-rose-50 text-rose-600"
+              : "border-[#c3dedd] bg-[#c3dedd]/20 text-[#2f4a55]"
           }`}
         >
           {actionStatus.message}
@@ -434,7 +430,7 @@ const ProductSummary = ({
       ) : null}
 
       {wishlistState?.error ? (
-        <div className="rounded-2xl border border-rose-200/60 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
           {wishlistState.error}
         </div>
       ) : null}

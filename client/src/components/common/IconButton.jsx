@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 const baseStyles =
-  "inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-100 transition hover:border-emerald-300/60 hover:bg-emerald-400/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300";
+  "inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#DCECE9] bg-white text-slate-600 transition hover:border-[#b8985b] hover:bg-[#F2EAE0] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8985b]";
 
 const IconButton = ({ icon, label, to, href, onClick, className = "" }) => {
   const renderIcon = () => {

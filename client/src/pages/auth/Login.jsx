@@ -7,7 +7,6 @@ import { storeAuthSession } from "../../utils/authStorage";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState(null);
 
@@ -19,8 +18,8 @@ const Login = () => {
   // Handle Google OAuth callback
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    const error = urlParams.get('error');
+    const token = urlParams.get("token");
+    const error = urlParams.get("error");
 
     if (token) {
       // Handle successful Google login
@@ -28,35 +27,44 @@ const Login = () => {
         type: "success",
         message: "Google login successful! Redirecting...",
       });
-      
+
       // Store the token
-      localStorage.setItem('authToken', token);
-      
+      localStorage.setItem("authToken", token);
+
       // You may want to get user info here
       // For now, redirect to home page
       setTimeout(() => {
-        navigate('/', { replace: true });
+        navigate("/", { replace: true });
         // Clean up URL
-        window.history.replaceState({}, document.title, window.location.pathname);
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
       }, 1000);
     }
 
     if (error) {
       // Handle Google login error
       const errorMessages = {
-        google_auth_failed: 'Google authentication failed. Please try again.',
-        google_auth_error: 'An error occurred during Google authentication.',
+        google_auth_failed: "Google authentication failed. Please try again.",
+        google_auth_error: "An error occurred during Google authentication.",
       };
-      
-      const message = errorMessages[error] || 'Authentication failed. Please try again.';
+
+      const message =
+        errorMessages[error] || "Authentication failed. Please try again.";
       setStatus({
         type: "error",
         message: message,
       });
-      
+
       // Clean up URL
       setTimeout(() => {
-        window.history.replaceState({}, document.title, window.location.pathname);
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
       }, 3000);
     }
   }, [navigate]);
@@ -89,8 +97,9 @@ const Login = () => {
   const fields = [
     {
       name: "phoneNumber",
+      label: "Mobile number",
       type: "tel",
-      placeholder: "Enter the Mobile Number",
+      placeholder: "Enter your mobile number",
       required: true,
       autoComplete: "tel",
       inputMode: "numeric",
@@ -98,41 +107,13 @@ const Login = () => {
     },
     {
       name: "password",
-      type: isPasswordVisible ? "text" : "password",
-      placeholder: "Enter the Password",
+      label: "Password",
+      type: "password",
+      placeholder: "Enter your password",
       required: true,
       autoComplete: "current-password",
       helperText: "Use the password you created during registration.",
-      render: ({ value = "", setValue, inputClasses }) => (
-        <div className="space-y-2">
-          <label
-            htmlFor="login-password"
-            className="block text-sm font-medium text-emerald-100"
-          >
-            Password
-          </label>
-          <div className="relative">
-            <input
-              id="login-password"
-              name="password"
-              type={isPasswordVisible ? "text" : "password"}
-              placeholder="Enter the Password"
-              value={value}
-              onChange={(event) => setValue(event.target.value)}
-              className={`${inputClasses} pr-24`}
-              required
-              autoComplete="current-password"
-            />
-            <button
-              type="button"
-              onClick={() => setIsPasswordVisible((previous) => !previous)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold uppercase tracking-wide text-emerald-200/80"
-            >
-              {isPasswordVisible ? "Hide" : "Show"}
-            </button>
-          </div>
-        </div>
-      ),
+      inputClassName: "pr-24",
     },
   ];
 
@@ -151,9 +132,7 @@ const Login = () => {
     }
   };
 
-  const socialProviders = [
-    { label: "Google", onClick: handleGoogleLogin },
-  ];
+  const socialProviders = [{ label: "Google", onClick: handleGoogleLogin }];
 
   const handleLogin = async (formValues, { reset }) => {
     const mobileNumber = (formValues.phoneNumber ?? "")
@@ -207,7 +186,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#07150f]">
+    <div className="min-h-screen bg-[#f5f2ee]">
       <UserNavbar />
       <AuthForm
         title="Welcome back"

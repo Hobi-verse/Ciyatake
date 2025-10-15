@@ -73,7 +73,7 @@ function App() {
   const isLoggedIn = !!authSession.token;
 
   return (
-    <div className="min-h-screen bg-[#07150f]">
+    <div className="min-h-screen bg-white text-slate-900">
       <Routes>
         <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
         <Route

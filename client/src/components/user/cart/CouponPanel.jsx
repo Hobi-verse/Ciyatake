@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { formatINR } from "../../../utils/currency.js";
 
 const statusColors = {
-  active: "text-emerald-200 bg-emerald-500/10",
-  expired: "text-rose-200 bg-rose-500/10",
-  inactive: "text-amber-200 bg-amber-500/10",
+  active: "text-[#2f4a55] bg-[#c3dedd]",
+  expired: "text-[#8a4b3c] bg-[#F6C7B3]",
+  inactive: "text-slate-600 bg-[#F2EAE0]",
 };
 
 const CouponPanel = ({
@@ -73,18 +73,16 @@ const CouponPanel = ({
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#081611] p-5 text-sm text-emerald-100">
+    <div className="rounded-2xl border border-[#DCECE9] bg-white p-5 text-sm text-slate-700 shadow-[0_20px_50px_rgba(15,23,42,0.1)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
             Coupons
           </p>
-          <p className="text-sm text-emerald-100/80">
-            Apply a coupon to save more.
-          </p>
+          <p className="text-sm text-slate-600">Apply a coupon to save more.</p>
         </div>
         {appliedCoupon ? (
-          <span className="rounded-full border border-emerald-300/40 px-3 py-1 text-xs font-medium uppercase tracking-[0.25em] text-emerald-100/80">
+          <span className="rounded-full border border-[#c3dedd] bg-[#c3dedd]/30 px-3 py-1 text-xs font-medium uppercase tracking-[0.25em] text-[#2f4a55]">
             {statusLabel}
           </span>
         ) : null}
@@ -100,40 +98,40 @@ const CouponPanel = ({
             spellCheck={false}
             autoComplete="off"
             placeholder="Enter coupon code"
-            className="flex-1 rounded-2xl border border-white/10 bg-[#0b1f19] px-4 py-2 text-sm uppercase tracking-[0.2em] text-emerald-50 placeholder:text-emerald-200/40 focus:border-emerald-300/60 focus:outline-none focus:ring-2 focus:ring-emerald-300/20"
+            className="flex-1 rounded-2xl border border-[#DCECE9] bg-white px-4 py-2 text-sm uppercase tracking-[0.2em] text-slate-700 placeholder:text-slate-400 focus:border-[#b8985b] focus:outline-none focus:ring-2 focus:ring-[#b8985b]/25"
             disabled={isApplying}
           />
           <button
             type="submit"
-            className="flex  items-center justify-center rounded-xl bg-emerald-500 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-emerald-500/70"
+            className="flex items-center justify-center rounded-xl bg-[#b8985b] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-[#a9894f] disabled:cursor-not-allowed disabled:bg-[#b8985b]/60"
             disabled={isApplying || !codeInput.trim()}
           >
             {isApplying ? "Applying" : "Apply"}
           </button>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-emerald-200/70 sm:gap-3">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 sm:gap-3">
           <button
             type="button"
             onClick={handleAutoApply}
             disabled={isApplying}
-            className="font-semibold uppercase tracking-[0.3em] text-emerald-200/80 transition hover:text-emerald-100 disabled:cursor-not-allowed disabled:text-emerald-200/40"
+            className="font-semibold uppercase tracking-[0.3em] text-[#b8985b] transition hover:text-[#a9894f] disabled:cursor-not-allowed disabled:text-slate-400"
           >
             Auto apply best
           </button>
         </div>
         {applyError ? (
-          <div className="rounded-xl border border-rose-300/40 bg-rose-500/10 px-4 py-2 text-xs text-rose-100">
+          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-xs text-rose-600">
             {applyError}
           </div>
         ) : null}
         {appliedCoupon ? (
-          <div className="rounded-xl border border-emerald-300/40 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-100">
+          <div className="rounded-xl border border-[#c3dedd] bg-[#c3dedd]/20 px-4 py-3 text-xs text-[#2f4a55]">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="space-y-1">
-                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-100">
+                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#2f4a55]">
                   Coupon applied
                 </p>
-                <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.25em] text-emerald-200/70">
+                <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.25em] text-slate-600">
                   <span>{appliedCoupon.code}</span>
                   {appliedCoupon.discountApplied ? (
                     <span>
@@ -148,7 +146,7 @@ const CouponPanel = ({
               <button
                 type="button"
                 onClick={handleRemove}
-                className="rounded-full border border-emerald-200/50 px-3 py-1 font-semibold uppercase tracking-[0.3em] text-emerald-100 transition hover:border-emerald-100 hover:text-white"
+                className="rounded-full border border-[#b8985b] px-3 py-1 font-semibold uppercase tracking-[0.3em] text-[#b8985b] transition hover:bg-[#b8985b] hover:text-white"
               >
                 Remove
               </button>
@@ -159,28 +157,28 @@ const CouponPanel = ({
 
       <div className="mt-5 space-y-3">
         {availableLoading ? (
-          <div className="rounded-xl border border-white/10 bg-[#0b1f19] px-4 py-3 text-xs text-emerald-200/70">
+          <div className="rounded-xl border border-[#DCECE9] bg-[#F2EAE0] px-4 py-3 text-xs text-slate-600">
             Loading available coupons...
           </div>
         ) : availableError ? (
-          <div className="space-y-2 rounded-xl border border-rose-300/40 bg-rose-500/10 px-4 py-3 text-xs text-rose-100">
+          <div className="space-y-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-600">
             <p>{availableError}</p>
             <button
               type="button"
               onClick={onRefresh}
-              className="inline-flex items-center justify-center rounded-full border border-rose-200/60 px-3 py-1 font-semibold uppercase tracking-[0.3em] text-rose-100 transition hover:border-rose-100 hover:bg-rose-100/10"
+              className="inline-flex items-center justify-center rounded-full border border-rose-300 px-3 py-1 font-semibold uppercase tracking-[0.3em] text-rose-600 transition hover:bg-rose-100"
             >
               Retry
             </button>
           </div>
         ) : isLoggedIn && availableCoupons.length ? (
           <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3 text-xs text-emerald-200/70">
+            <div className="flex items-center justify-between gap-3 text-xs text-slate-600">
               <span>Available coupons for you</span>
               <button
                 type="button"
                 onClick={onRefresh}
-                className="rounded-full border border-emerald-300/40 px-3 py-1 font-semibold uppercase tracking-[0.3em] text-emerald-200/80 transition hover:border-emerald-200/70 hover:text-emerald-100"
+                className="rounded-full border border-[#b8985b] px-3 py-1 font-semibold uppercase tracking-[0.3em] text-[#b8985b] transition hover:bg-[#b8985b] hover:text-white"
               >
                 Refresh
               </button>
@@ -199,12 +197,12 @@ const CouponPanel = ({
                 return (
                   <li
                     key={coupon.id ?? coupon.code}
-                    className="rounded-2xl border border-white/10 bg-[#0b1f19] p-4"
+                    className="rounded-2xl border border-[#DCECE9] bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-base font-semibold tracking-[0.3em] text-white">
+                          <span className="text-base font-semibold tracking-[0.3em] text-slate-900">
                             {coupon.code}
                           </span>
                           <span
@@ -218,11 +216,11 @@ const CouponPanel = ({
                           </span>
                         </div>
                         {coupon.description ? (
-                          <p className="text-xs text-emerald-200/70">
+                          <p className="text-xs text-slate-600">
                             {coupon.description}
                           </p>
                         ) : null}
-                        <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.25em] text-emerald-200/60">
+                        <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.25em] text-slate-500">
                           <span>
                             {coupon.discountType === "percentage"
                               ? `${coupon.discountValue}% off`
@@ -249,7 +247,7 @@ const CouponPanel = ({
                         type="button"
                         onClick={() => onApply?.(coupon.code)}
                         disabled={isApplying}
-                        className="rounded-full border border-emerald-300/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80 transition hover:border-emerald-200/70 hover:text-emerald-100 disabled:cursor-not-allowed disabled:border-emerald-300/20 disabled:text-emerald-200/40"
+                        className="rounded-full border border-[#b8985b] px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[#b8985b] transition hover:bg-[#b8985b] hover:text-white disabled:cursor-not-allowed disabled:border-[#DCECE9] disabled:text-slate-400"
                       >
                         Apply
                       </button>
@@ -260,7 +258,7 @@ const CouponPanel = ({
             </ul>
           </div>
         ) : (
-          <div className="rounded-xl border border-white/10 bg-[#0b1f19] px-4 py-3 text-xs text-emerald-200/70">
+          <div className="rounded-xl border border-[#DCECE9] bg-[#F2EAE0] px-4 py-3 text-xs text-slate-600">
             {isLoggedIn
               ? "No personal coupons available right now."
               : "Sign in to see coupons curated for you."}

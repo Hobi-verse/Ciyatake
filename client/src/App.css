@@ -1,15 +1,15 @@
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
     "Helvetica Neue", sans-serif;
-  background-color: #0f231d;
+  background-color: #ffffff;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background: #0f231d;
-  color: #ecfdf5;
+  background: #ffffff;
+  color: #1f1f1f;
 }
 
 img {
@@ -26,9 +26,9 @@ input[type="range"]::-webkit-slider-thumb {
   height: 1.25rem;
   width: 1.25rem;
   border-radius: 9999px;
-  border: 2px solid rgba(110, 231, 183, 0.9);
-  background: rgba(16, 185, 129, 0.95);
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25);
+  border: 2px solid rgba(185, 152, 91, 0.9);
+  background: rgba(185, 152, 91, 0.95);
+  box-shadow: 0 0 0 4px rgba(185, 152, 91, 0.2);
   cursor: pointer;
   margin-top: -0.5rem;
 }
@@ -37,31 +37,31 @@ input[type="range"]::-moz-range-thumb {
   height: 1.25rem;
   width: 1.25rem;
   border-radius: 9999px;
-  border: 2px solid rgba(110, 231, 183, 0.9);
-  background: rgba(16, 185, 129, 0.95);
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25);
+  border: 2px solid rgba(185, 152, 91, 0.9);
+  background: rgba(185, 152, 91, 0.95);
+  box-shadow: 0 0 0 4px rgba(185, 152, 91, 0.2);
   cursor: pointer;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
   height: 0.25rem;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0);
+  background: rgba(185, 152, 91, 0.15);
 }
 
 input[type="range"]::-moz-range-track {
   height: 0.25rem;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0);
+  background: rgba(185, 152, 91, 0.15);
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(110, 231, 183, 0.35) transparent;
+  scrollbar-color: rgba(185, 152, 91, 0.45) transparent;
 }
 
 .custom-scrollbar:hover {
-  scrollbar-color: rgba(110, 231, 183, 0.55) transparent;
+  scrollbar-color: rgba(185, 152, 91, 0.6) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -73,12 +73,20 @@ input[type="range"]::-moz-range-track {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(16, 185, 129, 0.35), rgba(45, 212, 191, 0.55));
+  background: linear-gradient(
+    180deg,
+    rgba(210, 203, 188, 0.65),
+    rgba(185, 152, 91, 0.8)
+  );
   border-radius: 9999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(16, 185, 129, 0.55), rgba(110, 231, 183, 0.75));
+  background: linear-gradient(
+    180deg,
+    rgba(185, 152, 91, 0.75),
+    rgba(169, 129, 70, 0.9)
+  );
 }
