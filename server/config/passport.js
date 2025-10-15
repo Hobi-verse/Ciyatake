@@ -32,12 +32,15 @@ passport.use(
           // Link Google account to existing user
           existingUserByEmail.googleId = profile.id;
           existingUserByEmail.isVerified = true;
-          
+          if (!existingUserByEmail.mobileNumber) {
+            existingUserByEmail.profileSetupRequired = true;
+          }
+
           // Update profile picture if not set
           if (!existingUserByEmail.profilePicture && profile.photos?.[0]?.value) {
             existingUserByEmail.profilePicture = profile.photos[0].value;
           }
-          
+
           await existingUserByEmail.save();
           return done(null, existingUserByEmail);
         }
@@ -50,14 +53,13 @@ passport.use(
           profilePicture: profile.photos?.[0]?.value || "",
           isVerified: true,
           authProvider: "google",
-          // Generate a temporary mobile number or leave empty
-          mobileNumber: "",
+          profileSetupRequired: true,
         });
 
         // Create customer profile
         await CustomerProfile.findOneAndUpdate(
           { userId: newUser._id },
-          { 
+          {
             userId: newUser._id,
             firstName: profile.name?.givenName || "",
             lastName: profile.name?.familyName || "",
@@ -68,7 +70,7 @@ passport.use(
 
         console.log("New Google user created:", newUser._id);
         return done(null, newUser);
-        
+
       } catch (error) {
         console.error("Google OAuth Error:", error);
         return done(error, null);

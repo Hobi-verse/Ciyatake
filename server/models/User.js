@@ -6,51 +6,58 @@ const userSchema = new mongoose.Schema(
     // User's mobile number for login and OTP verification
     mobileNumber: {
       type: String,
-      required: function() {
+      required: function () {
         return !this.googleId; // Mobile not required if Google OAuth
       },
       unique: true,
       sparse: true, // Allow multiple null values
       trim: true,
+      set: (value) => {
+        if (typeof value === "string") {
+          const normalized = value.trim();
+          return normalized.length ? normalized : undefined;
+        }
+        return value;
+      },
       match: [/^[0-9]{10}$/, "Please enter a valid 10-digit mobile number"],
     },
-    
+
     // Secure password storage (will be hashed before saving)
     password: {
       type: String,
-      required: function() {
+      required: function () {
         return !this.googleId; // Password not required if Google OAuth
       },
       minlength: [6, "Password must be at least 6 characters long"],
     },
-    
+
     // Google OAuth ID for social login
     googleId: {
       type: String,
       unique: true,
       sparse: true, // Allow multiple null values
     },
-    
+
     // Profile picture URL (from Google or uploaded)
     profilePicture: {
       type: String,
       default: "",
     },
-    
+
     // Authentication provider (local, google, etc.)
     authProvider: {
       type: String,
       enum: ["local", "google"],
       default: "local",
     },
-    
+
     // User's full name for personalization
     fullName: {
       type: String,
       trim: true,
       default: "",
     },
-    
+
     // Email address for communication (optional)
     email: {
       type: String,
@@ -59,20 +66,20 @@ const userSchema = new mongoose.Schema(
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
       default: "",
     },
-    
+
     // User role for access control (customer, admin, etc.)
     role: {
       type: String,
       enum: ["customer", "admin"],
       default: "customer",
     },
-    
+
     // Track if mobile number is verified via OTP
     isVerified: {
       type: Boolean,
       default: false,
     },
-    
+
     // Store user's shipping addresses
     addresses: [
       {
@@ -84,11 +91,17 @@ const userSchema = new mongoose.Schema(
         isDefault: { type: Boolean, default: false },
       },
     ],
-    
+
     // Track account status for security purposes
     isActive: {
       type: Boolean,
       default: true,
+    },
+
+    // Track if additional profile information is required after social login
+    profileSetupRequired: {
+      type: Boolean,
+      default: false,
     },
   },
   {

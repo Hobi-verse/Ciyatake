@@ -11,6 +11,7 @@ import MyAccountPage from "./pages/user/MyAccountPage.jsx";
 import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register.jsx";
 import ForgetPass from "./pages/auth/ForgetPass.jsx";
+import LoginSuccess from "./pages/auth/LoginSuccess.jsx";
 import AdminDashboardLayout from "./components/admin/common/AdminDashboardLayout.jsx";
 import Dashboard from "./components/admin/dashboard.jsx";
 import Orders from "./components/admin/orders/Orders.jsx";
@@ -128,6 +129,7 @@ function App() {
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Route>
         <Route path="/login" element={<Login />} />
+        <Route path="/login/success" element={<LoginSuccess />} />
         <Route path="/signup" element={<Register />} />
         <Route path="/forget-password" element={<ForgetPass />} />
         <Route path="*" element={<Navigate to="/" replace />} />

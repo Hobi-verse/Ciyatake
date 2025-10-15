@@ -1,5 +1,6 @@
 import { apiRequest } from "./client";
 import { API_BASE_URL } from "./config";
+import { storeAuthSession } from "../utils/authStorage";
 
 const normalizeMobilePayload = (payload = {}) => {
   const { phoneNumber, mobileNumber, ...rest } = payload ?? {};
@@ -67,7 +68,7 @@ export const linkMobileNumber = async ({ phoneNumber, mobileNumber, otp } = {}) 
 export const handleGoogleSuccess = (token) => {
   // Store token in localStorage
   if (token) {
-    localStorage.setItem("authToken", token);
+    storeAuthSession({ token });
     // You can also set it in your auth context/state management
     return true;
   }

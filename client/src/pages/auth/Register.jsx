@@ -3,8 +3,14 @@ import { useNavigate } from "react-router-dom";
 import UserNavbar from "../../components/user/common/UserNavbar";
 import AuthForm from "../../components/common/AuthForm";
 import Button from "../../components/common/Button";
-import { sendOtp, verifyOtp, registerUser, googleLogin, getUserProfile } from "../../api/auth";
-import { storeAuthSession } from "../../utils/authStorage";
+import {
+  sendOtp,
+  verifyOtp,
+  registerUser,
+  googleLogin,
+  getUserProfile,
+} from "../../api/auth";
+import { storeAuthSession, clearAuthSession } from "../../utils/authStorage";
 
 const OTP_LENGTH = 6;
 
@@ -332,7 +338,10 @@ const Register = () => {
     {
       label: "Google",
       onClick: () => {
-        setStatus({ type: "info", message: "Redirecting to Google for authentication..." });
+        setStatus({
+          type: "info",
+          message: "Redirecting to Google for authentication...",
+        });
         googleLogin();
       },
     },
@@ -350,7 +359,7 @@ const Register = () => {
           setStatus({ type: "info", message: "Finishing Google signup..." });
 
           // Store token so api client can use it for authenticated requests
-          localStorage.setItem("authToken", token);
+          storeAuthSession({ token });
 
           // Try to fetch profile
           let profileResponse = null;
@@ -358,25 +367,38 @@ const Register = () => {
             profileResponse = await getUserProfile();
           } catch (profileErr) {
             // profile fetch failed; continue with minimal session
-            console.warn("Failed to fetch profile after Google signup:", profileErr);
+            console.warn(
+              "Failed to fetch profile after Google signup:",
+              profileErr
+            );
           }
 
           if (profileResponse?.success && profileResponse?.user) {
             storeAuthSession({ token, user: profileResponse.user });
-            const redirectPath = profileResponse.user.role === "admin" ? "/admin/dashboard" : "/";
-            setStatus({ type: "success", message: "Signup successful. Redirecting..." });
+            const redirectPath =
+              profileResponse.user.role === "admin" ? "/admin/dashboard" : "/";
+            setStatus({
+              type: "success",
+              message: "Signup successful. Redirecting...",
+            });
             setTimeout(() => navigate(redirectPath, { replace: true }), 600);
             return;
           }
 
           // If we couldn't fetch full profile, still store token and send user home
           storeAuthSession({ token, user: { id: "google-user" } });
-          setStatus({ type: "success", message: "Signup successful. Redirecting..." });
+          setStatus({
+            type: "success",
+            message: "Signup successful. Redirecting...",
+          });
           setTimeout(() => navigate("/", { replace: true }), 600);
         } catch (e) {
           console.error("Error handling Google signup callback:", e);
-          setStatus({ type: "error", message: "Google signup failed. Please try again." });
-          localStorage.removeItem("authToken");
+          setStatus({
+            type: "error",
+            message: "Google signup failed. Please try again.",
+          });
+          clearAuthSession();
         }
       })();
     }
@@ -386,14 +408,19 @@ const Register = () => {
         google_auth_failed: "Google authentication failed. Please try again.",
         google_auth_error: "An error occurred during Google authentication.",
       };
-      const message = errorMessages[error] || "Authentication failed. Please try again.";
+      const message =
+        errorMessages[error] || "Authentication failed. Please try again.";
       setStatus({ type: "error", message });
 
       // optionally clean URL
       setTimeout(() => {
         const url = new URL(window.location.href);
         url.searchParams.delete("error");
-        window.history.replaceState({}, document.title, url.pathname + url.search);
+        window.history.replaceState(
+          {},
+          document.title,
+          url.pathname + url.search
+        );
       }, 2500);
     }
   }, [navigate]);

@@ -325,18 +325,24 @@ exports.googleAuth = passport.authenticate("google", {
 exports.googleCallback = async (req, res) => {
   try {
     const user = req.user;
-    
+
     if (!user) {
       return res.redirect(`${process.env.CLIENT_URL || "http://localhost:5173"}/login?error=google_auth_failed`);
     }
 
+    const requiresProfileCompletion =
+      typeof user.profileSetupRequired === "boolean"
+        ? user.profileSetupRequired
+        : !user.mobileNumber;
+
     // Generate JWT token
     const token = jwt.sign(
-      { 
-        id: user._id, 
-        mobileNumber: user.mobileNumber || "", 
+      {
+        id: user._id,
+        mobileNumber: user.mobileNumber || "",
         email: user.email,
-        role: user.role 
+        role: user.role,
+        profileSetupRequired: requiresProfileCompletion,
       },
       process.env.JWT_SECRET || "your-secret-key-change-in-production",
       { expiresIn: "7d" }
@@ -350,9 +356,16 @@ exports.googleCallback = async (req, res) => {
       sameSite: "lax",
     });
 
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const redirectUrl = new URL("/login/success", clientUrl);
+    redirectUrl.searchParams.set("token", token);
+    if (requiresProfileCompletion) {
+      redirectUrl.searchParams.set("needsProfile", "1");
+    }
+
     // Redirect to frontend with success
-    return res.redirect(`${process.env.CLIENT_URL || "http://localhost:5173"}/login/success?token=${token}`);
-    
+    return res.redirect(redirectUrl.toString());
+
   } catch (error) {
     console.error("Google Callback Error:", error);
     return res.redirect(`${process.env.CLIENT_URL || "http://localhost:5173"}/login?error=google_auth_error`);
@@ -363,7 +376,7 @@ exports.googleCallback = async (req, res) => {
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
-    
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -414,9 +427,9 @@ exports.linkMobileNumber = async (req, res) => {
     }
 
     // Check if mobile number is already linked to another account
-    const existingUser = await User.findOne({ 
-      mobileNumber, 
-      _id: { $ne: userId } 
+    const existingUser = await User.findOne({
+      mobileNumber,
+      _id: { $ne: userId }
     });
 
     if (existingUser) {
@@ -430,6 +443,7 @@ exports.linkMobileNumber = async (req, res) => {
     await User.findByIdAndUpdate(userId, {
       mobileNumber,
       isVerified: true,
+      profileSetupRequired: false,
     });
 
     // Mark OTP as used
