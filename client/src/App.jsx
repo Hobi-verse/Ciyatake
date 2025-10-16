@@ -13,12 +13,12 @@ import Register from "./pages/auth/Register.jsx";
 import ForgetPass from "./pages/auth/ForgetPass.jsx";
 import LoginSuccess from "./pages/auth/LoginSuccess.jsx";
 import AdminDashboardLayout from "./components/admin/common/AdminDashboardLayout.jsx";
-import Dashboard from "./components/admin/dashboard.jsx";
-import Orders from "./components/admin/orders/Orders.jsx";
+import Dashboard from "./pages/admin/Dashboard.jsx";
+import Orders from "./pages/admin/Orders.jsx";
 import Products from "./pages/admin/Products.jsx";
-import Customers from "./components/admin/customers/Customers.jsx";
-import Reports from "./components/admin/reports/Reports.jsx";
-import Users from "./components/admin/users/Users.jsx";
+import Customers from "./pages/admin/Customers.jsx";
+import Reports from "./pages/admin/Reports.jsx";
+import Reviews from "./pages/admin/Reviews.jsx";
 import Coupons from "./pages/admin/Coupons.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import {
@@ -127,7 +127,7 @@ function App() {
             <Route path="customers" element={<Customers />} />
             <Route path="coupons" element={<Coupons />} />
             <Route path="reports" element={<Reports />} />
-            <Route path="users" element={<Users />} />
+            <Route path="reviews" element={<Reviews />} />
             <Route path="*" element={<Navigate to="dashboard" replace />} />
           </Route>
           <Route path="/login" element={<Login />} />

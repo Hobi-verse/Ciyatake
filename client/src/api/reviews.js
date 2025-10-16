@@ -210,9 +210,12 @@ export const approveReview = async (reviewId) => {
     throw new Error("approveReview requires a reviewId");
   }
 
-  await apiRequest(`/reviews/${reviewId}/approve`, {
+  const response = await apiRequest(`/reviews/${reviewId}/approve`, {
     method: "PATCH",
   });
+
+  const data = response?.data ?? response ?? {};
+  return data.review ?? null;
 };
 
 export const rejectReview = async (reviewId, reason) => {
@@ -220,10 +223,13 @@ export const rejectReview = async (reviewId, reason) => {
     throw new Error("rejectReview requires a reviewId");
   }
 
-  await apiRequest(`/reviews/${reviewId}/reject`, {
+  const response = await apiRequest(`/reviews/${reviewId}/reject`, {
     method: "PATCH",
     body: reason ? { reason } : undefined,
   });
+
+  const data = response?.data ?? response ?? {};
+  return data.review ?? null;
 };
 
 export const respondToReview = async (reviewId, message) => {

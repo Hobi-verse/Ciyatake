@@ -207,7 +207,3 @@ export const fetchReports = async () => {
   return response?.data ?? response ?? [];
 };
 
-export const fetchAdminUsers = async ({ signal } = {}) => {
-  const response = await apiRequest("/admin/users", { signal });
-  return response?.data ?? response ?? [];
-};

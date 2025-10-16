@@ -1,6 +1,6 @@
 import {
   FiHome,
-  FiUsers,
+  FiMessageSquare,
   FiShoppingBag,
   FiPackage,
   FiUserCheck,
@@ -10,7 +10,7 @@ import {
 
 export const adminLinks = [
   { label: "Dashboard", to: "/admin/dashboard", icon: FiHome },
-  { label: "Users", to: "/admin/users", icon: FiUsers },
+  { label: "Reviews", to: "/admin/reviews", icon: FiMessageSquare },
   { label: "Orders", to: "/admin/orders", icon: FiShoppingBag },
   { label: "Products", to: "/admin/products", icon: FiPackage },
   { label: "Customers", to: "/admin/customers", icon: FiUserCheck },

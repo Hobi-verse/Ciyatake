@@ -1,3 +1,1 @@
-import DashboardHome from "./dashboard/DashboardHome";
-
-export default DashboardHome;
+export { default } from "../../pages/admin/Dashboard.jsx";

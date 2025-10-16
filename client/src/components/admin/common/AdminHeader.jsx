@@ -1,94 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchAdminUsers } from "../../../api/admin.js";
 import { logoutUser } from "../../../api/auth.js";
 import {
   AUTH_SESSION_EVENT,
   clearAuthSession,
   getStoredAuthSession,
 } from "../../../utils/authStorage.js";
-
-const resolveEntityId = (entity) => {
-  if (!entity || typeof entity !== "object") {
-    return null;
-  }
-
-  const candidates = [entity.id, entity._id, entity.userId, entity.user_id];
-
-  for (const candidate of candidates) {
-    if (candidate === null || candidate === undefined) {
-      continue;
-    }
-
-    if (typeof candidate === "string" || typeof candidate === "number") {
-      return candidate.toString();
-    }
-
-    if (
-      typeof candidate === "object" &&
-      typeof candidate.toString === "function"
-    ) {
-      const serialized = candidate.toString();
-      if (serialized && serialized !== "[object Object]") {
-        return serialized;
-      }
-    }
-  }
-
-  return null;
-};
-
-const extractUsers = (payload) => {
-  if (!payload) {
-    return [];
-  }
-
-  if (Array.isArray(payload)) {
-    return payload;
-  }
-
-  if (Array.isArray(payload.results)) {
-    return payload.results;
-  }
-
-  if (Array.isArray(payload.items)) {
-    return payload.items;
-  }
-
-  if (Array.isArray(payload.data?.results)) {
-    return payload.data.results;
-  }
-
-  if (Array.isArray(payload.data)) {
-    return payload.data;
-  }
-
-  return [];
-};
-
-const pickResolvedUser = (fetchedUsers, storedUser) => {
-  const storedId = resolveEntityId(storedUser);
-
-  if (storedId) {
-    const match = fetchedUsers.find(
-      (candidate) => resolveEntityId(candidate) === storedId
-    );
-
-    if (match) {
-      return { ...storedUser, ...match };
-    }
-  }
-
-  if (storedUser) {
-    return storedUser;
-  }
-
-  if (fetchedUsers.length) {
-    return fetchedUsers[0];
-  }
-
-  return null;
-};
 
 const normalizeUserDetails = (user) => {
   if (!user) {
@@ -130,64 +47,12 @@ const AdminHeader = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
-    let isActive = true;
-    const controller = new AbortController();
-
-    const loadUser = async () => {
-      const session = getStoredAuthSession();
-
-      if (!session?.token) {
-        if (!isActive) {
-          return;
-        }
-
-        setState({
-          user: session?.user ?? null,
-          loading: false,
-          error: null,
-        });
-        return;
-      }
-
-      setState((previous) => ({
-        ...previous,
-        loading: true,
-        error: null,
-      }));
-
-      try {
-        const response = await fetchAdminUsers({ signal: controller.signal });
-        if (!isActive) {
-          return;
-        }
-
-        const fetchedUsers = extractUsers(response);
-        const nextUser = pickResolvedUser(fetchedUsers, session.user ?? null);
-
-        setState({
-          user: nextUser,
-          loading: false,
-          error: null,
-        });
-      } catch (error) {
-        if (!isActive || error?.name === "AbortError") {
-          return;
-        }
-
-        setState((previous) => ({
-          ...previous,
-          loading: false,
-          error,
-        }));
-      }
-    };
-
-    loadUser();
-
-    return () => {
-      isActive = false;
-      controller.abort();
-    };
+    const session = getStoredAuthSession();
+    setState({
+      user: session?.user ?? null,
+      loading: false,
+      error: null,
+    });
   }, [sessionVersion]);
 
   useEffect(() => {
