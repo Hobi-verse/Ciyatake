@@ -2,21 +2,21 @@ import { NavLink } from "react-router-dom";
 import adminLinks from "./adminLinks";
 
 const AdminSidebar = () => (
-  <aside className="sticky top-24 hidden h-[calc(100vh-7.5rem)] w-72 flex-shrink-0 overflow-hidden rounded-3xl bg-gradient-to-br from-[#0f2b24e6] via-[#0a1d17e6] to-[#05110ee6] text-emerald-100 shadow-[0_25px_60px_-25px_rgba(7,63,45,0.6)] ring-1 ring-emerald-500/20 backdrop-blur-xl lg:block">
+  <aside className="sticky top-24 hidden h-[calc(100vh-7.5rem)] w-72 flex-shrink-0 overflow-hidden rounded-3xl bg-white/90 text-[#6d5a3c] shadow-[0_25px_60px_-25px_rgba(94,74,42,0.25)] ring-1 ring-[#e6dccb] backdrop-blur lg:block">
     <div className="custom-scrollbar flex h-full flex-col gap-10 overflow-y-auto px-7 py-7">
-      <div className="rounded-2xl border border-emerald-100/30 bg-white/5 p-5 shadow-inner shadow-emerald-900/40">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-200">
+      <div className="rounded-2xl border border-[#e6dccb] bg-white p-5 shadow-inner shadow-[#b8985b]/10">
+        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#b8985b]">
           Ciyatake
         </p>
-        <h2 className="mt-3 text-2xl font-semibold text-white">
+        <h2 className="mt-3 text-2xl font-semibold text-slate-900">
           Admin Console
         </h2>
-        <p className="mt-2 text-xs text-emerald-100/80">
+        <p className="mt-2 text-xs text-[#8f7843]">
           Quick access to every part of your commerce stack.
         </p>
       </div>
       <nav className="space-y-5">
-        <div className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-200/80">
+        <div className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b8985b]">
           Menu
         </div>
         <ul className="space-y-3">
@@ -29,16 +29,16 @@ const AdminSidebar = () => (
                   className={({ isActive }) =>
                     `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
                       isActive
-                        ? "bg-white/15 text-white shadow-2xl shadow-emerald-900/40 ring-1 ring-emerald-200/60"
-                        : "text-emerald-100/80 hover:bg-white/5 hover:text-white hover:ring-1 hover:ring-emerald-200/40"
+                        ? "bg-[#b8985b] text-white shadow-2xl shadow-[#b8985b]/30 ring-1 ring-[#dec9a4]"
+                        : "text-[#8f7843] hover:bg-[#f2eae0] hover:text-[#5c4a2c] hover:ring-1 hover:ring-[#dec9a4]"
                     }`
                   }
                 >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-lg shadow-inner shadow-emerald-900/40">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#f2eae0] text-lg text-[#8f7843] shadow-inner shadow-[#b8985b]/15">
                     <Icon />
                   </span>
                   <span>{link.label}</span>
-                  <span className="ml-auto text-xs font-medium uppercase tracking-[0.25em] text-emerald-200/60 transition group-hover:text-white/80">
+                  <span className="ml-auto text-xs font-medium uppercase tracking-[0.25em] text-[#c9b084] transition group-hover:text-white/90">
                     {"→"}
                   </span>
                 </NavLink>

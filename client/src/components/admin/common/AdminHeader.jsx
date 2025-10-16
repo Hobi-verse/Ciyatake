@@ -115,12 +115,10 @@ const AdminHeader = () => {
   }, [isLoggingOut, navigate]);
 
   return (
-    <header className="sticky top-0 z-40 flex h-20 items-center gap-4 border-b border-emerald-100/70 bg-white/95 px-8 text-emerald-900 shadow-lg backdrop-blur">
+    <header className="sticky top-0 z-40 flex h-20 items-center gap-4 border-b border-[#e6dccb] bg-white/95 px-8 text-slate-900 shadow-lg backdrop-blur">
       <div className="flex flex-col">
         <h1 className="text-2xl font-bold tracking-tight">Admin Panel</h1>
-        <p className="hidden text-sm text-emerald-700/80 md:block">
-          {subtitle}
-        </p>
+        <p className="hidden text-sm text-[#8f7843] md:block">{subtitle}</p>
         {state.error ? (
           <p className="hidden text-xs text-rose-600 md:block">
             Unable to sync admin details right now.
@@ -129,7 +127,7 @@ const AdminHeader = () => {
       </div>
       <div className="ml-auto flex items-center gap-4">
         <div
-          className="hidden rounded-full bg-emerald-100 px-4 py-2 text-sm font-medium text-emerald-700 md:block"
+          className="hidden rounded-full bg-[#f2eae0] px-4 py-2 text-sm font-medium text-[#8f7843] md:block"
           aria-live="polite"
         >
           {signInMessage}
@@ -138,11 +136,11 @@ const AdminHeader = () => {
           type="button"
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className="hidden items-center rounded-full border border-emerald-500/40 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-70 md:inline-flex"
+          className="hidden items-center rounded-full border border-[#b8985b]/40 px-4 py-2 text-sm font-semibold text-[#8f7843] transition hover:bg-[#f2eae0] disabled:cursor-not-allowed disabled:opacity-70 md:inline-flex"
         >
           {isLoggingOut ? "Signing out..." : "Logout"}
         </button>
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-600/90 text-lg font-semibold text-white shadow-inner">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#b8985b] text-lg font-semibold text-white shadow-inner">
           {avatarLabel}
         </div>
       </div>

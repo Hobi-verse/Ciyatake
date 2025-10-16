@@ -25,7 +25,7 @@ const ratingOptions = [
 ];
 
 const statusClassMap = {
-  approved: "bg-emerald-100 text-emerald-700",
+  approved: "bg-[#f2eae0] text-[#8f7843]",
   pending: "bg-amber-100 text-amber-700",
   rejected: "bg-rose-100 text-rose-700",
 };
@@ -374,7 +374,7 @@ const Reviews = () => {
       <header className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-emerald-500">
+            <p className="text-xs uppercase tracking-[0.3em] text-[#b8985b]">
               Customer insight
             </p>
             <h1 className="text-3xl font-bold text-slate-900">
@@ -386,14 +386,14 @@ const Reviews = () => {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em]">
-            <span className="rounded-full bg-emerald-100 px-4 py-2 text-emerald-700">
+            <span className="rounded-full bg-[#f2eae0] px-4 py-2 text-[#8f7843]">
               {totalLabel} reviews
             </span>
             <button
               type="button"
               onClick={handleRefresh}
               disabled={loading}
-              className="rounded-full border border-emerald-500 px-4 py-2 text-emerald-600 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full border border-[#dec9a4] px-4 py-2 text-[#8f7843] transition hover:bg-[#f2eae0] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Refreshing…" : "Refresh"}
             </button>
@@ -418,8 +418,8 @@ const Reviews = () => {
                   onClick={() => setStatusFilter(option.value)}
                   className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${
                     active
-                      ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30"
-                      : "border border-emerald-100 bg-white text-emerald-600 hover:bg-emerald-50"
+                      ? "bg-[#b8985b] text-white shadow-lg shadow-[#b8985b]/30"
+                      : "border border-[#e6dccb] bg-white text-[#8f7843] hover:bg-[#f2eae0]"
                   }`}
                 >
                   {option.label}
@@ -434,7 +434,7 @@ const Reviews = () => {
               <select
                 value={ratingFilter}
                 onChange={(event) => setRatingFilter(event.target.value)}
-                className="ml-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-600 transition hover:border-emerald-200"
+                className="ml-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-600 transition hover:border-[#dec9a4]"
               >
                 {ratingOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -448,8 +448,8 @@ const Reviews = () => {
               onClick={() => setVerifiedOnly((current) => !current)}
               className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition ${
                 verifiedOnly
-                  ? "border border-emerald-500 bg-emerald-600 text-white"
-                  : "border border-slate-200 bg-white text-slate-500 hover:border-emerald-200"
+                  ? "border border-[#dec9a4] bg-[#b8985b] text-white"
+                  : "border border-slate-200 bg-white text-slate-500 hover:border-[#dec9a4]"
               }`}
             >
               {verifiedOnly ? "Verified only" : "All reviews"}
@@ -463,11 +463,11 @@ const Reviews = () => {
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
                 placeholder="Search by title or comment"
-                className="w-64 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200"
+                className="w-64 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 outline-none transition focus:border-[#b8985b] focus:ring-2 focus:ring-[#e6dccb]"
               />
               <button
                 type="submit"
-                className="rounded-full border border-emerald-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-600 transition hover:bg-emerald-50"
+                className="rounded-full border border-[#dec9a4] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#8f7843] transition hover:bg-[#f2eae0]"
               >
                 Search
               </button>
@@ -498,9 +498,9 @@ const Reviews = () => {
         </div>
       ) : null}
 
-      <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-2xl">
-        <table className="min-w-full divide-y divide-emerald-50 text-left">
-          <thead className="bg-emerald-600/95 text-xs font-semibold uppercase tracking-[0.35em] text-white">
+      <div className="overflow-hidden rounded-2xl border border-[#e6dccb] bg-white shadow-2xl">
+        <table className="min-w-full divide-y divide-[#f2eae0] text-left">
+          <thead className="bg-[#b8985b] text-xs font-semibold uppercase tracking-[0.35em] text-white">
             <tr>
               <th className="px-6 py-4">Review</th>
               <th className="px-6 py-4">Product</th>
@@ -510,12 +510,12 @@ const Reviews = () => {
               <th className="px-6 py-4">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-emerald-50 text-sm">
+          <tbody className="divide-y divide-[#f2eae0] text-sm">
             {loading && !reviews.length ? (
               <tr>
                 <td
                   colSpan={6}
-                  className="px-6 py-6 text-center text-emerald-600"
+                  className="px-6 py-6 text-center text-[#8f7843]"
                 >
                   Loading reviews…
                 </td>
@@ -544,7 +544,7 @@ const Reviews = () => {
                 : Number(review.helpfulVotes ?? 0);
 
               return (
-                <tr key={key} className="align-top hover:bg-emerald-50/60">
+                <tr key={key} className="align-top hover:bg-[#f2eae0]">
                   <td className="px-6 py-4">
                     <div className="space-y-2">
                       {review.title ? (
@@ -570,20 +570,20 @@ const Reviews = () => {
                         </p>
                       ) : null}
                       {helpfulVotes > 0 ? (
-                        <p className="text-xs text-emerald-600">
+                        <p className="text-xs text-[#8f7843]">
                           {helpfulVotes} helpful vote
                           {helpfulVotes === 1 ? "" : "s"}
                         </p>
                       ) : null}
                       {review.adminResponse?.message ? (
-                        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-                          <p className="font-semibold text-emerald-900">
+                        <div className="rounded-2xl border border-[#e6dccb] bg-[#f7f1e4] px-3 py-2 text-xs text-[#8f7843]">
+                          <p className="font-semibold text-[#5c4a2c]">
                             Your response
                           </p>
                           <p className="mt-1 whitespace-pre-line leading-relaxed">
                             {review.adminResponse.message}
                           </p>
-                          <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-emerald-500">
+                          <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-[#b8985b]">
                             {review.adminResponse.respondedBy || "Admin"} ·{" "}
                             {formatDateTime(review.adminResponse.respondedAt)}
                           </p>
@@ -640,7 +640,7 @@ const Reviews = () => {
                         </span>
                       </div>
                       {review.isVerifiedPurchase ? (
-                        <span className="inline-flex w-max items-center rounded-full border border-emerald-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-emerald-600">
+                        <span className="inline-flex w-max items-center rounded-full border border-[#dec9a4] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-[#8f7843]">
                           Verified
                         </span>
                       ) : null}
@@ -679,7 +679,7 @@ const Reviews = () => {
                           type="button"
                           onClick={() => handleApprove(review.id)}
                           disabled={isBusy}
-                          className="rounded-full border border-emerald-500 px-4 py-2 text-emerald-600 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="rounded-full border border-[#dec9a4] px-4 py-2 text-[#8f7843] transition hover:bg-[#f2eae0] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {isBusy ? "Working…" : "Approve"}
                         </button>
@@ -721,7 +721,7 @@ const Reviews = () => {
             type="button"
             onClick={handleLoadMore}
             disabled={loadingMore || loading}
-            className="rounded-full border border-emerald-500 px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-600 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full border border-[#dec9a4] px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[#8f7843] transition hover:bg-[#f2eae0] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loadingMore ? "Loading…" : "Load more"}
           </button>

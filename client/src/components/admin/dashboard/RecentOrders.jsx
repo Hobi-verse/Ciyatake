@@ -9,7 +9,7 @@ const statusClassMap = {
   packed: "bg-slate-200 text-slate-700",
   shipped: "bg-blue-100 text-blue-700",
   "out-for-delivery": "bg-indigo-100 text-indigo-700",
-  delivered: "bg-emerald-100 text-emerald-700",
+  delivered: "bg-[#e6f1e6] text-[#4f7a5a]",
   cancelled: "bg-rose-100 text-rose-700",
   refunded: "bg-slate-200 text-slate-700",
 };
@@ -83,11 +83,11 @@ const RecentOrders = () => {
   }, []);
 
   return (
-    <section className="flex-1 rounded-2xl border border-emerald-100 bg-white shadow-xl">
-      <header className="flex items-center justify-between border-b border-emerald-100 bg-emerald-600/95 px-6 py-4 text-white">
+    <section className="flex-1 rounded-2xl border border-[#e6dccb] bg-white shadow-xl">
+      <header className="flex items-center justify-between border-b border-[#e6dccb] bg-[#b8985b] px-6 py-4 text-white">
         <div>
           <h3 className="text-lg font-semibold">Recent Orders</h3>
-          <p className="text-sm text-emerald-100/80">
+          <p className="text-sm text-[#f5e8d3]">
             Latest orders awaiting action
           </p>
         </div>
@@ -96,8 +96,8 @@ const RecentOrders = () => {
         </span>
       </header>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-emerald-50 text-left text-sm text-slate-700">
-          <thead className="bg-emerald-50/90 text-xs font-semibold uppercase tracking-wide text-emerald-700">
+        <table className="min-w-full divide-y divide-[#f2eae0] text-left text-sm text-slate-700">
+          <thead className="bg-[#f2eae0] text-xs font-semibold uppercase tracking-wide text-[#8f7843]">
             <tr>
               <th className="px-6 py-3">Order ID</th>
               <th className="px-6 py-3">Customer</th>
@@ -105,7 +105,7 @@ const RecentOrders = () => {
               <th className="px-6 py-3">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-emerald-50">
+          <tbody className="divide-y divide-[#f2eae0]">
             {error ? (
               <tr>
                 <td
@@ -119,7 +119,7 @@ const RecentOrders = () => {
               <tr>
                 <td
                   colSpan={4}
-                  className="px-6 py-6 text-center text-sm text-emerald-600"
+                  className="px-6 py-6 text-center text-sm text-[#8f7843]"
                 >
                   Loading orders...
                 </td>
@@ -128,9 +128,9 @@ const RecentOrders = () => {
               orders.map((order, index) => (
                 <tr
                   key={order.id ?? order.orderNumber ?? `recent-order-${index}`}
-                  className="hover:bg-emerald-50/60"
+                  className="hover:bg-[#f2eae0]"
                 >
-                  <td className="px-6 py-4 font-semibold text-emerald-700">
+                  <td className="px-6 py-4 font-semibold text-[#8f7843]">
                     {order.orderNumber || order.id || "—"}
                     {typeof order.grandTotal === "number" && (
                       <div className="text-xs font-normal text-slate-500">

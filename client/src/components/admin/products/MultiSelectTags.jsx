@@ -56,7 +56,7 @@ const MultiSelectTags = ({
   return (
     <div className="relative">
       <div
-        className={`flex min-h-[2.75rem] flex-wrap items-center gap-2 rounded-2xl border px-3 py-2 transition focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 ${
+        className={`flex min-h-[2.75rem] flex-wrap items-center gap-2 rounded-2xl border px-3 py-2 transition focus-within:border-[#b8985b] focus-within:ring-2 focus-within:ring-[#b8985b]/20 ${
           remainingSlots > 0 ? "border-slate-200" : "border-amber-300"
         }`}
         onClick={() => document.getElementById(inputId)?.focus()}
@@ -64,7 +64,7 @@ const MultiSelectTags = ({
         {value.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700"
+            className="inline-flex items-center gap-1 rounded-full bg-[#f2eae0] px-3 py-1 text-sm font-medium text-[#8f7843]"
           >
             {tag}
             <button
@@ -73,7 +73,7 @@ const MultiSelectTags = ({
                 event.stopPropagation();
                 removeTag(tag);
               }}
-              className="rounded-full p-1 text-emerald-600 transition hover:bg-emerald-200/70"
+              className="rounded-full p-1 text-[#8f7843] transition hover:bg-[#f2eae0]/70"
               aria-label={`Remove ${tag}`}
             >
               <svg
@@ -118,7 +118,7 @@ const MultiSelectTags = ({
               key={option}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => addTag(option)}
-              className="flex w-full justify-between rounded-2xl px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-emerald-50"
+              className="flex w-full justify-between rounded-2xl px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-[#f2eae0]"
             >
               <span>{option}</span>
               <span className="text-xs text-slate-500">Add</span>
@@ -129,7 +129,7 @@ const MultiSelectTags = ({
               type="button"
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => addTag(inputValue.trim())}
-              className="w-full rounded-2xl px-3 py-2 text-left text-sm text-emerald-700 transition hover:bg-emerald-50"
+              className="w-full rounded-2xl px-3 py-2 text-left text-sm text-[#8f7843] transition hover:bg-[#f2eae0]"
             >
               Add "{inputValue.trim()}"
             </button>

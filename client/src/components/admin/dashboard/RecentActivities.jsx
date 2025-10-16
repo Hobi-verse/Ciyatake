@@ -39,12 +39,12 @@ const RecentActivities = () => {
   }, []);
 
   return (
-    <aside className="w-full max-w-sm rounded-2xl border border-emerald-100 bg-white shadow-xl">
-      <header className="flex items-center justify-between border-b border-emerald-100 px-6 py-4">
+    <aside className="w-full max-w-sm rounded-2xl border border-[#e6dccb] bg-white shadow-xl">
+      <header className="flex items-center justify-between border-b border-[#e6dccb] px-6 py-4">
         <h3 className="text-lg font-semibold text-slate-900">
           Recent Activity
         </h3>
-        <span className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500">
+        <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#b8985b]">
           Feed
         </span>
       </header>
@@ -54,7 +54,7 @@ const RecentActivities = () => {
             Unable to load activity feed.
           </p>
         ) : loading ? (
-          <p className="rounded-2xl bg-emerald-50 p-4 text-center text-sm text-emerald-700">
+          <p className="rounded-2xl bg-[#f7f1e4] p-4 text-center text-sm text-[#8f7843]">
             Loading activity...
           </p>
         ) : activities.length ? (
@@ -63,7 +63,7 @@ const RecentActivities = () => {
               key={`${activity.message}-${index}`}
               className="flex items-start gap-3"
             >
-              <span className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <span className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#f2eae0] text-[#8f7843]">
                 {activity.icon ?? "📝"}
               </span>
               <div className="flex-1">
@@ -80,8 +80,8 @@ const RecentActivities = () => {
           </p>
         )}
       </div>
-      <div className="border-t border-emerald-100 p-6">
-        <button className="inline-flex w-full items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">
+      <div className="border-t border-[#e6dccb] p-6">
+        <button className="inline-flex w-full items-center justify-center rounded-full bg-[#b8985b] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#a9894f]">
           View all activity
         </button>
       </div>

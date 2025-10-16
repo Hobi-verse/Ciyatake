@@ -4,7 +4,7 @@ import AdminSidebar from "./AdminSidebar";
 import adminLinks from "./adminLinks";
 
 const AdminDashboardLayout = () => (
-  <div className="min-h-screen bg-emerald-400/10 flex flex-col">
+  <div className="min-h-screen bg-[#f5f2ee] flex flex-col">
     <AdminHeader />
     <div className="flex flex-1 flex-col gap-6 px-6 pb-6 lg:flex-row mt-4">
       <nav className="lg:hidden">
@@ -16,10 +16,10 @@ const AdminDashboardLayout = () => (
                 <NavLink
                   to={link.to}
                   className={({ isActive }) =>
-                    `flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow transition ring-1 ring-emerald-100 ${
+                    `flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold shadow transition ring-1 ring-[#e6dccb] ${
                       isActive
-                        ? "bg-emerald-600 text-white"
-                        : "bg-white/95 text-emerald-700 hover:bg-emerald-50"
+                        ? "bg-[#b8985b] text-white shadow-[#b8985b]/30"
+                        : "bg-white/95 text-[#8f7843] hover:bg-[#f2eae0]"
                     }`
                   }
                 >
@@ -32,7 +32,7 @@ const AdminDashboardLayout = () => (
         </ul>
       </nav>
       <AdminSidebar />
-      <div className="custom-scrollbar mt-4 flex-1 overflow-y-auto rounded-2xl bg-white/95 px-8 pb-10 pt-16 text-slate-900 shadow-xl ring-1 ring-emerald-100 scroll-pt-24 lg:mt-0 lg:max-h-[calc(100vh-7.5rem)] lg:pt-20">
+      <div className="custom-scrollbar mt-4 flex-1 overflow-y-auto rounded-2xl bg-white px-8 pb-10 pt-16 text-slate-900 shadow-xl ring-1 ring-[#e6dccb] scroll-pt-24 lg:mt-0 lg:max-h-[calc(100vh-7.5rem)] lg:pt-20">
         <Outlet />
       </div>
     </div>

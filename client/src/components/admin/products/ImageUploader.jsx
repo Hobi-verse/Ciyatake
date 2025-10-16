@@ -79,8 +79,8 @@ const ImageUploader = ({
       <div
         className={`rounded-2xl border-2 border-dashed px-6 py-8 text-center transition ${
           dragActive
-            ? "border-emerald-400 bg-emerald-50"
-            : "border-slate-300 hover:border-emerald-300 hover:bg-emerald-50/40"
+            ? "border-[#b8985b] bg-[#f2eae0]"
+            : "border-slate-300 hover:border-[#cdae79] hover:bg-[#f2eae0]/70"
         } ${canAddMore ? "cursor-pointer" : "cursor-not-allowed opacity-70"}`}
         onClick={() =>
           canAddMore ? document.getElementById(inputId)?.click() : undefined
@@ -97,7 +97,7 @@ const ImageUploader = ({
         }}
         onDrop={canAddMore ? handleDrop : undefined}
       >
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#f2eae0] text-[#8f7843]">
           <svg
             className="h-6 w-6"
             viewBox="0 0 24 24"
@@ -143,7 +143,7 @@ const ImageUploader = ({
               key={image.id}
               className={`group relative overflow-hidden rounded-2xl border bg-white shadow-sm transition ${
                 primaryImageIndex === index
-                  ? "border-emerald-500"
+                  ? "border-[#b8985b]"
                   : "border-slate-200"
               }`}
             >
@@ -154,7 +154,7 @@ const ImageUploader = ({
               />
 
               {primaryImageIndex === index ? (
-                <span className="absolute left-3 top-3 rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-semibold text-white shadow">
+                <span className="absolute left-3 top-3 rounded-full bg-[#b8985b]/90 px-3 py-1 text-xs font-semibold text-white shadow">
                   Primary
                 </span>
               ) : null}

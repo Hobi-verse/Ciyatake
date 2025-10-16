@@ -8,10 +8,10 @@ const FormSection = ({
   const toggleable = typeof onToggle === "function";
 
   return (
-    <section className="rounded-3xl border border-emerald-100 bg-white/80 shadow-sm transition hover:shadow-md">
+    <section className="rounded-3xl border border-[#e6dccb] bg-white/80 shadow-sm transition hover:shadow-md">
       <header
-        className={`flex items-start justify-between gap-4 border-b border-emerald-100/60 px-5 py-4 ${
-          toggleable ? "cursor-pointer hover:bg-emerald-50/50" : ""
+        className={`flex items-start justify-between gap-4 border-b border-[#e6dccb]/60 px-5 py-4 ${
+          toggleable ? "cursor-pointer hover:bg-[#f2eae0]/50" : ""
         }`}
         onClick={toggleable ? onToggle : undefined}
       >
@@ -23,7 +23,7 @@ const FormSection = ({
         </div>
         {toggleable ? (
           <span
-            className={`mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-200 text-emerald-600 transition ${
+            className={`mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#dec9a4] text-[#8f7843] transition ${
               isOpen ? "rotate-180" : ""
             }`}
           >

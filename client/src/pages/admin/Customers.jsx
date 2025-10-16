@@ -117,15 +117,15 @@ const Customers = () => {
         <div className="text-sm text-slate-400">
           Showing {customers.length} of {totalCustomers} customers
           {leadingTier ? (
-            <span className="ml-3 inline-flex items-center gap-1 rounded-full bg-emerald-100/70 px-3 py-1 text-xs font-semibold text-emerald-700">
+            <span className="ml-3 inline-flex items-center gap-1 rounded-full bg-[#f2eae0] px-3 py-1 text-xs font-semibold text-[#8f7843]">
               Top tier: {leadingTier.label} · {leadingTier.count}
             </span>
           ) : null}
         </div>
       </header>
-      <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-2xl">
-        <table className="min-w-full divide-y divide-emerald-50">
-          <thead className="bg-emerald-600/95 text-left text-xs font-semibold uppercase tracking-wide text-white">
+      <div className="overflow-hidden rounded-2xl border border-[#e6dccb] bg-white shadow-2xl">
+        <table className="min-w-full divide-y divide-[#f2eae0]">
+          <thead className="bg-[#b8985b] text-left text-xs font-semibold uppercase tracking-wide text-white">
             <tr>
               <th className="px-6 py-4">Customer</th>
               <th className="px-6 py-4">Contact</th>
@@ -134,7 +134,7 @@ const Customers = () => {
               <th className="px-6 py-4">Activity</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-emerald-50 text-sm">
+          <tbody className="divide-y divide-[#f2eae0] text-sm">
             {error ? (
               <tr>
                 <td
@@ -148,7 +148,7 @@ const Customers = () => {
               <tr>
                 <td
                   colSpan={5}
-                  className="px-6 py-6 text-center text-sm text-emerald-600"
+                  className="px-6 py-6 text-center text-sm text-[#8f7843]"
                 >
                   Loading customers...
                 </td>
@@ -157,10 +157,10 @@ const Customers = () => {
               customers.map((customer, index) => (
                 <tr
                   key={customer.id ?? customer.userId ?? `customer-${index}`}
-                  className="hover:bg-emerald-50/60"
+                  className="hover:bg-[#f2eae0]"
                 >
                   <td className="px-6 py-4">
-                    <div className="font-semibold text-emerald-700">
+                    <div className="font-semibold text-[#8f7843]">
                       {customer.name || "—"}
                     </div>
                     <div className="text-xs text-slate-400">
@@ -178,11 +178,11 @@ const Customers = () => {
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center rounded-full bg-emerald-100/70 px-3 py-1 text-xs font-semibold text-emerald-700">
+                    <span className="inline-flex items-center rounded-full bg-[#f2eae0] px-3 py-1 text-xs font-semibold text-[#8f7843]">
                       {formatTierLabel(customer.membershipTier)}
                     </span>
                     {customer.isVerified ? (
-                      <span className="ml-2 text-xs font-medium text-emerald-600">
+                      <span className="ml-2 text-xs font-medium text-[#8f7843]">
                         Verified
                       </span>
                     ) : null}
