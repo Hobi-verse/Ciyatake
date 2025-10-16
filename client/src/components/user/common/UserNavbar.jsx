@@ -582,6 +582,7 @@ const UserNavbar = ({
                 />
               </div>
             </div>
+            
 
             <div className="hidden items-center gap-2 md:flex">
               {actions.map((action, index) => {
@@ -630,6 +631,8 @@ const UserNavbar = ({
               })}
             </div>
 
+            
+
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen((previous) => !previous)}
@@ -644,15 +647,39 @@ const UserNavbar = ({
                 className="h-5 w-5"
               />
             </button>
+
+            
           </div>
         </div>
+ 
+     <div className="relative block md:hidden lg:hidden">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(event) => onSearchChange?.(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  onSearchSubmit?.(searchTerm);
+                }
+              }}
+              className="w-full rounded-xl border border-[#DCECE9] bg-white px-4 py-3 mt-4 pl-10 text-sm text-slate-700 placeholder:text-slate-400 transition focus:border-[#b8985b] focus:outline-none focus:ring-2 focus:ring-[#b8985b]/25"
+            />
+            <img
+              src={searchIcon}
+              alt=""
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 mt-2"
+              aria-hidden="true"
+            />
+          </div>
 
         <div
           className={`${
             isMobileMenuOpen ? "mt-6" : "hidden"
           } flex flex-col gap-4 lg:hidden`}
         >
-          <div className="relative">
+
+          {/* <div className="relative">
             <input
               type="text"
               placeholder="Search products..."
@@ -671,7 +698,7 @@ const UserNavbar = ({
               className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
               aria-hidden="true"
             />
-          </div>
+          </div> */}
 
           <ul className="flex flex-col gap-3 text-sm font-medium text-slate-700">
             {genderLinks.map((link) => (
@@ -708,7 +735,7 @@ const UserNavbar = ({
             </li>
           </ul>
 
-          <div className="flex flex-wrap gap-3">
+          {/* <div className="flex flex-wrap gap-3">
             {actions.map((action, index) => {
               const key =
                 action.key ?? `${action.label ?? "action"}-mobile-${index}`;
@@ -753,7 +780,7 @@ const UserNavbar = ({
                 </button>
               );
             })}
-          </div>
+          </div> */}
         </div>
       </nav>
     </header>

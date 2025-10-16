@@ -80,52 +80,78 @@ const ProductCard = ({
   })();
 
   const cardContent = (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-[#DCECE9] bg-white p-4 shadow-lg transition hover:border-[#b8985b]/60 hover:bg-[#F2EAE0]">
-      {hasDiscount ? (
-        <span className="absolute left-4 top-4 rounded-full bg-rose-500 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-          {roundedDiscount}% OFF
-        </span>
-      ) : null}
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#DCECE9]">
-        {merchandisingLabel ? (
-          <span className="absolute right-3 top-3 rounded-full border border-[#b8985b]/30 bg-[#b8985b]/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#b8985b]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-50">
+        {hasDiscount && (
+          <span className="absolute left-2 top-2 z-10 rounded bg-green-600 px-2 py-1 text-xs font-medium text-white">
+            {roundedDiscount}% OFF
+          </span>
+        )}
+        {merchandisingLabel && (
+          <span className="absolute right-2 top-2 z-10 rounded bg-purple-600 px-2 py-1 text-xs font-medium text-white">
             {merchandisingLabel}
           </span>
-        ) : null}
+        )}
         {imageUrl ? (
           <img
             src={imageUrl}
             alt={imageAlt ?? title}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
             loading="lazy"
           />
-        ) : null}
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gray-100">
+            <span className="text-gray-400 text-xs">No Image</span>
+          </div>
+        )}
+        <button className="absolute right-2 bottom-2 rounded-full bg-white p-1.5 shadow-sm hover:shadow-md transition-shadow">
+          <svg className="h-4 w-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button>
       </div>
-      <div className="mt-4 flex flex-col gap-3">
+      
+      <div className="flex flex-1 flex-col justify-between p-2 sm:p-3">
         <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-          {brand ? <p className="text-sm text-slate-500">{brand}</p> : null}
+          <h3 className="line-clamp-2 text-xs font-medium text-gray-900 sm:text-sm">
+            {title}
+          </h3>
+          {brand && (
+            <p className="text-xs text-gray-500">{brand}</p>
+          )}
         </div>
-        <div className="flex items-center gap-2 text-sm text-slate-600">
-          <img src={starIcon} alt="" aria-hidden="true" className="h-4 w-4" />
-          {ratingDisplay ? (
-            <span className="font-semibold text-[#b8985b]">
-              {ratingDisplay}
+
+        <div className="mt-2 space-y-1">
+          <div className="flex items-baseline gap-1">
+            <span className="text-sm font-bold text-gray-900 sm:text-base">
+              {formattedPrice}
             </span>
-          ) : null}
-          {ratingDisplay && reviewLabel ? (
-            <span className="text-slate-500">{reviewLabel}</span>
-          ) : null}
-        </div>
-        <div className="flex items-baseline gap-2">
-          <span className="text-base font-semibold text-[#b8985b]">
-            {formattedPrice}
-          </span>
-          {showOriginalPrice ? (
-            <span className="text-sm text-slate-400 line-through">
-              {formattedMrp}
-            </span>
-          ) : null}
+            {showOriginalPrice && (
+              <span className="text-xs text-gray-500 line-through sm:text-sm">
+                {formattedMrp}
+              </span>
+            )}
+          </div>
+
+          {numericRating ? (
+            <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 rounded bg-green-600 px-1.5 py-0.5">
+                <img src={starIcon} alt="" className="h-3 w-3 brightness-0 invert" />
+                <span className="text-xs font-medium text-white">
+                  {ratingDisplay}
+                </span>
+              </div>
+              {reviewLabel && (
+                <span className="text-xs text-gray-500">{reviewLabel}</span>
+              )}
+            </div>
+          ) : (
+            <div className="text-xs text-gray-600">New</div>
+          )}
+
+          <div className="text-xs text-green-600 font-medium">
+            Free Delivery
+          </div>
         </div>
       </div>
     </article>
