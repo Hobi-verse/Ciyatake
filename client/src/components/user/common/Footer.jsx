@@ -1,4 +1,14 @@
-import { ShoppingBag, Mail, Phone, Clock, Instagram, Facebook, Twitter, Linkedin } from 'lucide-react';
+import {
+  ShoppingBag,
+  Mail,
+  Phone,
+  Clock,
+  Instagram,
+  Facebook,
+  Twitter,
+  Linkedin,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -9,17 +19,26 @@ const Footer = () => {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <ShoppingBag className="w-8 h-8 text-[#8b7355]" />
-              <h3 className="text-2xl font-semibold text-[#8b7355]">Ciyatake</h3>
+              <h3 className="text-2xl font-semibold text-[#8b7355]">
+                Ciyatake
+              </h3>
             </div>
             <p className="text-sm leading-relaxed text-gray-600">
-              Thoughtfully curated fashion and lifestyle essentials to help you celebrate everyday moments in style.
+              Thoughtfully curated fashion and lifestyle essentials to help you
+              celebrate everyday moments in style.
             </p>
             <div className="space-y-2">
-              <a href="mailto:care@ciyatake.com" className="flex items-center text-sm text-[#a08968] hover:text-[#8b7355] transition-colors">
+              <a
+                href="mailto:care@ciyatake.com"
+                className="flex items-center text-sm text-[#a08968] hover:text-[#8b7355] transition-colors"
+              >
                 <Mail className="w-4 h-4 mr-2" />
                 care@ciyatake.com
               </a>
-              <a href="tel:+919876543210" className="flex items-center text-sm text-[#a08968] hover:text-[#8b7355] transition-colors">
+              <a
+                href="tel:+919876543210"
+                className="flex items-center text-sm text-[#a08968] hover:text-[#8b7355] transition-colors"
+              >
                 <Phone className="w-4 h-4 mr-2" />
                 +91 98765 43210
               </a>
@@ -35,27 +54,42 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4 text-[#8b7355]">SHOP</h4>
             <ul className="space-y-2">
               <li>
-                <a href="/shop/women" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
+                <a
+                  href="/shop/women"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
                   Women
                 </a>
               </li>
               <li>
-                <a href="/shop/men" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
+                <a
+                  href="/shop/men"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
                   Men
                 </a>
               </li>
               <li>
-                <a href="/shop/kids" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
+                <a
+                  href="/shop/kids"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
                   Kids
                 </a>
               </li>
               <li>
-                <a href="/shop/accessories" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
+                <a
+                  href="/shop/accessories"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
                   Accessories
                 </a>
               </li>
               <li>
-                <a href="/shop/home-living" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
+                <a
+                  href="/shop/home-living"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
                   Home & Living
                 </a>
               </li>
@@ -64,65 +98,75 @@ const Footer = () => {
 
           {/* Help & Support Section */}
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-[#8b7355]">HELP & SUPPORT</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="/track-order" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
+            <h4 className="text-lg font-semibold mb-4 text-[#8b7355]">
+              HELP & SUPPORT
+            </h4>
+            <ul className="flex flex-col space-y-2">
+              <Link to="/track-order">
+                <a
+                  href="/track-order"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
                   Track Order
                 </a>
-              </li>
-              <li>
-                <a href="/returns-refunds" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
+              </Link>
+              <Link to="/return-and-refund-policy">
+                <a
+                  href="/returns-refunds"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
                   Returns & Refunds
                 </a>
-              </li>
-              <li>
-                <a href="/shipping-delivery" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
-                  Shipping & Delivery
-                </a>
-              </li>
-              <li>
-                <a href="/faqs" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
+              </Link>
+              <Link to="FAQs">
+                <a
+                  href="/faqs"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
                   FAQs
                 </a>
-              </li>
-              <li>
-                <a href="/size-guide" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
-                  Size Guide
-                </a>
-              </li>
+              </Link>
             </ul>
           </div>
 
           {/* Company Section */}
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-[#8b7355]">COMPANY</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="/our-story" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
+            <h4 className="text-lg font-semibold mb-4 text-[#8b7355]">
+              COMPANY
+            </h4>
+            <ul className="flex flex-col space-y-2">
+              <Link to="our-story">
+                <a
+                  href="/our-story"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
                   Our Story
                 </a>
-              </li>
-              <li>
-                <a href="/sustainability" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
-                  Sustainability
-                </a>
-              </li>
-              <li>
-                <a href="/careers" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
+              </Link>
+              <Link to="career-page">
+                <a
+                  href="/careers"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
                   Careers
                 </a>
-              </li>
-              <li>
-                <a href="/press" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
+              </Link>
+              <Link to="press">
+                <a
+                  href="/press"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
                   Press
                 </a>
-              </li>
-              <li>
-                <a href="/contact" className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors">
+              </Link>
+              <Link to="contact-us">
+                <a
+                  href="/contact"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
                   Contact
                 </a>
-              </li>
+              </Link>
             </ul>
           </div>
         </div>
@@ -168,15 +212,24 @@ const Footer = () => {
 
             {/* Legal Links */}
             <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600 md:justify-end">
-              <a href="/privacy-policy" className="hover:text-[#8b7355] transition-colors">
+              <a
+                href="/privacy-policy"
+                className="hover:text-[#8b7355] transition-colors"
+              >
                 Privacy Policy
               </a>
               <span className="hidden sm:inline">•</span>
-              <a href="/terms-of-service" className="hover:text-[#8b7355] transition-colors">
+              <a
+                href="/terms-of-service"
+                className="hover:text-[#8b7355] transition-colors"
+              >
                 Terms of Service
               </a>
               <span className="hidden sm:inline">•</span>
-              <a href="/cookie-policy" className="hover:text-[#8b7355] transition-colors">
+              <a
+                href="/cookie-policy"
+                className="hover:text-[#8b7355] transition-colors"
+              >
                 Cookie Policy
               </a>
             </div>
@@ -191,7 +244,7 @@ const Footer = () => {
 
       {/* Scroll to Top Button */}
       <button
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         className="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-[#8b7355] text-white shadow-lg hover:bg-[#a08968] transition-all flex items-center justify-center"
         aria-label="Scroll to top"
       >
