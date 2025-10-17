@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 4000;
 
 //middleware - Enable CORS for frontend communication
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: "https://ciyatake.shop",
   credentials: true,
 }));
 app.use(express.json({ limit: "10mb" }));

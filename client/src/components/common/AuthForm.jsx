@@ -1,6 +1,6 @@
 // AuthForm.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Button from "./Button";
 import Skeleton from "./Skeleton";
 
@@ -336,12 +336,12 @@ const AuthForm = ({
 
         <p className="mt-6 text-center text-sm text-slate-600">
           {footerText}{" "}
-          <a
-            href={footerLinkHref}
+          <Link
+            to={footerLinkHref}
             className="font-semibold text-[#b8985b] transition hover:text-[#a9894f]"
           >
             {footerLinkText}
-          </a>
+          </Link>
         </p>
       </div>
     </div>
