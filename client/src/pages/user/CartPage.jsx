@@ -5,6 +5,8 @@ import CartItem from "../../components/user/cart/CartItem.jsx";
 import SavedItem from "../../components/user/cart/SavedItem.jsx";
 import OrderSummary from "../../components/user/cart/OrderSummary.jsx";
 import CouponPanel from "../../components/user/cart/CouponPanel.jsx";
+import Loader from "../../components/common/Loader.jsx";
+import Skeleton from "../../components/common/Skeleton.jsx";
 import {
   fetchCart,
   removeCartItem,
@@ -100,6 +102,10 @@ const CartPage = ({ isLoggedIn = false }) => {
     () => cart.items.filter((item) => item.savedForLater),
     [cart.items]
   );
+
+  const hasCartItems = cartItems.length > 0;
+  const isInitialCartLoad = loading && !hasCartItems;
+  const isRefreshingCart = loading && hasCartItems;
 
   const cartSignature = useMemo(
     () =>
@@ -420,20 +426,52 @@ const CartPage = ({ isLoggedIn = false }) => {
                   Retry
                 </button>
               </div>
-            ) : loading ? (
-              <div className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-10 text-center text-sm text-[#b8985b]">
-                Loading your cart...
-              </div>
-            ) : cartItems.length ? (
-              cartItems.map((item) => (
-                <CartItem
-                  key={item.id}
-                  item={item}
-                  onQuantityChange={handleQuantityChange}
-                  onRemove={handleRemove}
-                  onSaveForLater={handleSaveForLater}
-                />
+            ) : isInitialCartLoad ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  key={`cart-item-skeleton-${index}`}
+                  className="rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-sm"
+                >
+                  <div className="flex flex-col gap-4 sm:flex-row">
+                    <Skeleton
+                      className="h-36 w-full rounded-2xl sm:w-40"
+                      rounded={false}
+                    />
+                    <div className="flex-1 space-y-3">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-4 w-1/3" />
+                      <div className="flex flex-wrap gap-2">
+                        <Skeleton
+                          className="h-9 w-32 rounded-full"
+                          rounded={false}
+                        />
+                        <Skeleton
+                          className="h-9 w-28 rounded-full"
+                          rounded={false}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ))
+            ) : cartItems.length ? (
+              <>
+                {cartItems.map((item) => (
+                  <CartItem
+                    key={item.id}
+                    item={item}
+                    onQuantityChange={handleQuantityChange}
+                    onRemove={handleRemove}
+                    onSaveForLater={handleSaveForLater}
+                  />
+                ))}
+                {isRefreshingCart ? (
+                  <div className="flex justify-center pt-4">
+                    <Loader label="Refreshing cart" />
+                  </div>
+                ) : null}
+              </>
             ) : (
               <div className="rounded-3xl border border-dashed border-[#DCECE9] bg-[#DCECE9]/40 p-10 text-center text-sm text-slate-600">
                 Your cart is empty. Browse products to add them here.
@@ -441,30 +479,41 @@ const CartPage = ({ isLoggedIn = false }) => {
             )}
           </div>
 
-          <OrderSummary
-            subtotal={totals.subtotal}
-            estimatedTax={totals.estimatedTax}
-            shippingLabel={
-              couponResult?.freeShipping ? "Free (coupon)" : "Free"
-            }
-            discount={couponResult?.discountApplied ?? 0}
-            couponCode={couponResult?.code ?? ""}
-            onRemoveCoupon={handleRemoveCoupon}
-          >
-            <CouponPanel
-              appliedCoupon={couponResult}
-              isApplying={couponLoading}
-              applyError={couponError}
-              onApply={handleApplyCoupon}
-              onAutoApply={handleAutoApplyCoupon}
-              onRemove={handleRemoveCoupon}
-              availableCoupons={availableCoupons}
-              availableLoading={availableLoading}
-              availableError={availableError}
-              onRefresh={() => loadAvailableCoupons({})}
-              isLoggedIn={isLoggedIn}
-            />
-          </OrderSummary>
+          {isInitialCartLoad ? (
+            <div className="space-y-4 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-sm">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full rounded-full" rounded={false} />
+              <Skeleton className="h-10 w-full rounded-full" rounded={false} />
+            </div>
+          ) : (
+            <OrderSummary
+              subtotal={totals.subtotal}
+              estimatedTax={totals.estimatedTax}
+              shippingLabel={
+                couponResult?.freeShipping ? "Free (coupon)" : "Free"
+              }
+              discount={couponResult?.discountApplied ?? 0}
+              couponCode={couponResult?.code ?? ""}
+              onRemoveCoupon={handleRemoveCoupon}
+            >
+              <CouponPanel
+                appliedCoupon={couponResult}
+                isApplying={couponLoading}
+                applyError={couponError}
+                onApply={handleApplyCoupon}
+                onAutoApply={handleAutoApplyCoupon}
+                onRemove={handleRemoveCoupon}
+                availableCoupons={availableCoupons}
+                availableLoading={availableLoading}
+                availableError={availableError}
+                onRefresh={() => loadAvailableCoupons({})}
+                isLoggedIn={isLoggedIn}
+              />
+            </OrderSummary>
+          )}
         </section>
 
         {actionError ? (
@@ -491,7 +540,29 @@ const CartPage = ({ isLoggedIn = false }) => {
           </div>
 
           <div className="mt-6 grid gap-4">
-            {savedItems.length ? (
+            {isInitialCartLoad ? (
+              Array.from({ length: 2 }).map((_, index) => (
+                <div
+                  key={`saved-item-skeleton-${index}`}
+                  className="rounded-2xl border border-[#DCECE9] bg-white p-6 shadow-sm"
+                >
+                  <div className="flex items-center gap-4">
+                    <Skeleton
+                      className="h-20 w-20 rounded-2xl"
+                      rounded={false}
+                    />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton
+                        className="h-8 w-32 rounded-full"
+                        rounded={false}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : savedItems.length ? (
               savedItems.map((item) => (
                 <SavedItem
                   key={item.id}

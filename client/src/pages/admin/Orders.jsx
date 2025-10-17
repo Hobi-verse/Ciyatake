@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchRecentOrders } from "../../api/admin.js";
 import formatINR from "../../utils/currency.js";
+import Loader from "../../components/common/Loader.jsx";
+import Skeleton from "../../components/common/Skeleton.jsx";
 
 const statusClassMap = {
   pending: "bg-amber-100 text-amber-700",
@@ -99,9 +101,15 @@ const Orders = () => {
         <p className="text-base text-slate-500">
           Track and manage recent customer orders with live status updates.
         </p>
-        <p className="text-sm text-slate-400">
-          Showing {orders.length} of {totalOrders} orders
-        </p>
+        <div className="min-h-[1.25rem] text-sm text-slate-400">
+          {loading ? (
+            <Skeleton className="h-4 w-48" />
+          ) : (
+            <>
+              Showing {orders.length} of {totalOrders} orders
+            </>
+          )}
+        </div>
       </header>
       <div className="overflow-hidden rounded-2xl border border-[#e6dccb] bg-white shadow-2xl">
         <table className="min-w-full divide-y divide-[#f2eae0]">
@@ -125,14 +133,30 @@ const Orders = () => {
                 </td>
               </tr>
             ) : loading ? (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-6 py-6 text-center text-sm text-[#8f7843]"
-                >
-                  Loading orders...
-                </td>
-              </tr>
+              Array.from({ length: 5 }).map((_, index) => (
+                <tr key={`orders-skeleton-${index}`} className="animate-pulse">
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="mt-2 h-3 w-16" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="mt-2 h-3 w-24" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-24" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton
+                      className="h-6 w-24 rounded-full"
+                      rounded={false}
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-20" />
+                  </td>
+                </tr>
+              ))
             ) : orders.length ? (
               orders.map((order, index) => (
                 <tr
@@ -189,6 +213,11 @@ const Orders = () => {
           </tbody>
         </table>
       </div>
+      {loading && !orders.length ? (
+        <div className="flex justify-center pt-6">
+          <Loader label="Fetching orders" />
+        </div>
+      ) : null}
     </section>
   );
 };

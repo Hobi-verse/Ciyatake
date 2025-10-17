@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "./Button";
+import Skeleton from "./Skeleton";
 
 const defaultInputClasses =
   "w-full rounded-lg border border-[#DCECE9] bg-white px-4 py-2 text-slate-700 placeholder:text-slate-400 focus:border-[#b8985b] focus:outline-none focus:ring-2 focus:ring-[#b8985b]/30 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400";
@@ -21,6 +22,7 @@ const AuthForm = ({
   footerLinkHref = "#",
   forgetPasswordText = "",
   status = null,
+  loading = false,
 }) => {
   const navigate = useNavigate();
 
@@ -199,6 +201,88 @@ const AuthForm = ({
     return renderStandardField(field, index);
   };
 
+  const renderStatusMessage = () => {
+    if (!status?.message) {
+      return null;
+    }
+
+    const toneClasses =
+      status.type === "error"
+        ? "border-rose-200 bg-rose-50 text-rose-600"
+        : status.type === "success"
+        ? "border-[#c3dedd] bg-[#c3dedd]/20 text-[#2f4a55]"
+        : "border-[#DCECE9] bg-[#F2EAE0] text-slate-600";
+
+    return (
+      <div className={`rounded-lg border px-3 py-2 text-sm ${toneClasses}`}>
+        {status.message}
+      </div>
+    );
+  };
+
+  const visibleFieldCount = useMemo(
+    () => Math.max(fields.filter((field) => !field?.hidden).length || 0, 2),
+    [fields]
+  );
+
+  const statusMessage = renderStatusMessage();
+
+  if (loading) {
+    return (
+      <div className="flex h-[calc(100vh-64px)] items-center justify-center bg-[#f5f2ee]">
+        <div className="w-full max-w-md overflow-hidden rounded-2xl border border-[#DCECE9] bg-white/95 p-8 shadow-[0_36px_80px_rgba(15,23,42,0.14)]">
+          <div className="space-y-2 text-center">
+            <Skeleton className="mx-auto h-8 w-48" />
+            <Skeleton className="mx-auto h-4 w-64" />
+          </div>
+
+          <div className="mt-6 space-y-4">
+            {Array.from({ length: visibleFieldCount }).map((_, index) => (
+              <div key={`auth-skeleton-field-${index}`} className="space-y-2">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-11 w-full rounded-lg" rounded={false} />
+              </div>
+            ))}
+
+            <Skeleton
+              className="ml-auto h-3 w-28 rounded-full"
+              rounded={false}
+            />
+            <Skeleton className="h-11 w-full rounded-full" rounded={false} />
+          </div>
+
+          {socialProviders.length ? (
+            <div className="mt-8 space-y-4">
+              <div className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-slate-500">
+                <Skeleton className="h-px flex-1" rounded={false} />
+                <Skeleton className="h-3 w-40" />
+                <Skeleton className="h-px flex-1" rounded={false} />
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {Array.from({ length: socialProviders.length }).map(
+                  (_, index) => (
+                    <Skeleton
+                      key={`auth-skeleton-provider-${index}`}
+                      className="h-11 flex-1 rounded-full"
+                      rounded={false}
+                    />
+                  )
+                )}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="mt-6 space-y-2 text-center">
+            <Skeleton className="mx-auto h-3 w-56" />
+            <Skeleton className="mx-auto h-3 w-32" />
+          </div>
+
+          {statusMessage ? <div className="mt-6">{statusMessage}</div> : null}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-[calc(100vh-64px)] items-center justify-center bg-[#f5f2ee]">
       <div className="w-full max-w-md overflow-y-auto rounded-2xl border border-[#DCECE9] bg-white/95 p-8 shadow-[0_36px_80px_rgba(15,23,42,0.14)]">
@@ -225,20 +309,7 @@ const AuthForm = ({
           <Button type="submit" disabled={isSubmitDisabled} className="w-full">
             {buttonLabel}
           </Button>
-
-          {status?.message ? (
-            <div
-              className={`rounded-lg border px-3 py-2 text-sm ${
-                status.type === "error"
-                  ? "border-rose-200 bg-rose-50 text-rose-600"
-                  : status.type === "success"
-                  ? "border-[#c3dedd] bg-[#c3dedd]/20 text-[#2f4a55]"
-                  : "border-[#DCECE9] bg-[#F2EAE0] text-slate-600"
-              }`}
-            >
-              {status.message}
-            </div>
-          ) : null}
+          {statusMessage}
         </form>
 
         {socialProviders.length ? (

@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthForm from "../../components/common/AuthForm";
 import UserNavbar from "../../components/user/common/UserNavbar";
+import Loader from "../../components/common/Loader.jsx";
 import { loginUser, googleLogin } from "../../api/auth";
 import { storeAuthSession } from "../../utils/authStorage";
 
@@ -9,6 +10,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState(null);
+  const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
 
   const buttonLabel = useMemo(
     () => (isSubmitting ? "Signing in..." : "Sign In"),
@@ -21,7 +23,10 @@ const Login = () => {
     const token = urlParams.get("token");
     const error = urlParams.get("error");
 
+    let cleanupTimeout;
+
     if (token) {
+      setIsProcessingOAuth(true);
       // Handle successful Google login
       setStatus({
         type: "success",
@@ -33,7 +38,8 @@ const Login = () => {
 
       // You may want to get user info here
       // For now, redirect to home page
-      setTimeout(() => {
+      cleanupTimeout = window.setTimeout(() => {
+        setIsProcessingOAuth(false);
         navigate("/", { replace: true });
         // Clean up URL
         window.history.replaceState(
@@ -45,6 +51,7 @@ const Login = () => {
     }
 
     if (error) {
+      setIsProcessingOAuth(true);
       // Handle Google login error
       const errorMessages = {
         google_auth_failed: "Google authentication failed. Please try again.",
@@ -59,14 +66,20 @@ const Login = () => {
       });
 
       // Clean up URL
-      setTimeout(() => {
+      cleanupTimeout = window.setTimeout(() => {
         window.history.replaceState(
           {},
           document.title,
           window.location.pathname
         );
+        setIsProcessingOAuth(false);
       }, 3000);
     }
+    return () => {
+      if (cleanupTimeout) {
+        window.clearTimeout(cleanupTimeout);
+      }
+    };
   }, [navigate]);
 
   const extractErrorMessage = (
@@ -185,6 +198,9 @@ const Login = () => {
     }
   };
 
+  const showRefreshLoader = !isProcessingOAuth && isSubmitting;
+  const loaderLabel = "Signing you in";
+
   return (
     <div className="min-h-screen bg-[#f5f2ee]">
       <UserNavbar />
@@ -204,9 +220,15 @@ const Login = () => {
         footerLinkText="Sign up"
         footerLinkHref="/signup"
         status={status}
-        isSubmitDisabled={isSubmitting}
+        isSubmitDisabled={isSubmitting || isProcessingOAuth}
+        loading={isProcessingOAuth}
         forgetPasswordText="Forget Password?"
       />
+      {showRefreshLoader ? (
+        <div className="flex justify-center pt-6">
+          <Loader label={loaderLabel} />
+        </div>
+      ) : null}
     </div>
   );
 };

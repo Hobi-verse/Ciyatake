@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import UserNavbar from "../../components/user/common/UserNavbar";
 import AuthForm from "../../components/common/AuthForm";
 import Button from "../../components/common/Button";
+import Loader from "../../components/common/Loader.jsx";
 import {
   sendOtp,
   verifyOtp,
@@ -24,6 +25,7 @@ const Register = () => {
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState(null);
+  const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
 
   const extractErrorMessage = useCallback(
     (error, fallback = "Something went wrong. Please try again.") => {
@@ -357,7 +359,10 @@ const Register = () => {
     const token = urlParams.get("token");
     const error = urlParams.get("error");
 
+    let cleanupTimeout;
+
     if (token) {
+      setIsProcessingOAuth(true);
       (async () => {
         try {
           setStatus({ type: "info", message: "Finishing Google signup..." });
@@ -385,7 +390,10 @@ const Register = () => {
               type: "success",
               message: "Signup successful. Redirecting...",
             });
-            setTimeout(() => navigate(redirectPath, { replace: true }), 600);
+            cleanupTimeout = window.setTimeout(() => {
+              setIsProcessingOAuth(false);
+              navigate(redirectPath, { replace: true });
+            }, 600);
             return;
           }
 
@@ -395,7 +403,10 @@ const Register = () => {
             type: "success",
             message: "Signup successful. Redirecting...",
           });
-          setTimeout(() => navigate("/", { replace: true }), 600);
+          cleanupTimeout = window.setTimeout(() => {
+            setIsProcessingOAuth(false);
+            navigate("/", { replace: true });
+          }, 600);
         } catch (e) {
           console.error("Error handling Google signup callback:", e);
           setStatus({
@@ -403,11 +414,13 @@ const Register = () => {
             message: "Google signup failed. Please try again.",
           });
           clearAuthSession();
+          setIsProcessingOAuth(false);
         }
       })();
     }
 
     if (error) {
+      setIsProcessingOAuth(true);
       const errorMessages = {
         google_auth_failed: "Google authentication failed. Please try again.",
         google_auth_error: "An error occurred during Google authentication.",
@@ -417,7 +430,7 @@ const Register = () => {
       setStatus({ type: "error", message });
 
       // optionally clean URL
-      setTimeout(() => {
+      cleanupTimeout = window.setTimeout(() => {
         const url = new URL(window.location.href);
         url.searchParams.delete("error");
         window.history.replaceState(
@@ -425,8 +438,14 @@ const Register = () => {
           document.title,
           url.pathname + url.search
         );
+        setIsProcessingOAuth(false);
       }, 2500);
     }
+    return () => {
+      if (cleanupTimeout) {
+        window.clearTimeout(cleanupTimeout);
+      }
+    };
   }, [navigate]);
 
   const handleSubmit = useCallback(
@@ -514,6 +533,18 @@ const Register = () => {
     [extractErrorMessage, isOtpVerified, navigate, otpMobileNumber]
   );
 
+  const showRefreshLoader =
+    !isProcessingOAuth && (isSendingOtp || isVerifyingOtp || isSubmitting);
+
+  let loaderLabel = "";
+  if (isSubmitting) {
+    loaderLabel = "Creating your account";
+  } else if (isVerifyingOtp) {
+    loaderLabel = "Verifying OTP";
+  } else if (isSendingOtp) {
+    loaderLabel = "Sending OTP";
+  }
+
   return (
     <div className="min-h-screen bg-[#f5f2ee]">
       <UserNavbar />
@@ -529,12 +560,18 @@ const Register = () => {
         }}
         socialProviders={socialProviders}
         buttonLabel={buttonLabel}
-        isSubmitDisabled={!isOtpVerified || isSubmitting}
+        isSubmitDisabled={!isOtpVerified || isSubmitting || isProcessingOAuth}
         footerText="Already have an account?"
         footerLinkText="Login"
         footerLinkHref="/login"
         status={status}
+        loading={isProcessingOAuth}
       />
+      {showRefreshLoader ? (
+        <div className="flex justify-center pt-6">
+          <Loader label={loaderLabel} />
+        </div>
+      ) : null}
     </div>
   );
 };
