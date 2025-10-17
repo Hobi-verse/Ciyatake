@@ -27,6 +27,7 @@ import {
   getStoredAuthSession,
 } from "./utils/authStorage";
 import Footer from "./components/user/common/Footer.jsx";
+import GettingStarted from "./pages/user/GettingStarted.jsx";
 
 function App() {
   const [authSession, setAuthSession] = useState(() => getStoredAuthSession());
@@ -74,10 +75,11 @@ function App() {
   const isLoggedIn = !!authSession.token;
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-slate-900">
+    <div className="flex flex-col min-h-screen bg-white text-slate-900">
       <div className="flex-1">
         <Routes>
-          <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
+          <Route path="/" element={<GettingStarted />} />
+          <Route path="/home" element={<HomePage isLoggedIn={isLoggedIn} />} />
           <Route
             path="/products/:productId"
             element={<ProductDetailsPage isLoggedIn={isLoggedIn} />}
