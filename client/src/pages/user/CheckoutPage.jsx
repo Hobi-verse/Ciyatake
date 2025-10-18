@@ -733,138 +733,36 @@ const CheckoutPage = () => {
                       onChange={handleAddressSelection}
                     />
                   ) : (
-                    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
-                      We don't have a saved address yet. Add a new one below to
+                    <>
+                    <div className="rounded-2xl text-center border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+                      You don't have a saved address yet. Add a new one below to
                       continue.
                     </div>
+                    <div class="flex flex-col items-center justify-center bg-gradient-to-br from-amber-50 to-amber-100 p-4">
+                      <div class="bg-white rounded-2xl shadow-xl border border-[#b8985b] p-8 w-full max-w-md text-center">
+                        <h1 class="text-2xl font-bold text-[#b8985b] mb-6">Save Address Navigation Guide</h1>
+
+                        <div class="flex items-center justify-center space-x-3 text-sm font-medium">
+                          <div class="flex items-center gap-4 rounded-2xl border px-4 py-3 transition border-[#b8985b] bg-[#b8985b] text-white shadow-[0_14px_28px_rgba(184,152,91,0.3)]">
+                            <span>Account</span>
+                          </div>
+                          <span class="text-[#b8985b]">→</span>
+                          <div class="flex items-center gap-4 rounded-2xl border px-4 py-3 transition border-[#b8985b] bg-[#b8985b] text-white shadow-[0_14px_28px_rgba(184,152,91,0.3)]">
+                            <span>Address</span>
+                          </div>
+                          <span class="text-[#b8985b]">→</span>
+                          <div class="flex items-center gap-4 rounded-2xl border px-4 py-3 transition border-[#b8985b] bg-[#b8985b] text-white shadow-[0_14px_28px_rgba(184,152,91,0.3)]">
+                            <span>Add New Address</span>
+                          </div>
+                        </div>
+
+                        <p class="mt-6 text-gray-700 text-sm">Follow the steps above to add a new address to your account.</p>
+                      </div>
+                    </div>
+
+                    </>
                   )}
-
-                  {!useNewAddress && selectedAddress ? (
-                    <div className="mt-4 space-y-1 rounded-2xl border border-[#DCECE9] bg-white p-4 text-sm text-slate-700">
-                      <p className="text-sm font-semibold text-[#b8985b]">
-                        {selectedAddress.recipient ?? "Primary recipient"}
-                      </p>
-                      <p>{selectedAddress.addressLine1}</p>
-                      {selectedAddress.addressLine2 ? (
-                        <p>{selectedAddress.addressLine2}</p>
-                      ) : null}
-                      <p>
-                        {[
-                          selectedAddress.city,
-                          selectedAddress.state,
-                          selectedAddress.postalCode,
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </p>
-                      <p>{selectedAddress.country}</p>
-                      {selectedAddress.phone ? (
-                        <p className="text-xs text-slate-500">
-                          Phone: {selectedAddress.phone}
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : null}
-
-                  {useNewAddress ? (
-                    <div className="mt-6 space-y-4">
-                      <CheckoutField
-                        label="Address label"
-                        name="label"
-                        placeholder="e.g. Home, Office"
-                        value={addressForm.label}
-                        onChange={handleAddressFormChange}
-                      />
-                      <CheckoutField
-                        label="Address line 1"
-                        name="addressLine1"
-                        autoComplete="address-line1"
-                        placeholder="Apartment, house number, street"
-                        value={addressForm.addressLine1}
-                        onChange={handleAddressFormChange}
-                      />
-                      <CheckoutField
-                        label="Address line 2"
-                        name="addressLine2"
-                        autoComplete="address-line2"
-                        placeholder="Landmark, area"
-                        optional
-                        value={addressForm.addressLine2}
-                        onChange={handleAddressFormChange}
-                      />
-
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <CheckoutField
-                          label="City"
-                          name="city"
-                          autoComplete="address-level2"
-                          placeholder="City"
-                          value={addressForm.city}
-                          onChange={handleAddressFormChange}
-                        />
-                        <CheckoutField
-                          label="State"
-                          name="state"
-                          options={states}
-                          value={addressForm.state}
-                          onChange={handleAddressFormChange}
-                        />
-                      </div>
-
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <CheckoutField
-                          label="Postal code"
-                          name="postalCode"
-                          autoComplete="postal-code"
-                          placeholder="PIN code"
-                          value={addressForm.postalCode}
-                          onChange={handleAddressFormChange}
-                        />
-                        <CheckoutField
-                          label="Country"
-                          name="country"
-                          options={[
-                            {
-                              value: "",
-                              label: "Select country",
-                              disabled: true,
-                            },
-                            { value: DEFAULT_COUNTRY, label: DEFAULT_COUNTRY },
-                          ]}
-                          value={addressForm.country}
-                          onChange={handleAddressFormChange}
-                        />
-                      </div>
-
-                      <label className="flex flex-col gap-2">
-                        <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#b8985b]">
-                          Delivery instructions
-                          <span className="ml-2 text-[0.7rem] font-medium lowercase text-slate-400">
-                            optional
-                          </span>
-                        </span>
-                        <textarea
-                          name="deliveryInstructions"
-                          placeholder="e.g. Leave the package at the front desk"
-                          value={addressForm.deliveryInstructions}
-                          onChange={handleAddressFormChange}
-                          rows={3}
-                          className={TEXTAREA_FIELD_CLASSES}
-                        />
-                      </label>
-                    </div>
-                  ) : null}
-
-                  {checkoutIssues.length ? (
-                    <div className="mt-6 space-y-2 text-sm text-amber-700">
-                      {checkoutIssues.map((issue) => (
-                        <p key={`${issue?.type}-${issue?.itemId ?? "global"}`}>
-                          {issue?.message ??
-                            "We found an issue with an item in your cart."}
-                        </p>
-                      ))}
-                    </div>
-                  ) : null}
+                <button disabled={isSavingAddress} onClick={()=>navigate('/account')} className="bg-[#b8985b] text-white font-semibold rounded-3xl py-2 cursor-pointer">Go Save address</button>
                 </CheckoutSection>
               </form>
 

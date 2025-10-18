@@ -27,6 +27,13 @@ import {
   getStoredAuthSession,
 } from "./utils/authStorage";
 import Footer from "./components/user/common/Footer.jsx";
+import TrackOrder from "./components/user/common/helpAndSupport/TrackOrders.jsx";
+import RefundPolicy from "./components/user/common/helpAndSupport/RefundPolicy.jsx";
+import Faqs from "./components/user/common/helpAndSupport/Faqs.jsx";
+import OurStory from "./components/user/common/Company/OurStory.jsx";
+import Careers from "./components/user/common/Company/Careers.jsx";
+import Contact from "./components/user/common/Company/Contact.jsx";
+import Press from "./components/user/common/Company/Press.jsx";
 
 function App() {
   const [authSession, setAuthSession] = useState(() => getStoredAuthSession());
@@ -74,10 +81,17 @@ function App() {
   const isLoggedIn = !!authSession.token;
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-slate-900">
+    <div className="flex flex-col min-h-screen bg-white text-slate-900">
       <div className="flex-1">
         <Routes>
           <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
+          <Route path="/track-order" element={<TrackOrder />} />
+          <Route path="/return-and-refund-policy" element={<RefundPolicy />} />
+          <Route path="/FAQs" element={<Faqs />} />
+          <Route path="/Our-Story" element={<OurStory />} />
+          <Route path="/career-page" element={<Careers />} />
+          <Route path="/contact-us" element={<Contact />} />
+          <Route path="/press" element={<Press />} />
           <Route
             path="/products/:productId"
             element={<ProductDetailsPage isLoggedIn={isLoggedIn} />}
