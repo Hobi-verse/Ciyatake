@@ -109,14 +109,12 @@ const Login = () => {
 
   const fields = [
     {
-      name: "phoneNumber",
-      label: "Mobile number",
-      type: "tel",
-      placeholder: "Enter your mobile number",
+      name: "email",
+      label: "Email address",
+      type: "email",
+      placeholder: "Enter your email address",
       required: true,
-      autoComplete: "tel",
-      inputMode: "numeric",
-      maxLength: 10,
+      autoComplete: "email",
     },
     {
       name: "password",
@@ -148,15 +146,13 @@ const Login = () => {
   const socialProviders = [{ label: "Google", onClick: handleGoogleLogin }];
 
   const handleLogin = async (formValues, { reset }) => {
-    const mobileNumber = (formValues.phoneNumber ?? "")
-      .replace(/[^0-9]/g, "")
-      .slice(0, 10);
+    const email = formValues.email?.trim() ?? "";
     const password = formValues.password ?? "";
 
-    if (!mobileNumber || !password) {
+    if (!email || !password) {
       setStatus({
         type: "error",
-        message: "Please enter both mobile number and password.",
+        message: "Please enter both email address and password.",
       });
       return;
     }
@@ -165,7 +161,7 @@ const Login = () => {
     setStatus(null);
 
     try {
-      const response = await loginUser({ mobileNumber, password });
+      const response = await loginUser({ email, password });
 
       if (!response?.success) {
         throw new Error(response?.message ?? "Login failed");

@@ -6,11 +6,7 @@ const userSchema = new mongoose.Schema(
     // User's mobile number for login and OTP verification
     mobileNumber: {
       type: String,
-      required: function () {
-        return !this.googleId; // Mobile not required if Google OAuth
-      },
-      unique: true,
-      sparse: true, // Allow multiple null values
+      required: false,
       trim: true,
       set: (value) => {
         if (typeof value === "string") {
@@ -58,13 +54,16 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    // Email address for communication (optional)
+    // Email address for communication (now required for login)
     email: {
       type: String,
+      required: function () {
+        return !this.googleId; // Email required for local auth
+      },
+      unique: true,
       trim: true,
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
-      default: "",
     },
 
     // User role for access control (customer, admin, etc.)
@@ -107,6 +106,25 @@ const userSchema = new mongoose.Schema(
   {
     // Automatically add createdAt and updatedAt timestamps
     timestamps: true,
+  }
+);
+
+// Create partial unique index for mobileNumber (optional field)
+userSchema.index(
+  { mobileNumber: 1 },
+  { 
+    unique: true, 
+    partialFilterExpression: { mobileNumber: { $type: "string" } },
+    name: 'mobileNumber_unique_partial'
+  }
+);
+
+// Create unique index for email (required field)
+userSchema.index(
+  { email: 1 },
+  { 
+    unique: true,
+    name: 'email_unique'
   }
 );
 

@@ -21,7 +21,7 @@ import {
   validateCoupon,
 } from "../../api/coupons.js";
 
-const TAX_RATE = 0.1;
+// Removed TAX_RATE as tax is no longer applied
 
 const resolveErrorMessage = (error, fallback) => {
   if (!error) {
@@ -119,7 +119,7 @@ const CartPage = ({ isLoggedIn = false }) => {
     const subtotal = Number.isFinite(cart.totals.subtotal)
       ? cart.totals.subtotal
       : cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const estimatedTax = Math.round(subtotal * TAX_RATE);
+    const estimatedTax = 0; // Removed tax calculation
 
     return {
       subtotal,
@@ -204,14 +204,19 @@ const CartPage = ({ isLoggedIn = false }) => {
     const nextQuantity = Math.max(1, quantity);
     setActionError("");
 
+    console.log('🔄 Updating cart item:', { itemId, oldQuantity: quantity, newQuantity: nextQuantity });
+
     try {
       const updatedCart = await updateCartItem(itemId, {
         quantity: nextQuantity,
       });
+      
+      console.log('✅ Cart updated successfully:', updatedCart);
       setCart(updatedCart);
       setCouponError("");
       setLastValidatedSignature("");
     } catch (apiError) {
+      console.error('❌ Cart update failed:', apiError);
       setActionError(
         apiError?.message || "We couldn't update the quantity. Please retry."
       );
@@ -498,6 +503,7 @@ const CartPage = ({ isLoggedIn = false }) => {
               discount={couponResult?.discountApplied ?? 0}
               couponCode={couponResult?.code ?? ""}
               onRemoveCoupon={handleRemoveCoupon}
+              cartItems={cartItems} // Pass cart items to show product details
             >
               <CouponPanel
                 appliedCoupon={couponResult}

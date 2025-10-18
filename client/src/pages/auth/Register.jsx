@@ -19,7 +19,7 @@ const Register = () => {
   const navigate = useNavigate();
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
-  const [otpMobileNumber, setOtpMobileNumber] = useState("");
+  const [otpEmail, setOtpEmail] = useState("");
   const [otpFeedback, setOtpFeedback] = useState(null);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
@@ -54,14 +54,13 @@ const Register = () => {
   );
 
   const handleSendOtp = useCallback(
-    async (phoneNumber, resetOtp) => {
-      const sanitized = (phoneNumber ?? "").replace(/[^0-9]/g, "").slice(0, 10);
+    async (email, resetOtp) => {
+      const sanitized = (email ?? "").trim();
 
-      if (!sanitized || sanitized.length !== 10) {
+      if (!sanitized || !/^\S+@\S+\.\S+$/.test(sanitized)) {
         setOtpFeedback({
           type: "error",
-          message:
-            "Enter a valid 10-digit mobile number before requesting an OTP.",
+          message: "Enter a valid email address before requesting an OTP.",
         });
         return;
       }
@@ -72,20 +71,18 @@ const Register = () => {
 
       try {
         const response = await sendOtp({
-          mobileNumber: sanitized,
+          email: sanitized,
           context: "register",
         });
 
         setIsOtpSent(true);
         setIsOtpVerified(false);
-        setOtpMobileNumber(sanitized);
+        setOtpEmail(sanitized);
         resetOtp?.();
 
         setOtpFeedback({
           type: "info",
-          message: `${response?.message ?? "OTP sent successfully."}${
-            response?.otp ? ` (For testing use ${response.otp})` : ""
-          }`,
+          message: response?.message ?? "OTP sent successfully to your email address.",
         });
       } catch (error) {
         setOtpFeedback({
@@ -103,7 +100,7 @@ const Register = () => {
   );
 
   const handleVerifyOtp = useCallback(
-    async (phoneNumber, enteredOtp) => {
+    async (email, enteredOtp) => {
       if (!isOtpSent) {
         setOtpFeedback({
           type: "error",
@@ -112,23 +109,21 @@ const Register = () => {
         return;
       }
 
-      const sanitizedNumber = (phoneNumber ?? "")
-        .replace(/[^0-9]/g, "")
-        .slice(0, 10);
+      const sanitizedEmail = (email ?? "").trim();
 
-      if (!sanitizedNumber || sanitizedNumber.length !== 10) {
+      if (!sanitizedEmail || !/^\S+@\S+\.\S+$/.test(sanitizedEmail)) {
         setOtpFeedback({
           type: "error",
-          message: "Enter the mobile number used to request the OTP.",
+          message: "Enter the email address used to request the OTP.",
         });
         return;
       }
 
-      if (otpMobileNumber && sanitizedNumber !== otpMobileNumber) {
+      if (otpEmail && sanitizedEmail !== otpEmail) {
         setOtpFeedback({
           type: "error",
           message:
-            "Mobile number changed. Please request a new OTP for this number.",
+            "Email address changed. Please request a new OTP for this email.",
         });
         setIsOtpVerified(false);
         return;
@@ -141,7 +136,7 @@ const Register = () => {
       if (!sanitizedOtp || sanitizedOtp.length !== OTP_LENGTH) {
         setOtpFeedback({
           type: "error",
-          message: "Enter the 6-digit OTP that was sent to your mobile number.",
+          message: "Enter the 6-digit OTP that was sent to your email address.",
         });
         return;
       }
@@ -152,7 +147,7 @@ const Register = () => {
 
       try {
         const response = await verifyOtp({
-          mobileNumber: sanitizedNumber,
+          email: sanitizedEmail,
           otp: sanitizedOtp,
         });
 
@@ -176,14 +171,14 @@ const Register = () => {
         setIsVerifyingOtp(false);
       }
     },
-    [extractErrorMessage, isOtpSent, otpMobileNumber]
+    [extractErrorMessage, isOtpSent, otpEmail]
   );
 
   const buttonLabel = isSubmitting ? "Creating account..." : "Register";
 
   const fields = [
     {
-      name: "phoneNumber",
+      name: "email",
       render: ({
         value = "",
         setValue,
@@ -191,22 +186,20 @@ const Register = () => {
         setFieldValue,
         inputClasses,
       }) => {
-        const phoneId = "register-phone-input";
+        const emailId = "register-email-input";
         const otpId = "register-otp-input";
 
-        const handlePhoneChange = (event) => {
-          const nextValue = event.target.value
-            .replace(/[^0-9]/g, "")
-            .slice(0, 10);
+        const handleEmailChange = (event) => {
+          const nextValue = event.target.value.trim();
           setValue(nextValue);
 
           setStatus(null);
 
           if (isOtpSent || isOtpVerified) {
-            if (nextValue !== otpMobileNumber) {
+            if (nextValue !== otpEmail) {
               setIsOtpSent(false);
               setIsOtpVerified(false);
-              setOtpMobileNumber("");
+              setOtpEmail("");
               setFieldValue("otp", "");
             }
           }
@@ -230,22 +223,22 @@ const Register = () => {
         return (
           <div className="space-y-2">
             <label
-              htmlFor={phoneId}
+              htmlFor={emailId}
               className="block text-sm font-medium text-slate-700"
             >
-              Mobile number & OTP
+              Email address & OTP
             </label>
             <div className="grid gap-3 sm:grid-cols-[1.6fr_1fr]">
               <div className="space-y-2">
                 <input
-                  id={phoneId}
-                  name="phoneNumber"
-                  type="tel"
-                  autoComplete="tel"
+                  id={emailId}
+                  name="email"
+                  type="email"
+                  autoComplete="email"
                   className={inputClasses}
-                  placeholder="Enter the mobile number"
+                  placeholder="Enter your email address"
                   value={value}
-                  onChange={handlePhoneChange}
+                  onChange={handleEmailChange}
                   required
                 />
                 <Button
@@ -254,7 +247,7 @@ const Register = () => {
                   onClick={() =>
                     handleSendOtp(value, () => setFieldValue("otp", ""))
                   }
-                  disabled={value.length !== 10 || isSendingOtp}
+                  disabled={!/^\S+@\S+\.\S+$/.test(value) || isSendingOtp}
                 >
                   {isSendingOtp
                     ? "Sending..."
@@ -312,6 +305,15 @@ const Register = () => {
           </div>
         );
       },
+    },
+    {
+      name: "fullName",
+      label: "Full name",
+      type: "text",
+      placeholder: "Enter your full name",
+      required: false,
+      disabled: !isOtpVerified,
+      autoComplete: "name",
     },
     {
       name: "password",
@@ -458,23 +460,21 @@ const Register = () => {
         return;
       }
 
-      const mobileNumber = (formValues.phoneNumber ?? "")
-        .replace(/[^0-9]/g, "")
-        .slice(0, 10);
+      const email = (formValues.email ?? "").trim();
 
-      if (!mobileNumber || mobileNumber.length !== 10) {
+      if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
         setOtpFeedback({
           type: "error",
-          message: "Enter the mobile number you verified with OTP.",
+          message: "Enter the email address you verified with OTP.",
         });
         return;
       }
 
-      if (otpMobileNumber && otpMobileNumber !== mobileNumber) {
+      if (otpEmail && otpEmail !== email) {
         setOtpFeedback({
           type: "error",
           message:
-            "Mobile number no longer matches the verified OTP. Please request a new OTP.",
+            "Email address no longer matches the verified OTP. Please request a new OTP.",
         });
         setIsOtpVerified(false);
         return;
@@ -493,9 +493,10 @@ const Register = () => {
 
       try {
         const response = await registerUser({
-          mobileNumber,
+          email,
           password: formValues.password,
           confirmPassword: formValues.confirmPassword,
+          fullName: formValues.fullName || "",
         });
 
         if (!response?.success) {
@@ -514,7 +515,7 @@ const Register = () => {
         reset?.();
         setIsOtpSent(false);
         setIsOtpVerified(false);
-        setOtpMobileNumber("");
+        setOtpEmail("");
         setOtpFeedback(null);
 
         setTimeout(() => navigate("/"), 700);
@@ -530,7 +531,7 @@ const Register = () => {
         setIsSubmitting(false);
       }
     },
-    [extractErrorMessage, isOtpVerified, navigate, otpMobileNumber]
+    [extractErrorMessage, isOtpVerified, navigate, otpEmail]
   );
 
   const showRefreshLoader =

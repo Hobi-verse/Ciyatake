@@ -2,42 +2,43 @@ import { apiRequest } from "./client";
 import { API_BASE_URL } from "./config";
 import { storeAuthSession } from "../utils/authStorage";
 
-const normalizeMobilePayload = (payload = {}) => {
-  const { phoneNumber, mobileNumber, ...rest } = payload ?? {};
+const normalizeEmailPayload = (payload = {}) => {
+  const { email, phoneNumber, mobileNumber, ...rest } = payload ?? {};
   return {
     ...rest,
+    email: email ?? "",
     mobileNumber: mobileNumber ?? phoneNumber ?? "",
   };
 };
 
-export const sendOtp = async ({ phoneNumber, mobileNumber, context = "register" } = {}) =>
+export const sendOtp = async ({ email, context = "register" } = {}) =>
   apiRequest("/v1/auth/send-otp", {
     method: "POST",
-    body: normalizeMobilePayload({ phoneNumber, mobileNumber, context }),
+    body: { email, context },
   });
 
-export const verifyOtp = async ({ phoneNumber, mobileNumber, otp } = {}) =>
+export const verifyOtp = async ({ email, otp } = {}) =>
   apiRequest("/v1/auth/verify-otp", {
     method: "POST",
-    body: normalizeMobilePayload({ phoneNumber, mobileNumber, otp }),
+    body: { email, otp },
   });
 
 export const registerUser = async (payload = {}) =>
   apiRequest("/v1/auth/signup", {
     method: "POST",
-    body: normalizeMobilePayload(payload),
+    body: normalizeEmailPayload(payload),
   });
 
 export const loginUser = async (payload = {}) =>
   apiRequest("/v1/auth/login", {
     method: "POST",
-    body: normalizeMobilePayload(payload),
+    body: normalizeEmailPayload(payload),
   });
 
 export const updatePassword = async (payload = {}) =>
   apiRequest("/v1/auth/password", {
     method: "PATCH",
-    body: normalizeMobilePayload(payload),
+    body: normalizeEmailPayload(payload),
   });
 
 export const logoutUser = async () =>
@@ -61,7 +62,7 @@ export const getUserProfile = async () =>
 export const linkMobileNumber = async ({ phoneNumber, mobileNumber, otp } = {}) =>
   apiRequest("/v1/auth/link-mobile", {
     method: "POST",
-    body: normalizeMobilePayload({ phoneNumber, mobileNumber, otp }),
+    body: { phoneNumber, mobileNumber, otp },
   });
 
 // Handle Google OAuth success callback
