@@ -1,132 +1,267 @@
+import {
+  ShoppingBag,
+  Mail,
+  Phone,
+  Clock,
+  Instagram,
+  Facebook,
+  Twitter,
+  Linkedin,
+} from "lucide-react";
 import { Link } from "react-router-dom";
-import Button from "../../common/Button";
-
-const footerSections = [
-  {
-    title: "Shop",
-    links: [
-      { label: "Women", to: "/women" },
-      { label: "Men", to: "/men" },
-      { label: "Kids", to: "/kids" },
-      { label: "Accessories", to: "/accessories" },
-      { label: "Home & Living", to: "/home-living" },
-    ],
-  },
-  {
-    title: "Customer Care",
-    links: [
-      { label: "Track Order", to: "/orders" },
-      { label: "Returns & Refunds", to: "/returns" },
-      { label: "Shipping", to: "/shipping" },
-      { label: "FAQs", to: "/faqs" },
-      { label: "Size Guide", to: "/size-guide" },
-    ],
-  },
-  {
-    title: "About Ciyatake",
-    links: [
-      { label: "Our Story", to: "/about" },
-      { label: "Sustainability", to: "/sustainability" },
-      { label: "Careers", to: "/careers" },
-      { label: "Press", to: "/press" },
-      { label: "Contact", to: "/contact" },
-    ],
-  },
-];
-
-const policyLinks = [
-  { label: "Privacy Policy", to: "/privacy" },
-  { label: "Terms of Service", to: "/terms" },
-  { label: "Cookies", to: "/cookies" },
-];
-
-const newsletterInputClasses =
-  "flex-1 rounded-full border border-[#DCECE9] bg-white px-4 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-[#b8985b] focus:outline-none focus:ring-2 focus:ring-[#b8985b]/30";
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
-
   return (
-    <footer className="border-t border-[#DCECE9] bg-[#f5f2ee] text-slate-700">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          <div>
-            <Link to="/" className="flex items-center gap-3">
-              <img
-                src="/ciyatakeLogo.png"
-                alt="Ciyatake"
-                className="h-10 w-auto"
-              />
-              <span className="text-lg font-semibold tracking-tight text-[#b8985b]">
+    <footer className="bg-[#f5f1e8] text-gray-800">
+      <div className="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-16">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
+          {/* Brand Section */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <ShoppingBag className="w-8 h-8 text-[#8b7355]" />
+              <h3 className="text-2xl font-semibold text-[#8b7355]">
                 Ciyatake
-              </span>
-            </Link>
-            <p className="mt-4 max-w-xs text-sm text-slate-600">
+              </h3>
+            </div>
+            <p className="text-sm leading-relaxed text-gray-600">
               Thoughtfully curated fashion and lifestyle essentials to help you
               celebrate everyday moments in style.
             </p>
-
-            <div className="mt-6 space-y-2 text-sm text-slate-600">
-              <p>
-                <span className="font-semibold text-slate-700">Email:</span>{" "}
-                <a
-                  href="mailto:care@ciyatake.com"
-                  className="text-[#b8985b] transition hover:text-[#a9894f]"
-                >
-                  care@ciyatake.com
-                </a>
-              </p>
-              <p>
-                <span className="font-semibold text-slate-700">Phone:</span>{" "}
-                <a
-                  href="tel:+919876543210"
-                  className="text-[#b8985b] transition hover:text-[#a9894f]"
-                >
-                  +91 98765 43210
-                </a>
-              </p>
-              <p className="text-sm text-slate-500">
+            <div className="space-y-2">
+              <a
+                href="mailto:care@ciyatake.com"
+                className="flex items-center text-sm text-[#a08968] hover:text-[#8b7355] transition-colors"
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                care@ciyatake.com
+              </a>
+              <a
+                href="tel:+919876543210"
+                className="flex items-center text-sm text-[#a08968] hover:text-[#8b7355] transition-colors"
+              >
+                <Phone className="w-4 h-4 mr-2" />
+                +91 98765 43210
+              </a>
+              <div className="flex items-center text-sm text-gray-600">
+                <Clock className="w-4 h-4 mr-2" />
                 Monday to Saturday, 9:00 AM – 6:00 PM IST
-              </p>
+              </div>
             </div>
           </div>
 
-          {footerSections.map((section) => (
-            <div key={section.title}>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">
-                {section.title}
-              </h3>
-              <ul className="mt-4 space-y-3 text-sm text-slate-600">
-                {section.links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      to={link.to}
-                      className="transition hover:text-[#b8985b]"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Shop Section */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4 text-[#8b7355]">SHOP</h4>
+            <ul className="space-y-2">
+              <li>
+                <a
+                  href="/shop/women"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
+                  Women
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/shop/men"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
+                  Men
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/shop/kids"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
+                  Kids
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/shop/accessories"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
+                  Accessories
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/shop/home-living"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
+                  Home & Living
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Help & Support Section */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4 text-[#8b7355]">
+              HELP & SUPPORT
+            </h4>
+            <ul className="flex flex-col space-y-2">
+              <Link to="/track-order">
+                <a
+                  href="/track-order"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
+                  Track Order
+                </a>
+              </Link>
+              <Link to="/return-and-refund-policy">
+                <a
+                  href="/returns-refunds"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
+                  Returns & Refunds
+                </a>
+              </Link>
+              <Link to="FAQs">
+                <a
+                  href="/faqs"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
+                  FAQs
+                </a>
+              </Link>
+            </ul>
+          </div>
+
+          {/* Company Section */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4 text-[#8b7355]">
+              COMPANY
+            </h4>
+            <ul className="flex flex-col space-y-2">
+              <Link to="our-story">
+                <a
+                  href="/our-story"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
+                  Our Story
+                </a>
+              </Link>
+              <Link to="career-page">
+                <a
+                  href="/careers"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
+                  Careers
+                </a>
+              </Link>
+              <Link to="press">
+                <a
+                  href="/press"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
+                  Press
+                </a>
+              </Link>
+              <Link to="contact-us">
+                <a
+                  href="/contact"
+                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+                >
+                  Contact
+                </a>
+              </Link>
+            </ul>
+          </div>
         </div>
 
-        <div className="mt-12 border-t border-[#DCECE9] pt-6 text-xs text-slate-500 sm:flex sm:items-center sm:justify-between">
-          <p>© {currentYear} Ciyatake. All rights reserved.</p>
-          <div className="mt-3 flex flex-wrap gap-4 sm:mt-0">
-            {policyLinks.map((link) => (
-              <Link
-                key={link.label}
-                to={link.to}
-                className="transition hover:text-[#b8985b]"
+        {/* Social Media & Bottom Bar */}
+        <div className="pt-8 mt-12 border-t border-gray-300">
+          <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
+            {/* Social Media Icons */}
+            <div className="flex space-x-4">
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
               >
-                {link.label}
-              </Link>
-            ))}
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
+              >
+                <Facebook className="w-5 h-5" />
+              </a>
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
+              >
+                <Twitter className="w-5 h-5" />
+              </a>
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
+              >
+                <Linkedin className="w-5 h-5" />
+              </a>
+            </div>
+
+            {/* Legal Links */}
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600 md:justify-end">
+              <a
+                href="/privacy-policy"
+                className="hover:text-[#8b7355] transition-colors"
+              >
+                Privacy Policy
+              </a>
+              <span className="hidden sm:inline">•</span>
+              <a
+                href="/terms-of-service"
+                className="hover:text-[#8b7355] transition-colors"
+              >
+                Terms of Service
+              </a>
+              <span className="hidden sm:inline">•</span>
+              <a
+                href="/cookie-policy"
+                className="hover:text-[#8b7355] transition-colors"
+              >
+                Cookie Policy
+              </a>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="mt-6 text-sm text-center text-gray-600">
+            © {new Date().getFullYear()} Ciyatake. All rights reserved.
           </div>
         </div>
       </div>
+
+      {/* Scroll to Top Button */}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-[#8b7355] text-white shadow-lg hover:bg-[#a08968] transition-all flex items-center justify-center"
+        aria-label="Scroll to top"
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 10l7-7m0 0l7 7m-7-7v18"
+          />
+        </svg>
+      </button>
     </footer>
   );
 };
