@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Newspaper,
   Download,
@@ -16,6 +16,7 @@ import {
   ArrowRight,
   TrendingUp,
   Clock,
+  ArrowLeft,
 } from "lucide-react";
 
 const Press = () => {
@@ -272,10 +273,21 @@ const Press = () => {
     }, 3000);
   };
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#f5f1ed]">
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-[#8b7355] to-[#6b5847] text-white py-20 px-4">
+        <a
+          href="/"
+          className="inline-flex items-center gap-2 px-4 py-2 mb-6 font-semibold transition-all duration-200 border-2 border-white rounded-lg shadow-md sm:mb-8 hover:text-black hover:shadow-xl hover:scale-105 group"
+        >
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+          <span>Back to Home</span>
+        </a>
         <div className="max-w-6xl mx-auto text-center">
           <div className="flex justify-center mb-6">
             <Newspaper className="w-16 h-16" />
@@ -682,7 +694,7 @@ const Press = () => {
                       value={contactForm.message}
                       onChange={handleInputChange}
                       rows={5}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8b7355]"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8b7355] resize-none"
                       placeholder="Tell us about your inquiry..."
                     />
                   </div>
