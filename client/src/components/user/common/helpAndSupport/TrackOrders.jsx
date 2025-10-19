@@ -8,6 +8,7 @@ import {
   Home,
 } from "lucide-react";
 import { useState } from "react";
+import { useEffect } from "react";
 
 const TrackOrder = () => {
   const [orderNumber, setOrderNumber] = useState("");
@@ -95,6 +96,13 @@ const TrackOrder = () => {
     };
     return labels[status] || status;
   };
+
+  useEffect(() => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+}, []);
 
   return (
     <div className="min-h-screen bg-[#faf8f5]">
