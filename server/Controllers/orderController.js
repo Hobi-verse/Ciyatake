@@ -694,7 +694,7 @@ exports.getAllOrders = async (req, res) => {
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
       .limit(parseInt(limit))
-      .populate("userId", "name email")
+      .populate("userId", "fullName email mobileNumber role")
       .lean();
 
     // Get total count
@@ -706,13 +706,48 @@ exports.getAllOrders = async (req, res) => {
       orderNumber: order.orderNumber,
       status: order.status,
       placedAt: order.placedAt,
-      customer: order.customer,
-      itemCount: order.items.length,
+      updatedAt: order.updatedAt,
+      customer: {
+        id: order.userId?._id ?? order.customer?.id ?? null,
+        name:
+          order.customer?.name ??
+          order.userId?.fullName ??
+          order.userId?.name ??
+          null,
+        email: order.customer?.email ?? order.userId?.email ?? null,
+        phone:
+          order.customer?.phone ??
+          order.userId?.mobileNumber ??
+          order.userId?.phone ??
+          null,
+      },
+      itemCount: Array.isArray(order.items) ? order.items.length : 0,
+      items: Array.isArray(order.items)
+        ? order.items.map((item) => ({
+          id: item._id,
+          productId: item.productId,
+          variantSku: item.variantSku,
+          title: item.title,
+          size: item.size,
+          color: item.color,
+          unitPrice: item.unitPrice,
+          quantity: item.quantity,
+          subtotal: item.subtotal,
+          imageUrl: item.imageUrl,
+        }))
+        : [],
       pricing: order.pricing,
       payment: {
-        method: order.payment.method,
-        status: order.payment.status,
+        method: order.payment?.method ?? null,
+        status: order.payment?.status ?? null,
+        transactionId: order.payment?.transactionId ?? null,
+        paidAt: order.payment?.paidAt ?? null,
       },
+      shipping: order.shipping ?? null,
+      delivery: order.delivery ?? null,
+      timeline: Array.isArray(order.timeline) ? order.timeline : [],
+      notes: order.notes ?? {},
+      support: order.support ?? {},
     }));
 
     res.json({

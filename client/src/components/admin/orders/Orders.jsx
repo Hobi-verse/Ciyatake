@@ -1,1 +1,1 @@
-export { default } from "../../../pages/admin/Orders.jsx";
+export { default } from "./OrdersBoard.jsx";
