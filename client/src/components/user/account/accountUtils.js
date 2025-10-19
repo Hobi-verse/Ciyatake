@@ -23,3 +23,18 @@ export const formatDate = (value) => {
     year: "numeric",
   }).format(parsed);
 };
+
+export const formatDateTime = (value) => {
+  const parsed = toDate(value);
+  if (!parsed) {
+    return value ?? "—";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(parsed);
+};
