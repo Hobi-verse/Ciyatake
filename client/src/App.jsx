@@ -96,18 +96,37 @@ function App() {
             path="/products/:productId"
             element={<ProductDetailsPage isLoggedIn={isLoggedIn} />}
           />
-          <Route path="/cart" element={<CartPage isLoggedIn={isLoggedIn} />} />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute session={authSession}>
+                <CartPage isLoggedIn={isLoggedIn} />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/wishlist"
-            element={<WishlistPage isLoggedIn={isLoggedIn} />}
+            element={
+              <ProtectedRoute session={authSession}>
+                <WishlistPage isLoggedIn={isLoggedIn} />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/checkout"
-            element={<CheckoutPage isLoggedIn={isLoggedIn} />}
+            element={
+              <ProtectedRoute session={authSession}>
+                <CheckoutPage isLoggedIn={isLoggedIn} />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/confirmation"
-            element={<ConfirmationPage isLoggedIn={isLoggedIn} />}
+            element={
+              <ProtectedRoute session={authSession}>
+                <ConfirmationPage isLoggedIn={isLoggedIn} />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/account"
