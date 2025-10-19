@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { storeAuthSession, clearAuthSession } from "../../utils/authStorage";
 import { getUserProfile } from "../../api/auth";
+import Loader from "../../components/common/Loader.jsx";
 
 const LoginSuccess = () => {
   const navigate = useNavigate();
@@ -68,12 +69,9 @@ const LoginSuccess = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f5f2ee]">
-      <div className="text-center">
-        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#b8985b]"></div>
-        <h2 className="mb-2 text-xl font-semibold text-slate-900">
-          Completing Google Sign-In
-        </h2>
-        <p className="text-slate-600">
+      <div className="space-y-3 text-center">
+        <Loader label="Completing Google sign-in" />
+        <p className="text-sm text-slate-600">
           Please wait while we set up your account...
         </p>
       </div>

@@ -9,6 +9,7 @@ const passport = require("./config/passport");
 
 const dataBase = require("./config/dataBase");
 const authRoutes = require("./routes/authRoutes");
+const debugRoutes = require("./routes/debugRoutes");
 const productRoutes = require("./routes/productRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const cartRoutes = require("./routes/cartRoutes");
@@ -51,6 +52,7 @@ dataBase.connect();
 
 //routes
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/auth", debugRoutes); // Debug routes for development
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/cart", cartRoutes);

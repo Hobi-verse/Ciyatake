@@ -3,6 +3,8 @@ import UserNavbar from "../../components/user/common/UserNavbar.jsx";
 import Breadcrumbs from "../../components/common/Breadcrumbs.jsx";
 import WishlistItem from "../../components/user/wishlist/WishlistItem.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
+import Loader from "../../components/common/Loader.jsx";
+import Skeleton from "../../components/common/Skeleton.jsx";
 import heartIcon from "../../assets/icons/heart.svg";
 import {
   emptyWishlist,
@@ -90,6 +92,10 @@ const WishlistPage = ({ isLoggedIn = false }) => {
   }, [loadWishlist]);
 
   const items = useMemo(() => wishlist.items ?? [], [wishlist.items]);
+
+  const hasItems = items.length > 0;
+  const isInitialWishlistLoad = loading && !hasItems;
+  const isRefreshingWishlist = loading && hasItems;
 
   const handleRemove = useCallback(
     async (targetItem) => {
@@ -193,10 +199,14 @@ const WishlistPage = ({ isLoggedIn = false }) => {
             Save items you love and move them to your cart whenever you’re
             ready.
           </p>
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#DCECE9] bg-[#F2EAE0] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#b8985b]">
-            <img src={heartIcon} alt="" className="h-4 w-4" aria-hidden />
-            {wishlist.itemCount ?? items.length} saved
-          </span>
+          {isInitialWishlistLoad ? (
+            <Skeleton className="h-6 w-32 rounded-full" rounded={false} />
+          ) : (
+            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#DCECE9] bg-[#F2EAE0] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#b8985b]">
+              <img src={heartIcon} alt="" className="h-4 w-4" aria-hidden />
+              {wishlist.itemCount ?? items.length} saved
+            </span>
+          )}
         </header>
 
         <section className="space-y-4">
@@ -211,19 +221,50 @@ const WishlistPage = ({ isLoggedIn = false }) => {
                 Retry
               </button>
             </div>
-          ) : loading ? (
-            <div className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-10 text-center text-sm text-[#b8985b]">
-              Loading your saved items...
-            </div>
-          ) : items.length ? (
-            items.map((item) => (
-              <WishlistItem
-                key={item.id}
-                item={item}
-                onAddToCart={handleAddToCart}
-                onRemove={handleRemove}
-              />
+          ) : isInitialWishlistLoad ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={`wishlist-item-skeleton-${index}`}
+                className="rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-sm"
+              >
+                <div className="flex flex-col gap-4 sm:flex-row">
+                  <Skeleton
+                    className="h-40 w-full rounded-2xl sm:w-40"
+                    rounded={false}
+                  />
+                  <div className="flex-1 space-y-3">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <div className="flex flex-wrap gap-2">
+                      <Skeleton
+                        className="h-9 w-28 rounded-full"
+                        rounded={false}
+                      />
+                      <Skeleton
+                        className="h-9 w-28 rounded-full"
+                        rounded={false}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))
+          ) : hasItems ? (
+            <>
+              {items.map((item) => (
+                <WishlistItem
+                  key={item.id}
+                  item={item}
+                  onAddToCart={handleAddToCart}
+                  onRemove={handleRemove}
+                />
+              ))}
+              {isRefreshingWishlist ? (
+                <div className="flex justify-center pt-4">
+                  <Loader label="Refreshing wishlist" />
+                </div>
+              ) : null}
+            </>
           ) : (
             <div className="rounded-3xl border border-dashed border-[#DCECE9] bg-[#DCECE9]/40 p-10 text-center text-sm text-slate-600">
               Your wishlist is empty. Browse products and tap the heart icon to

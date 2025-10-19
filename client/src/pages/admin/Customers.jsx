@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchCustomers } from "../../api/admin.js";
 import formatINR from "../../utils/currency.js";
+import Loader from "../../components/common/Loader.jsx";
+import Skeleton from "../../components/common/Skeleton.jsx";
 
 const formatDateLabel = (value) => {
   if (!value) {
@@ -114,10 +116,16 @@ const Customers = () => {
         <p className="text-base text-slate-500">
           View customer details and recent engagement.
         </p>
-        <div className="text-sm text-slate-400">
-          Showing {customers.length} of {totalCustomers} customers
-          {leadingTier ? (
-            <span className="ml-3 inline-flex items-center gap-1 rounded-full bg-[#f2eae0] px-3 py-1 text-xs font-semibold text-[#8f7843]">
+        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-400">
+          {loading ? (
+            <Skeleton className="h-4 w-56" />
+          ) : (
+            <span>
+              Showing {customers.length} of {totalCustomers} customers
+            </span>
+          )}
+          {leadingTier && !loading ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#f2eae0] px-3 py-1 text-xs font-semibold text-[#8f7843]">
               Top tier: {leadingTier.label} · {leadingTier.count}
             </span>
           ) : null}
@@ -145,14 +153,35 @@ const Customers = () => {
                 </td>
               </tr>
             ) : loading ? (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-6 py-6 text-center text-sm text-[#8f7843]"
+              Array.from({ length: 5 }).map((_, index) => (
+                <tr
+                  key={`customers-skeleton-${index}`}
+                  className="animate-pulse"
                 >
-                  Loading customers...
-                </td>
-              </tr>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="mt-2 h-3 w-24" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-36" />
+                    <Skeleton className="mt-2 h-3 w-20" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton
+                      className="h-6 w-28 rounded-full"
+                      rounded={false}
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="mt-2 h-3 w-24" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="mt-2 h-3 w-24" />
+                  </td>
+                </tr>
+              ))
             ) : customers.length ? (
               customers.map((customer, index) => (
                 <tr
@@ -218,6 +247,11 @@ const Customers = () => {
           </tbody>
         </table>
       </div>
+      {loading && !customers.length ? (
+        <div className="flex justify-center pt-6">
+          <Loader label="Fetching customers" />
+        </div>
+      ) : null}
     </section>
   );
 };

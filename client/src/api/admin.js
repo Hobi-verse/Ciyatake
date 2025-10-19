@@ -23,11 +23,214 @@ const normalizeAdminOrder = (order) => {
     return null;
   }
 
+  const resolvedCustomer = (() => {
+    if (order.customer && typeof order.customer === "object") {
+      const customerId =
+        order.customer.id ?? order.customer._id ?? order.customer.userId ?? null;
+      return {
+        id:
+          typeof customerId === "string"
+            ? customerId
+            : customerId?.toString?.() ?? null,
+        name: order.customer.name ?? order.customer.fullName ?? null,
+        email: order.customer.email ?? null,
+        phone:
+          order.customer.phone ??
+          order.customer.mobileNumber ??
+          order.customer.contact ??
+          null,
+      };
+    }
+
+    if (order.customerName || order.customerEmail || order.customerPhone) {
+      const customerId = order.customerId ?? null;
+      return {
+        id:
+          typeof customerId === "string"
+            ? customerId
+            : customerId?.toString?.() ?? null,
+        name: order.customerName ?? null,
+        email: order.customerEmail ?? null,
+        phone: order.customerPhone ?? null,
+      };
+    }
+
+    if (order.user && typeof order.user === "object") {
+      const userId = order.user.id ?? order.user._id ?? null;
+      return {
+        id:
+          typeof userId === "string"
+            ? userId
+            : userId?.toString?.() ?? null,
+        name: order.user.fullName ?? order.user.name ?? null,
+        email: order.user.email ?? null,
+        phone: order.user.mobileNumber ?? order.user.phone ?? null,
+      };
+    }
+
+    return {
+      id: null,
+      name: null,
+      email: null,
+      phone: null,
+    };
+  })();
+
+  const normalizedItems = Array.isArray(order.items)
+    ? order.items.map((item) => ({
+      id: (() => {
+        const identifier = item.id ?? item._id ?? null;
+        return typeof identifier === "string"
+          ? identifier
+          : identifier?.toString?.() ?? null;
+      })(),
+      productId: (() => {
+        const identifier =
+          item.productId ?? item.product?.id ?? item.product?._id ?? null;
+        return typeof identifier === "string"
+          ? identifier
+          : identifier?.toString?.() ?? null;
+      })(),
+      variantSku: item.variantSku ?? item.sku ?? null,
+      title: item.title ?? item.product?.title ?? "",
+      size: item.size ?? item.variant?.size ?? null,
+      color: item.color ?? item.variant?.color ?? null,
+      unitPrice: typeof item.unitPrice === "number" ? item.unitPrice : null,
+      quantity: typeof item.quantity === "number" ? item.quantity : null,
+      subtotal:
+        typeof item.subtotal === "number"
+          ? item.subtotal
+          : typeof item.total === "number"
+            ? item.total
+            : null,
+      imageUrl:
+        item.imageUrl ??
+        item.product?.imageUrl ??
+        (Array.isArray(item.product?.media)
+          ? item.product.media[0]?.url ?? null
+          : null),
+    }))
+    : [];
+
+  const pricing =
+    order.pricing && typeof order.pricing === "object"
+      ? {
+        subtotal:
+          typeof order.pricing.subtotal === "number"
+            ? order.pricing.subtotal
+            : null,
+        shipping:
+          typeof order.pricing.shipping === "number"
+            ? order.pricing.shipping
+            : null,
+        tax:
+          typeof order.pricing.tax === "number" ? order.pricing.tax : null,
+        discount:
+          typeof order.pricing.discount === "number"
+            ? order.pricing.discount
+            : null,
+        grandTotal:
+          typeof order.pricing.grandTotal === "number"
+            ? order.pricing.grandTotal
+            : null,
+      }
+      : {
+        subtotal:
+          typeof order.subtotal === "number" ? order.subtotal : null,
+        shipping:
+          typeof order.shippingCost === "number"
+            ? order.shippingCost
+            : null,
+        tax: typeof order.tax === "number" ? order.tax : null,
+        discount:
+          typeof order.discount === "number" ? order.discount : null,
+        grandTotal:
+          typeof order.grandTotal === "number"
+            ? order.grandTotal
+            : typeof order.total === "number"
+              ? order.total
+              : null,
+      };
+
+  const shipping = (() => {
+    if (order.shipping && typeof order.shipping === "object") {
+      return {
+        recipient: order.shipping.recipient ?? null,
+        phone: order.shipping.phone ?? null,
+        addressLine1: order.shipping.addressLine1 ?? null,
+        addressLine2: order.shipping.addressLine2 ?? null,
+        city: order.shipping.city ?? null,
+        state: order.shipping.state ?? null,
+        postalCode: order.shipping.postalCode ?? null,
+        country: order.shipping.country ?? null,
+        instructions: order.shipping.instructions ?? null,
+      };
+    }
+
+    if (order.shippingRecipient || order.shippingCity) {
+      return {
+        recipient: order.shippingRecipient ?? null,
+        city: order.shippingCity ?? null,
+      };
+    }
+
+    return null;
+  })();
+
+  const delivery =
+    order.delivery && typeof order.delivery === "object"
+      ? {
+        estimatedDeliveryDate: toISOStringSafe(
+          order.delivery.estimatedDeliveryDate
+        ),
+        deliveryWindow: order.delivery.deliveryWindow ?? null,
+        actualDeliveryDate: toISOStringSafe(order.delivery.actualDeliveryDate),
+        trackingNumber: order.delivery.trackingNumber ?? null,
+        courierService: order.delivery.courierService ?? null,
+      }
+      : null;
+
+  const timeline = Array.isArray(order.timeline)
+    ? order.timeline.map((entry) => ({
+      id: (() => {
+        const identifier = entry.id ?? entry._id ?? null;
+        return typeof identifier === "string"
+          ? identifier
+          : identifier?.toString?.() ?? null;
+      })(),
+      title: entry.title ?? "",
+      description: entry.description ?? "",
+      status: entry.status ?? null,
+      timestamp: toISOStringSafe(entry.timestamp),
+    }))
+    : [];
+
+  const paymentStatus = order.payment?.status ?? order.paymentStatus ?? null;
+  const paymentMethod = order.payment?.method ?? order.paymentMethod ?? null;
+  const itemsCount =
+    typeof order.itemsCount === "number"
+      ? order.itemsCount
+      : Array.isArray(order.items)
+        ? order.items.length
+        : normalizedItems.length;
+
+  const resolvedId = order.id ?? order.orderNumber ?? order._id ?? null;
+  const normalizedId =
+    typeof resolvedId === "string"
+      ? resolvedId
+      : resolvedId?.toString?.() ?? null;
+
   return {
-    id: order.id ?? order.orderNumber ?? order._id ?? null,
-    orderNumber: order.orderNumber ?? order.id ?? "",
+    id: normalizedId,
+    orderNumber:
+      typeof order.orderNumber === "string"
+        ? order.orderNumber
+        : typeof order.id === "string"
+          ? order.id
+          : normalizedId ?? "",
     status: normalizeOrderStatus(order.status),
-    placedAt: toISOStringSafe(order.placedAt),
+    placedAt: toISOStringSafe(order.placedAt ?? order.createdAt),
+    updatedAt: toISOStringSafe(order.updatedAt),
     grandTotal:
       typeof order.grandTotal === "number"
         ? order.grandTotal
@@ -40,20 +243,32 @@ const normalizeAdminOrder = (order) => {
         : typeof order.pricing?.discount === "number"
           ? order.pricing.discount
           : null,
-    paymentStatus: order.paymentStatus ?? order.payment?.status ?? null,
-    paymentMethod: order.paymentMethod ?? order.payment?.method ?? null,
-    itemsCount:
-      typeof order.itemsCount === "number"
-        ? order.itemsCount
-        : Array.isArray(order.items)
-          ? order.items.length
-          : null,
+    paymentStatus,
+    paymentMethod,
+    itemsCount,
     customerName:
-      order.customer?.name ??
+      resolvedCustomer.name ??
       order.customerName ??
       (typeof order.customer === "string" ? order.customer : null),
-    customerEmail: order.customer?.email ?? null,
-    customerPhone: order.customer?.phone ?? null,
+    customerEmail: resolvedCustomer.email ?? null,
+    customerPhone: resolvedCustomer.phone ?? null,
+    customer: resolvedCustomer,
+    items: normalizedItems,
+    pricing,
+    payment: {
+      method: paymentMethod,
+      status: paymentStatus,
+      transactionId: order.payment?.transactionId ?? null,
+      paidAt: toISOStringSafe(order.payment?.paidAt),
+    },
+    shipping,
+    delivery,
+    timeline,
+    notes: order.notes && typeof order.notes === "object" ? order.notes : {},
+    support:
+      order.support && typeof order.support === "object"
+        ? order.support
+        : null,
   };
 };
 
@@ -112,6 +327,81 @@ export const fetchRecentOrders = async (params = {}) => {
     stats: Array.isArray(data.stats) ? data.stats : [],
     query: data.query ?? "",
     source: "api",
+  };
+};
+
+export const fetchAdminOrders = async (params = {}) => {
+  const query = {
+    limit: 20,
+    sortBy: "placedAt",
+    sortOrder: "desc",
+    ...params,
+  };
+
+  const payload = await apiRequest("/orders/admin/all", { query });
+  const data = payload?.data ?? {};
+
+  const results = Array.isArray(data.orders)
+    ? data.orders.map((order) => normalizeAdminOrder(order)).filter(Boolean)
+    : [];
+
+  return {
+    results,
+    pagination: data.pagination ?? null,
+  };
+};
+
+export const updateAdminOrderStatus = async (
+  orderId,
+  { status, trackingNumber, courierService }
+) => {
+  if (!orderId) {
+    throw new Error("updateAdminOrderStatus requires an orderId");
+  }
+
+  if (!status) {
+    throw new Error("updateAdminOrderStatus requires a status string");
+  }
+
+  const response = await apiRequest(`/orders/${orderId}/status`, {
+    method: "PATCH",
+    body: {
+      status,
+      trackingNumber: trackingNumber || undefined,
+      courierService: courierService || undefined,
+    },
+  });
+
+  const orderData = response?.data?.order ?? response?.order ?? null;
+  if (!orderData) {
+    return null;
+  }
+
+  return {
+    status: normalizeOrderStatus(orderData.status),
+    delivery:
+      orderData.delivery && typeof orderData.delivery === "object"
+        ? {
+          estimatedDeliveryDate: toISOStringSafe(
+            orderData.delivery.estimatedDeliveryDate
+          ),
+          deliveryWindow: orderData.delivery.deliveryWindow ?? null,
+          actualDeliveryDate: toISOStringSafe(
+            orderData.delivery.actualDeliveryDate
+          ),
+          trackingNumber: orderData.delivery.trackingNumber ?? null,
+          courierService: orderData.delivery.courierService ?? null,
+        }
+        : null,
+    timeline: Array.isArray(orderData.timeline)
+      ? orderData.timeline.map((entry) => ({
+        id: entry.id ?? entry._id ?? null,
+        title: entry.title ?? "",
+        description: entry.description ?? "",
+        status: entry.status ?? null,
+        timestamp: toISOStringSafe(entry.timestamp),
+      }))
+      : [],
   };
 };
 

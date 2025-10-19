@@ -24,6 +24,8 @@ import OrdersSection from "../../components/user/account/OrdersSection.jsx";
 import AddressesSection from "../../components/user/account/AddressesSection.jsx";
 import PaymentsSection from "../../components/user/account/PaymentsSection.jsx";
 import PreferencesSection from "../../components/user/account/PreferencesSection.jsx";
+import Loader from "../../components/common/Loader.jsx";
+import Skeleton from "../../components/common/Skeleton.jsx";
 import EditProfileDialog from "../../components/user/account/EditProfileDialog.jsx";
 import AddressDialog from "../../components/user/account/AddressDialog.jsx";
 import MyReviewsSection from "../../components/user/account/reviews/MyReviewsSection.jsx";
@@ -89,6 +91,9 @@ const MyAccountPage = ({ isLoggedIn }) => {
   });
   const successTimeoutRef = useRef();
   const addressStatusTimeoutRef = useRef();
+
+  const isInitialAccountLoad = loading && !summary;
+  const isRefreshingAccount = loading && Boolean(summary);
 
   const loadSummary = useCallback(async ({ signal } = {}) => {
     setLoading(true);
@@ -636,9 +641,31 @@ const MyAccountPage = ({ isLoggedIn }) => {
           </p>
         </header>
 
-        {loading ? (
-          <div className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-8 text-sm text-[#b8985b]">
-            Loading your account...
+        {isInitialAccountLoad ? (
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,0.35fr)_minmax(0,1fr)]">
+            <div className="space-y-3 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-sm">
+              <Skeleton className="h-6 w-44" />
+              {Array.from({ length: 5 }).map((_, index) => (
+                <Skeleton
+                  key={`account-nav-skeleton-${index}`}
+                  className="h-10 w-full rounded-xl"
+                  rounded={false}
+                />
+              ))}
+            </div>
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  key={`account-panel-skeleton-${index}`}
+                  className="space-y-3 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-sm"
+                >
+                  <Skeleton className="h-6 w-40" />
+                  <Skeleton className="h-4 w-52" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : error ? (
           <div className="space-y-4">
@@ -730,6 +757,12 @@ const MyAccountPage = ({ isLoggedIn }) => {
             </div>
           </div>
         )}
+
+        {isRefreshingAccount ? (
+          <div className="flex justify-center pt-4">
+            <Loader label="Refreshing account" />
+          </div>
+        ) : null}
       </main>
       <EditProfileDialog
         open={showEditProfile}

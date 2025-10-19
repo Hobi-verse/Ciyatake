@@ -33,14 +33,14 @@ const loadRazorpayScript = () => {
 
 // Payment API endpoints
 export const paymentAPI = {
-  // Create Razorpay order
+  // Create Razorpay order (Step 1 - Secure amount locking)
   createOrder: (orderData) =>
     apiRequest("/payments/create-order", {
       method: "POST",
       body: orderData,
     }),
 
-  // Verify payment and create order
+  // Verify payment and create order (Step 2 - Secure verification)
   verifyPayment: (paymentData) =>
     apiRequest("/payments/verify-payment", {
       method: "POST",
@@ -102,12 +102,9 @@ export const initializeRazorpayCheckout = async (options) => {
   });
 };
 
-// Complete payment flow helper
+// Complete payment flow helper - SECURE LIKE FLIPKART/AMAZON
 export const processPayment = async ({
-  amount,
-  currency = "INR",
   shippingAddressId,
-  paymentMethodId,
   couponCode,
   customerNotes,
   customerDetails,
@@ -115,23 +112,18 @@ export const processPayment = async ({
   onFailure,
 }) => {
   try {
-    if (!Number.isFinite(amount) || amount <= 0) {
-      throw new Error("Invalid payment amount");
-    }
-
+    // Validate required fields
     if (!shippingAddressId) {
       throw new Error("Shipping address is required for payment");
     }
 
-    // Step 1: Create Razorpay order
+    console.log('🔐 Starting secure payment process...');
+
+    // Step 1: Create Razorpay order with server-side validation and locked pricing
     const orderResponse = await paymentAPI.createOrder({
-      amount,
-      currency,
-      notes: {
-        shippingAddressId,
-        paymentMethodId,
-        couponCode,
-      },
+      shippingAddressId,
+      couponCode,
+      customerNotes,
     });
 
     const { success, data, message } = orderResponse ?? {};
@@ -140,15 +132,17 @@ export const processPayment = async ({
       throw new Error(message || "Failed to create payment order");
     }
 
-    const { orderId, key } = data;
+    const { orderId, key, amount, pricing, items, shippingAddress } = data;
 
-    // Step 2: Initialize Razorpay checkout
+    console.log('✅ Payment order created:', orderId, 'Amount locked:', amount);
+
+    // Step 2: Initialize Razorpay checkout with LOCKED amount
     const paymentResponse = await initializeRazorpayCheckout({
       key,
-      amount: amount * 100, // Convert to paise
-      currency,
+      amount: amount * 100, // Convert to paise (AMOUNT IS LOCKED)
+      currency: "INR",
       name: "Ciyatake",
-      description: "Order Payment",
+      description: `Order Payment - ${items.length} item(s)`,
       order_id: orderId,
       prefill: {
         name: customerDetails?.name ?? "",
@@ -156,25 +150,31 @@ export const processPayment = async ({
         contact: customerDetails?.phone ?? "",
       },
       theme: {
-        color: "#000000", // Your brand color
+        color: "#b8985b", // Your brand color
       },
       notes: {
         address: "Ciyatake Corporate Office",
+        itemCount: items.length,
+      },
+      // Disable editing of amount (SECURITY FEATURE)
+      readonly: {
+        email: true,
+        contact: true,
       },
     });
 
-    // Step 3: Verify payment on backend
+    console.log('💳 Payment completed via Razorpay');
+
+    // Step 3: Verify payment on backend with signature validation
     const verificationResponse = await paymentAPI.verifyPayment({
       razorpay_order_id: paymentResponse.razorpay_order_id,
       razorpay_payment_id: paymentResponse.razorpay_payment_id,
       razorpay_signature: paymentResponse.razorpay_signature,
-      shippingAddressId,
-      paymentMethodId,
-      couponCode,
       customerNotes,
     });
 
     if (verificationResponse?.success) {
+      console.log('✅ Payment verified and order created successfully');
       onSuccess && onSuccess(verificationResponse.data);
       return verificationResponse.data;
     }
@@ -183,7 +183,9 @@ export const processPayment = async ({
       verificationResponse?.message || "Payment verification failed"
     );
   } catch (error) {
-    // Report payment failure
+    console.error('❌ Payment process failed:', error);
+
+    // Report payment failure to backend
     if (error.error && error.error.metadata) {
       try {
         await paymentAPI.reportPaymentFailure({

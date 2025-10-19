@@ -1,24 +1,19 @@
 import { formatINR } from "../../../utils/currency.js";
 import arrowRightIcon from "../../../assets/icons/arrow-right.svg";
-import OrderItemCard from "../../common/OrderItemCard.jsx";
+import EditableOrderItem from "./EditableOrderItem.jsx";
 import OrderSummaryRow from "../../common/OrderSummaryRow.jsx";
 
 const CheckoutOrderSummary = ({
   order,
   onPlaceOrder,
+  onQuantityChange,
   isPlacingOrder = false,
 }) => {
   const subtotal = order.items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const shippingCost = order.shipping ?? 0;
-  const shippingLabel =
-    shippingCost === 0
-      ? order.shippingLabel ?? "Free"
-      : formatINR(shippingCost);
-  const tax = order.tax ?? 0;
-  const total = subtotal + shippingCost + tax;
+  const total = subtotal; // Only product price, no shipping or tax
 
   return (
     <aside className="space-y-6 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-[0_28px_64px_rgba(15,23,42,0.12)]">
@@ -31,14 +26,16 @@ const CheckoutOrderSummary = ({
 
       <div className="space-y-4">
         {order.items.map((item) => (
-          <OrderItemCard key={item.id} item={item} />
+          <EditableOrderItem 
+            key={item.id} 
+            item={item} 
+            onQuantityChange={onQuantityChange}
+          />
         ))}
       </div>
 
       <div className="space-y-3 border-t border-[#DCECE9] pt-4 text-sm text-slate-600">
         <OrderSummaryRow label="Subtotal" value={formatINR(subtotal)} />
-        <OrderSummaryRow label="Shipping" value={shippingLabel} />
-        <OrderSummaryRow label="Tax" value={formatINR(tax)} />
       </div>
 
       <OrderSummaryRow label="Total" value={formatINR(total)} emphasis />

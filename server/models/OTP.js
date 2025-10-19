@@ -3,11 +3,12 @@ const mongoose = require("mongoose");
 // Define OTP schema for storing verification codes
 const otpSchema = new mongoose.Schema(
   {
-    // Mobile number for which OTP is generated
-    mobileNumber: {
+    // Email address for which OTP is generated
+    email: {
       type: String,
       required: true,
       trim: true,
+      lowercase: true,
     },
     
     // 6-digit OTP code sent to user

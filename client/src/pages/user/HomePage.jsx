@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import UserNavbar from "../../components/user/common/UserNavbar.jsx";
-import AdvancedFilters, { SORT_OPTIONS } from "../../components/common/AdvancedFilters.jsx";
+import AdvancedFilters, {
+  SORT_OPTIONS,
+} from "../../components/common/AdvancedFilters.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
 import MobileBottomNav from "../../components/common/MobileBottomNav.jsx";
+import Loader from "../../components/common/Loader.jsx";
+import Skeleton from "../../components/common/Skeleton.jsx";
 import { fetchProducts } from "../../api/catalog.js";
 import { fetchCategories } from "../../api/categories.js";
 
@@ -76,12 +80,12 @@ const HomePage = ({ isLoggedIn }) => {
   // Prevent background scroll when mobile filter modal is open
   useEffect(() => {
     if (showMobileFilters) {
-      document.body.classList.add('overflow-hidden');
+      document.body.classList.add("overflow-hidden");
     } else {
-      document.body.classList.remove('overflow-hidden');
+      document.body.classList.remove("overflow-hidden");
     }
     return () => {
-      document.body.classList.remove('overflow-hidden');
+      document.body.classList.remove("overflow-hidden");
     };
   }, [showMobileFilters]);
   const [mobileFilterTab, setMobileFilterTab] = useState("Category");
@@ -382,6 +386,9 @@ const HomePage = ({ isLoggedIn }) => {
 
   const displayedCount = filteredProducts.length;
   const totalCount = totalProducts || displayedCount;
+  const hasProducts = products.length > 0;
+  const isInitialProductLoad = loading && !hasProducts;
+  const isRefreshingProducts = loading && hasProducts;
 
   const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
     if (key === "category") return value !== "all";
@@ -460,8 +467,18 @@ const HomePage = ({ isLoggedIn }) => {
                     setMobileFilterSearch("");
                   }}
                 >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
+                    />
                   </svg>
                   Filters
                 </button>
@@ -482,233 +499,346 @@ const HomePage = ({ isLoggedIn }) => {
             {/*  Mobile Filters Modal */}
             {showMobileFilters && (
               <div className="fixed inset-0 z-[999] flex h-full w-full items-stretch bg-black/40 lg:hidden">
-                <div className="absolute left-0 right-0 mx-auto w-full" style={{ top: '20vh', height: '80vh' }}>
+                <div
+                  className="absolute left-0 right-0 mx-auto w-full"
+                  style={{ top: "20vh", height: "80vh" }}
+                >
                   <div className="relative flex h-full w-full bg-white">
-                  {/* Sidebar Tabs */}
-                  <div className="flex flex-col w-28 bg-gray-50 border-r h-full">
-                    {[
-                      "Category",
-                      "Gender",
-                      "Color",
-                      "Size",
-                      "Price",
-                      "Rating",
-                    ].map((tab) => (
-                      <button
-                        key={tab}
-                        className={`py-3 px-2 text-left text-xs sm:text-sm font-medium border-l-4 transition-colors ${
-                          mobileFilterTab === tab
-                            ? "border-[#b8985b] bg-white text-[#b8985b]"
-                            : "border-transparent text-gray-700 hover:bg-gray-100"
-                        }`}
-                        onClick={() => {
-                          setMobileFilterTab(tab);
-                          setMobileFilterSearch("");
-                        }}
-                      >
-                        {tab}
-                      </button>
-                    ))}
-                  </div>
-                  {/* Filter Options Panel */}
-                  <div className="flex-1 flex flex-col min-w-0 h-full">
-                    {/* Header */}
-                    <div className="flex items-center justify-between border-b px-4 py-3">
-                      <span className="font-semibold text-base">Filters</span>
-                      <button onClick={() => setShowMobileFilters(false)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                    {/* Sidebar Tabs */}
+                    <div className="flex flex-col w-28 bg-gray-50 border-r h-full">
+                      {[
+                        "Category",
+                        "Gender",
+                        "Color",
+                        "Size",
+                        "Price",
+                        "Rating",
+                      ].map((tab) => (
+                        <button
+                          key={tab}
+                          className={`py-3 px-2 text-left text-xs sm:text-sm font-medium border-l-4 transition-colors ${
+                            mobileFilterTab === tab
+                              ? "border-[#b8985b] bg-white text-[#b8985b]"
+                              : "border-transparent text-gray-700 hover:bg-gray-100"
+                          }`}
+                          onClick={() => {
+                            setMobileFilterTab(tab);
+                            setMobileFilterSearch("");
+                          }}
+                        >
+                          {tab}
+                        </button>
+                      ))}
                     </div>
-                    {/* Search box for options */}
-                    <div className="px-4 py-2 border-b">
-                      <input
-                        type="text"
-                        placeholder="Search"
-                        value={mobileFilterSearch}
-                        onChange={e => setMobileFilterSearch(e.target.value)}
-                        className="w-full rounded border border-gray-200 px-3 py-2 text-xs sm:text-sm focus:border-[#b8985b] focus:ring-[#b8985b]"
-                      />
+                    {/* Filter Options Panel */}
+                    <div className="flex-1 flex flex-col min-w-0 h-full">
+                      {/* Header */}
+                      <div className="flex items-center justify-between border-b px-4 py-3">
+                        <span className="font-semibold text-base">Filters</span>
+                        <button
+                          onClick={() => setShowMobileFilters(false)}
+                          className="text-gray-500 hover:text-gray-700 text-2xl"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                      {/* Search box for options */}
+                      <div className="px-4 py-2 border-b">
+                        <input
+                          type="text"
+                          placeholder="Search"
+                          value={mobileFilterSearch}
+                          onChange={(e) =>
+                            setMobileFilterSearch(e.target.value)
+                          }
+                          className="w-full rounded border border-gray-200 px-3 py-2 text-xs sm:text-sm focus:border-[#b8985b] focus:ring-[#b8985b]"
+                        />
+                      </div>
+                      {/* Options List */}
+                      <div className="flex-1 overflow-y-auto px-4 py-2">
+                        {/* Render options for the selected tab */}
+                        {mobileFilterTab === "Category" && (
+                          <>
+                            {/* Category options */}
+                            {categoryOptions
+                              .filter(
+                                (opt) =>
+                                  !mobileFilterSearch ||
+                                  opt.label
+                                    .toLowerCase()
+                                    .includes(mobileFilterSearch.toLowerCase())
+                              )
+                              .map((opt) => (
+                                <label
+                                  key={opt.value}
+                                  className="flex items-center py-2 cursor-pointer"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={
+                                      mobileFilterDraft.category === opt.value
+                                    }
+                                    onChange={() =>
+                                      setMobileFilterDraft((draft) => ({
+                                        ...draft,
+                                        category: opt.value,
+                                      }))
+                                    }
+                                    className="mr-3 h-4 w-4 border-gray-300 text-[#b8985b] focus:ring-[#b8985b]"
+                                  />
+                                  <span className="text-sm">{opt.label}</span>
+                                </label>
+                              ))}
+                          </>
+                        )}
+                        {mobileFilterTab === "Gender" && (
+                          <>
+                            {[
+                              { value: "all", label: "All" },
+                              { value: "Women", label: "Women" },
+                              { value: "Men", label: "Men" },
+                              { value: "Kids", label: "Kids" },
+                              { value: "Unisex", label: "Unisex" },
+                            ]
+                              .filter(
+                                (opt) =>
+                                  !mobileFilterSearch ||
+                                  opt.label
+                                    .toLowerCase()
+                                    .includes(mobileFilterSearch.toLowerCase())
+                              )
+                              .map((opt) => (
+                                <label
+                                  key={opt.value}
+                                  className="flex items-center py-2 cursor-pointer"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={
+                                      mobileFilterDraft.gender === opt.value
+                                    }
+                                    onChange={() =>
+                                      setMobileFilterDraft((draft) => ({
+                                        ...draft,
+                                        gender: opt.value,
+                                      }))
+                                    }
+                                    className="mr-3 h-4 w-4 border-gray-300 text-[#b8985b] focus:ring-[#b8985b]"
+                                  />
+                                  <span className="text-sm">{opt.label}</span>
+                                </label>
+                              ))}
+                          </>
+                        )}
+                        {mobileFilterTab === "Color" && (
+                          <>
+                            {[
+                              { name: "black" },
+                              { name: "white" },
+                              { name: "red" },
+                              { name: "blue" },
+                              { name: "green" },
+                              { name: "pink" },
+                              { name: "purple" },
+                              { name: "yellow" },
+                              { name: "orange" },
+                              { name: "brown" },
+                              { name: "grey" },
+                              { name: "navy" },
+                            ]
+                              .filter(
+                                (opt) =>
+                                  !mobileFilterSearch ||
+                                  opt.name
+                                    .toLowerCase()
+                                    .includes(mobileFilterSearch.toLowerCase())
+                              )
+                              .map((opt) => (
+                                <label
+                                  key={opt.name}
+                                  className="flex items-center py-2 cursor-pointer"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={mobileFilterDraft.colors?.includes(
+                                      opt.name
+                                    )}
+                                    onChange={() =>
+                                      setMobileFilterDraft((draft) => ({
+                                        ...draft,
+                                        colors: draft.colors?.includes(opt.name)
+                                          ? draft.colors.filter(
+                                              (c) => c !== opt.name
+                                            )
+                                          : [...(draft.colors || []), opt.name],
+                                      }))
+                                    }
+                                    className="mr-3 h-4 w-4 border-gray-300 text-[#b8985b] focus:ring-[#b8985b]"
+                                  />
+                                  <span className="text-sm capitalize">
+                                    {opt.name}
+                                  </span>
+                                </label>
+                              ))}
+                          </>
+                        )}
+                        {mobileFilterTab === "Size" && (
+                          <>
+                            {["XS", "S", "M", "L", "XL", "XXL", "3XL"]
+                              .filter(
+                                (opt) =>
+                                  !mobileFilterSearch ||
+                                  opt
+                                    .toLowerCase()
+                                    .includes(mobileFilterSearch.toLowerCase())
+                              )
+                              .map((opt) => (
+                                <label
+                                  key={opt}
+                                  className="flex items-center py-2 cursor-pointer"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={mobileFilterDraft.sizes?.includes(
+                                      opt
+                                    )}
+                                    onChange={() =>
+                                      setMobileFilterDraft((draft) => ({
+                                        ...draft,
+                                        sizes: draft.sizes?.includes(opt)
+                                          ? draft.sizes.filter((s) => s !== opt)
+                                          : [...(draft.sizes || []), opt],
+                                      }))
+                                    }
+                                    className="mr-3 h-4 w-4 border-gray-300 text-[#b8985b] focus:ring-[#b8985b]"
+                                  />
+                                  <span className="text-sm">{opt}</span>
+                                </label>
+                              ))}
+                          </>
+                        )}
+                        {mobileFilterTab === "Price" && (
+                          <>
+                            {[
+                              { label: "Under ₹500", min: 0, max: 500 },
+                              { label: "₹500 - ₹1000", min: 500, max: 1000 },
+                              { label: "₹1000 - ₹2000", min: 1000, max: 2000 },
+                              { label: "₹2000 - ₹5000", min: 2000, max: 5000 },
+                              {
+                                label: "₹5000 - ₹10000",
+                                min: 5000,
+                                max: 10000,
+                              },
+                              {
+                                label: "Above ₹10000",
+                                min: 10000,
+                                max: 999999,
+                              },
+                            ]
+                              .filter(
+                                (opt) =>
+                                  !mobileFilterSearch ||
+                                  opt.label
+                                    .toLowerCase()
+                                    .includes(mobileFilterSearch.toLowerCase())
+                              )
+                              .map((opt) => (
+                                <label
+                                  key={opt.label}
+                                  className="flex items-center py-2 cursor-pointer"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={mobileFilterDraft.priceRanges?.some(
+                                      (r) =>
+                                        r.min === opt.min && r.max === opt.max
+                                    )}
+                                    onChange={() =>
+                                      setMobileFilterDraft((draft) => ({
+                                        ...draft,
+                                        priceRanges: draft.priceRanges?.some(
+                                          (r) =>
+                                            r.min === opt.min &&
+                                            r.max === opt.max
+                                        )
+                                          ? draft.priceRanges.filter(
+                                              (r) =>
+                                                !(
+                                                  r.min === opt.min &&
+                                                  r.max === opt.max
+                                                )
+                                            )
+                                          : [...(draft.priceRanges || []), opt],
+                                      }))
+                                    }
+                                    className="mr-3 h-4 w-4 border-gray-300 text-[#b8985b] focus:ring-[#b8985b]"
+                                  />
+                                  <span className="text-sm">{opt.label}</span>
+                                </label>
+                              ))}
+                          </>
+                        )}
+                        {mobileFilterTab === "Rating" && (
+                          <>
+                            {[
+                              { label: "4★ & above", value: 4 },
+                              { label: "3★ & above", value: 3 },
+                              { label: "2★ & above", value: 2 },
+                              { label: "1★ & above", value: 1 },
+                            ]
+                              .filter(
+                                (opt) =>
+                                  !mobileFilterSearch ||
+                                  opt.label
+                                    .toLowerCase()
+                                    .includes(mobileFilterSearch.toLowerCase())
+                              )
+                              .map((opt) => (
+                                <label
+                                  key={opt.value}
+                                  className="flex items-center py-2 cursor-pointer"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={
+                                      mobileFilterDraft.minRating === opt.value
+                                    }
+                                    onChange={() =>
+                                      setMobileFilterDraft((draft) => ({
+                                        ...draft,
+                                        minRating: opt.value,
+                                      }))
+                                    }
+                                    className="mr-3 h-4 w-4 border-gray-300 text-[#b8985b] focus:ring-[#b8985b]"
+                                  />
+                                  <span className="text-sm">{opt.label}</span>
+                                </label>
+                              ))}
+                          </>
+                        )}
+                      </div>
+                      {/* Sticky Footer Buttons */}
+                      <div className="sticky bottom-0 left-0 right-0 bg-white border-t flex items-center justify-between gap-2 px-4 py-3">
+                        <button
+                          className="flex-1 rounded border border-[#b8985b] bg-white px-4 py-2 text-sm font-semibold text-[#b8985b]"
+                          onClick={() => {
+                            setMobileFilterDraft(filters);
+                            setMobileFilterSearch("");
+                          }}
+                        >
+                          Clear Filters
+                        </button>
+                        <button
+                          className="flex-1 rounded bg-[#b8985b] px-4 py-2 text-sm font-semibold text-white"
+                          onClick={() => {
+                            setFilters(() => mobileFilterDraft);
+                            setShowMobileFilters(false);
+                          }}
+                        >
+                          Done
+                        </button>
+                      </div>
                     </div>
-                    {/* Options List */}
-                    <div className="flex-1 overflow-y-auto px-4 py-2">
-                      {/* Render options for the selected tab */}
-                      {mobileFilterTab === "Category" && (
-                        <>
-                          {/* Category options */}
-                          {categoryOptions
-                            .filter(opt =>
-                              !mobileFilterSearch ||
-                              opt.label.toLowerCase().includes(mobileFilterSearch.toLowerCase())
-                            )
-                            .map(opt => (
-                              <label key={opt.value} className="flex items-center py-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={mobileFilterDraft.category === opt.value}
-                                  onChange={() => setMobileFilterDraft(draft => ({ ...draft, category: opt.value }))}
-                                  className="mr-3 h-4 w-4 border-gray-300 text-[#b8985b] focus:ring-[#b8985b]"
-                                />
-                                <span className="text-sm">{opt.label}</span>
-                              </label>
-                            ))}
-                        </>
-                      )}
-                      {mobileFilterTab === "Gender" && (
-                        <>
-                          {[
-                            { value: "all", label: "All" },
-                            { value: "Women", label: "Women" },
-                            { value: "Men", label: "Men" },
-                            { value: "Kids", label: "Kids" },
-                            { value: "Unisex", label: "Unisex" },
-                          ]
-                            .filter(opt =>
-                              !mobileFilterSearch ||
-                              opt.label.toLowerCase().includes(mobileFilterSearch.toLowerCase())
-                            )
-                            .map(opt => (
-                              <label key={opt.value} className="flex items-center py-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={mobileFilterDraft.gender === opt.value}
-                                  onChange={() => setMobileFilterDraft(draft => ({ ...draft, gender: opt.value }))}
-                                  className="mr-3 h-4 w-4 border-gray-300 text-[#b8985b] focus:ring-[#b8985b]"
-                                />
-                                <span className="text-sm">{opt.label}</span>
-                              </label>
-                            ))}
-                        </>
-                      )}
-                      {mobileFilterTab === "Color" && (
-                        <>
-                          {[
-                            { name: "black" }, { name: "white" }, { name: "red" }, { name: "blue" }, { name: "green" }, { name: "pink" }, { name: "purple" }, { name: "yellow" }, { name: "orange" }, { name: "brown" }, { name: "grey" }, { name: "navy" }
-                          ]
-                            .filter(opt =>
-                              !mobileFilterSearch ||
-                              opt.name.toLowerCase().includes(mobileFilterSearch.toLowerCase())
-                            )
-                            .map(opt => (
-                              <label key={opt.name} className="flex items-center py-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={mobileFilterDraft.colors?.includes(opt.name)}
-                                  onChange={() => setMobileFilterDraft(draft => ({
-                                    ...draft,
-                                    colors: draft.colors?.includes(opt.name)
-                                      ? draft.colors.filter(c => c !== opt.name)
-                                      : [...(draft.colors || []), opt.name]
-                                  }))}
-                                  className="mr-3 h-4 w-4 border-gray-300 text-[#b8985b] focus:ring-[#b8985b]"
-                                />
-                                <span className="text-sm capitalize">{opt.name}</span>
-                              </label>
-                            ))}
-                        </>
-                      )}
-                      {mobileFilterTab === "Size" && (
-                        <>
-                          {["XS", "S", "M", "L", "XL", "XXL", "3XL"]
-                            .filter(opt =>
-                              !mobileFilterSearch ||
-                              opt.toLowerCase().includes(mobileFilterSearch.toLowerCase())
-                            )
-                            .map(opt => (
-                              <label key={opt} className="flex items-center py-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={mobileFilterDraft.sizes?.includes(opt)}
-                                  onChange={() => setMobileFilterDraft(draft => ({
-                                    ...draft,
-                                    sizes: draft.sizes?.includes(opt)
-                                      ? draft.sizes.filter(s => s !== opt)
-                                      : [...(draft.sizes || []), opt]
-                                  }))}
-                                  className="mr-3 h-4 w-4 border-gray-300 text-[#b8985b] focus:ring-[#b8985b]"
-                                />
-                                <span className="text-sm">{opt}</span>
-                              </label>
-                            ))}
-                        </>
-                      )}
-                      {mobileFilterTab === "Price" && (
-                        <>
-                          {[
-                            { label: "Under ₹500", min: 0, max: 500 },
-                            { label: "₹500 - ₹1000", min: 500, max: 1000 },
-                            { label: "₹1000 - ₹2000", min: 1000, max: 2000 },
-                            { label: "₹2000 - ₹5000", min: 2000, max: 5000 },
-                            { label: "₹5000 - ₹10000", min: 5000, max: 10000 },
-                            { label: "Above ₹10000", min: 10000, max: 999999 },
-                          ]
-                            .filter(opt =>
-                              !mobileFilterSearch ||
-                              opt.label.toLowerCase().includes(mobileFilterSearch.toLowerCase())
-                            )
-                            .map(opt => (
-                              <label key={opt.label} className="flex items-center py-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={mobileFilterDraft.priceRanges?.some(r => r.min === opt.min && r.max === opt.max)}
-                                  onChange={() => setMobileFilterDraft(draft => ({
-                                    ...draft,
-                                    priceRanges: draft.priceRanges?.some(r => r.min === opt.min && r.max === opt.max)
-                                      ? draft.priceRanges.filter(r => !(r.min === opt.min && r.max === opt.max))
-                                      : [...(draft.priceRanges || []), opt]
-                                  }))}
-                                  className="mr-3 h-4 w-4 border-gray-300 text-[#b8985b] focus:ring-[#b8985b]"
-                                />
-                                <span className="text-sm">{opt.label}</span>
-                              </label>
-                            ))}
-                        </>
-                      )}
-                      {mobileFilterTab === "Rating" && (
-                        <>
-                          {[
-                            { label: "4★ & above", value: 4 },
-                            { label: "3★ & above", value: 3 },
-                            { label: "2★ & above", value: 2 },
-                            { label: "1★ & above", value: 1 },
-                          ]
-                            .filter(opt =>
-                              !mobileFilterSearch ||
-                              opt.label.toLowerCase().includes(mobileFilterSearch.toLowerCase())
-                            )
-                            .map(opt => (
-                              <label key={opt.value} className="flex items-center py-2 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={mobileFilterDraft.minRating === opt.value}
-                                  onChange={() => setMobileFilterDraft(draft => ({ ...draft, minRating: opt.value }))}
-                                  className="mr-3 h-4 w-4 border-gray-300 text-[#b8985b] focus:ring-[#b8985b]"
-                                />
-                                <span className="text-sm">{opt.label}</span>
-                              </label>
-                            ))}
-                        </>
-                      )}
-                    </div>
-                    {/* Sticky Footer Buttons */}
-                    <div className="sticky bottom-0 left-0 right-0 bg-white border-t flex items-center justify-between gap-2 px-4 py-3">
-                      <button
-                        className="flex-1 rounded border border-[#b8985b] bg-white px-4 py-2 text-sm font-semibold text-[#b8985b]"
-                        onClick={() => {
-                          setMobileFilterDraft(filters);
-                          setMobileFilterSearch("");
-                        }}
-                      >
-                        Clear Filters
-                      </button>
-                      <button
-                        className="flex-1 rounded bg-[#b8985b] px-4 py-2 text-sm font-semibold text-white"
-                        onClick={() => {
-                          setFilters(() => mobileFilterDraft);
-                          setShowMobileFilters(false);
-                        }}
-                      >
-                        Done
-                      </button>
-                    </div>
-                  </div>
                   </div>
                 </div>
               </div>
@@ -717,9 +847,13 @@ const HomePage = ({ isLoggedIn }) => {
             {/* Desktop Sort and Results Header */}
             <div className="hidden lg:flex lg:flex-col lg:gap-4 lg:sm:flex-row lg:sm:items-center lg:sm:justify-between">
               <div className="flex items-center gap-4 text-sm text-slate-600">
-                <p>
-                  Showing {displayedCount} of {totalCount} products
-                </p>
+                {isInitialProductLoad ? (
+                  <Skeleton className="h-4 w-64" />
+                ) : (
+                  <p>
+                    Showing {displayedCount} of {totalCount} products
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:gap-4">
@@ -754,9 +888,16 @@ const HomePage = ({ isLoggedIn }) => {
             </div>
 
             {/* Loading States */}
-            {categoryLoading && (
-              <p className="text-sm text-[#b8985b]">Loading categories…</p>
-            )}
+            {categoryLoading ? (
+              <div className="flex flex-wrap items-center gap-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <Skeleton
+                    key={`homepage-category-skeleton-${index}`}
+                    className="h-6 w-24"
+                  />
+                ))}
+              </div>
+            ) : null}
 
             {categoryError && (
               <div className="flex flex-wrap items-center gap-3 rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
@@ -774,9 +915,24 @@ const HomePage = ({ isLoggedIn }) => {
             )}
 
             {/* Products Grid */}
-            {loading ? (
-              <div className="flex min-h-[16rem] items-center justify-center text-[#b8985b]">
-                Loading products...
+            {isInitialProductLoad ? (
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {Array.from({ length: 10 }).map((_, index) => (
+                  <div
+                    key={`homepage-product-skeleton-${index}`}
+                    className="space-y-3 rounded-3xl border border-[#DCECE9] bg-white p-3 shadow-sm"
+                  >
+                    <Skeleton
+                      className="h-44 w-full rounded-2xl"
+                      rounded={false}
+                    />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-3 w-1/3" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-12 text-center">
@@ -807,6 +963,12 @@ const HomePage = ({ isLoggedIn }) => {
                 </button>
               </div>
             )}
+
+            {isRefreshingProducts ? (
+              <div className="flex justify-center pt-6">
+                <Loader label="Refreshing products" />
+              </div>
+            ) : null}
 
             {!loading &&
               !error &&
@@ -847,7 +1009,7 @@ const HomePage = ({ isLoggedIn }) => {
           </svg>
         </button>
       )}
-      
+
       <MobileBottomNav />
     </div>
   );

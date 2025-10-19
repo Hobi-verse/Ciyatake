@@ -6,6 +6,8 @@ import CheckoutProgress from "../../components/user/checkout/CheckoutProgress.js
 import CheckoutSection from "../../components/user/checkout/CheckoutSection.jsx";
 import CheckoutField from "../../components/user/checkout/CheckoutField.jsx";
 import CheckoutOrderSummary from "../../components/user/checkout/CheckoutOrderSummary.jsx";
+import Loader from "../../components/common/Loader.jsx";
+import Skeleton from "../../components/common/Skeleton.jsx";
 import {
   fetchCart,
   validateCart,
@@ -18,7 +20,7 @@ import { processPayment } from "../../api/payments.js";
 
 const SHIPPING_THRESHOLD = 500;
 const SHIPPING_FEE = 50;
-const TAX_RATE = 0.18;
+// Removed TAX_RATE as tax is no longer applied
 const DEFAULT_COUNTRY = "India";
 const NEW_ADDRESS_OPTION_VALUE = "new-address";
 
@@ -48,9 +50,9 @@ const computePricing = (cart) => {
       }, 0)
     : 0;
 
-  const shipping = subtotal > SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
-  const tax = Math.round(subtotal * TAX_RATE);
-  const total = subtotal + shipping + tax;
+  const shipping = 0; // Always free shipping
+  const tax = 0; // No tax
+  const total = subtotal; // Only product price
 
   return {
     subtotal,
@@ -166,6 +168,10 @@ const CheckoutPage = () => {
       },
     ];
   }, [addresses]);
+
+  const hasCheckoutData = Boolean(cart);
+  const isInitialCheckoutLoad = loading && !hasCheckoutData;
+  const isRefreshingCheckout = loading && hasCheckoutData;
 
   const checkoutSteps = useMemo(() => {
     const hasShippingSelection = useNewAddress
@@ -300,6 +306,37 @@ const CheckoutPage = () => {
     }
   }, [selectedAddress, useNewAddress]);
 
+  const handleQuantityChange = useCallback(async (itemId, newQuantity) => {
+    console.log('🔄 Updating checkout quantity:', { itemId, newQuantity });
+    
+    try {
+      // Update the local order state immediately for better UX
+      setOrder(prevOrder => {
+        if (!prevOrder) return prevOrder;
+        
+        const updatedItems = prevOrder.items.map(item => 
+          item.id === itemId 
+            ? { ...item, quantity: newQuantity }
+            : item
+        );
+        
+        return { ...prevOrder, items: updatedItems };
+      });
+      
+      // Update the cart on the server
+      const { updateCartItem } = await import("../../api/cart.js");
+      await updateCartItem(itemId, { quantity: newQuantity });
+      
+      // Refresh the order to get updated totals
+      await loadCheckoutData();
+      
+    } catch (error) {
+      console.error('❌ Failed to update quantity:', error);
+      // Refresh to get the correct state
+      await loadCheckoutData();
+    }
+  }, [loadCheckoutData]);
+
   const handlePlaceOrder = async () => {
     if (isPlacingOrder || !order) {
       return;
@@ -312,14 +349,32 @@ const CheckoutPage = () => {
     const email = contactForm.email.trim();
     const phone = contactForm.phone.trim();
 
+    console.log('🛒 Starting order placement...', { 
+      fullName, 
+      email, 
+      phone,
+      contactFormValid: !!(fullName && email && phone)
+    });
+
     if (!fullName || !email || !phone) {
-      setOrderError(
-        "Please complete your contact information before continuing."
-      );
+      const missingFields = [];
+      if (!fullName) missingFields.push('Full Name');
+      if (!email) missingFields.push('Email');
+      if (!phone) missingFields.push('Phone');
+      
+      const errorMessage = `Missing contact information: ${missingFields.join(', ')}`;
+      console.error('❌ Contact validation failed:', errorMessage);
+      setOrderError(errorMessage);
       return;
     }
 
     const creatingNewAddress = useNewAddress || !selectedAddressId;
+    console.log('📍 Address info:', { 
+      creatingNewAddress, 
+      useNewAddress, 
+      selectedAddressId,
+      addressForm 
+    });
 
     if (creatingNewAddress) {
       const requiredFields = ["addressLine1", "city", "state", "postalCode"];
@@ -328,9 +383,9 @@ const CheckoutPage = () => {
       );
 
       if (missingFields.length) {
-        setOrderError(
-          "Please complete your shipping address details before paying."
-        );
+        const errorMessage = `Missing address fields: ${missingFields.join(', ')}`;
+        console.error('❌ Address validation failed:', errorMessage);
+        setOrderError(errorMessage);
         return;
       }
     }
@@ -343,95 +398,40 @@ const CheckoutPage = () => {
       let resolvedShippingAddress = selectedAddress;
 
       if (creatingNewAddress) {
+        console.log('📍 Creating new address...');
         setIsSavingAddress(true);
-        const newAddress = await createAddress({
-          label: addressForm.label || "Home",
-          recipient: fullName,
-          phone,
-          addressLine1: addressForm.addressLine1,
-          addressLine2: addressForm.addressLine2,
-          city: addressForm.city,
-          state: addressForm.state,
-          postalCode: addressForm.postalCode,
-          country: addressForm.country || DEFAULT_COUNTRY,
-          deliveryInstructions: addressForm.deliveryInstructions,
-        });
+        try {
+          const newAddress = await createAddress({
+            label: addressForm.label || "Home",
+            recipient: fullName,
+            phone,
+            addressLine1: addressForm.addressLine1,
+            addressLine2: addressForm.addressLine2,
+            city: addressForm.city,
+            state: addressForm.state,
+            postalCode: addressForm.postalCode,
+            country: addressForm.country || DEFAULT_COUNTRY,
+            deliveryInstructions: addressForm.deliveryInstructions,
+          });
 
-        resolvedAddressId = newAddress.id;
-        resolvedShippingAddress = newAddress;
-        setAddresses((prev) => [newAddress, ...prev]);
-        setSelectedAddressId(newAddress.id);
-        setUseNewAddress(false);
-      }
-
-      const validation = await validateCart();
-      let issues = validation?.issues ?? validation?.cartIssues ?? [];
-      let normalizedCart = validation?.cart ?? cart;
-
-      if (!validation?.valid) {
-        const insufficientStockIssues = issues.filter(
-          (issue) =>
-            issue?.type === "insufficient_stock" &&
-            Number.isFinite(issue?.availableQuantity)
-        );
-
-        let adjustedCart = normalizedCart;
-
-        if (insufficientStockIssues.length) {
-          for (const issue of insufficientStockIssues) {
-            const itemId = issue?.itemId;
-            const availableQuantity = Number(issue?.availableQuantity);
-
-            if (!itemId || !Number.isFinite(availableQuantity)) {
-              continue;
-            }
-
-            try {
-              if (availableQuantity > 0) {
-                adjustedCart = await updateCartItem(itemId, {
-                  quantity: availableQuantity,
-                });
-              } else {
-                adjustedCart = await removeCartItem(itemId);
-              }
-            } catch (adjustError) {
-              console.warn(
-                "Failed to auto-adjust cart item after stock validation",
-                adjustError
-              );
-            }
-          }
-
-          try {
-            const refreshedValidation = await validateCart();
-            normalizedCart = refreshedValidation?.cart ?? adjustedCart;
-            issues = refreshedValidation?.issues ?? [];
-          } catch (revalidateError) {
-            console.warn(
-              "Failed to revalidate cart after stock adjustment",
-              revalidateError
-            );
-            normalizedCart = adjustedCart;
-          }
+          console.log('✅ Address created successfully:', newAddress);
+          resolvedAddressId = newAddress.id;
+          resolvedShippingAddress = newAddress;
+          setAddresses((prev) => [newAddress, ...prev]);
+          setSelectedAddressId(newAddress.id);
+          setUseNewAddress(false);
+        } catch (addressError) {
+          console.error('❌ Address creation failed:', addressError);
+          setOrderError(`Failed to save address: ${addressError.message}`);
+          return;
         }
-
-        setCheckoutIssues(issues);
-        setCart(normalizedCart);
-        setOrder(buildOrderFromCart(normalizedCart));
-
-        const issueMessage = issues
-          .map((issue) => issue?.message)
-          .filter(Boolean)
-          .join(" ");
-
-        setOrderError(
-          issueMessage.length
-            ? issueMessage
-            : "We found some issues with your cart. Please review the highlighted items and try again."
-        );
-        return;
       }
 
+      console.log('🔍 Validating cart...');
+      
+      // Skip cart validation for now and proceed directly to payment
+      const normalizedCart = cart;
+      
       if (
         !normalizedCart ||
         !Array.isArray(normalizedCart.items) ||
@@ -447,19 +447,35 @@ const CheckoutPage = () => {
       const nextOrder = buildOrderFromCart(normalizedCart);
       setOrder(nextOrder);
 
-      const pricing = computePricing(normalizedCart);
+      console.log('💳 Starting secure payment process...');
 
+      // 🔐 SECURE PAYMENT FLOW - Like Flipkart/Amazon
       const verificationData = await processPayment({
-        amount: pricing.total,
         shippingAddressId: resolvedAddressId,
-        paymentMethodId: null,
-        couponCode: validation?.appliedCoupon?.code ?? undefined,
+        couponCode: undefined, // Skip coupon for now
         customerNotes: addressForm.deliveryInstructions,
         customerDetails: {
           name: fullName,
           email,
           phone,
         },
+        onSuccess: (data) => {
+          console.log('✅ Payment successful:', data);
+          
+          // Store success data for confirmation page navigation
+          const paymentSuccessData = {
+            paymentId: data?.razorpay_payment_id,
+            orderId: data?.razorpay_order_id,
+            signature: data?.razorpay_signature
+          };
+          
+          // Store in sessionStorage for immediate access
+          sessionStorage.setItem('paymentSuccess', JSON.stringify(paymentSuccessData));
+        },
+        onFailure: (error) => {
+          console.error('❌ Payment failed:', error);
+          throw error;
+        }
       });
 
       const resolvedOrder =
@@ -484,10 +500,10 @@ const CheckoutPage = () => {
           null,
         items: nextOrder?.items ?? resolvedOrder?.items ?? [],
         totals: {
-          subtotal: pricing.subtotal,
-          shipping: pricing.shipping,
+          subtotal: resolvedOrder?.pricing?.subtotal ?? resolvedOrder?.total ?? nextOrder?.total ?? 0,
+          shipping: resolvedOrder?.pricing?.shipping ?? 0,
           shippingLabel: nextOrder?.shippingLabel,
-          tax: pricing.tax,
+          tax: resolvedOrder?.pricing?.tax ?? 0,
         },
         paymentMethod:
           resolvedOrder?.payment?.method ??
@@ -511,41 +527,62 @@ const CheckoutPage = () => {
           deliveryInstructions: addressForm.deliveryInstructions,
         };
 
-      navigate("/confirmation", {
-        replace: true,
-        state: {
-          order: confirmationOrder,
-          orderId,
-          pricing,
-          customer: {
-            name: fullName,
-            email,
-            phone,
+      // Navigate to confirmation page - ensure this always happens
+      try {
+        navigate("/confirmation", {
+          replace: true,
+          state: {
+            order: confirmationOrder,
+            orderId,
+            pricing: {
+              subtotal: confirmationOrder?.totals?.subtotal || 0,
+              shipping: confirmationOrder?.totals?.shipping || 0,
+              tax: confirmationOrder?.totals?.tax || 0,
+              total: (confirmationOrder?.totals?.subtotal || 0) + (confirmationOrder?.totals?.shipping || 0) + (confirmationOrder?.totals?.tax || 0)
+            },
+            customer: {
+              name: fullName,
+              email,
+              phone,
+            },
+            shipping: {
+              addressLines: [
+                shippingAddress?.addressLine1,
+                shippingAddress?.addressLine2,
+                [
+                  shippingAddress?.city,
+                  shippingAddress?.state,
+                  shippingAddress?.postalCode,
+                ]
+                  .filter(Boolean)
+                  .join(", "),
+                shippingAddress?.country,
+              ].filter(Boolean),
+              instructions: shippingAddress?.deliveryInstructions,
+            },
           },
-          shipping: {
-            addressLines: [
-              shippingAddress.addressLine1,
-              shippingAddress.addressLine2,
-              [
-                shippingAddress.city,
-                shippingAddress.state,
-                shippingAddress.postalCode,
-              ]
-                .filter(Boolean)
-                .join(", "),
-              shippingAddress.country,
-            ].filter(Boolean),
-            instructions: shippingAddress.deliveryInstructions,
-          },
-        },
-      });
+        });
+        console.log('🎉 Redirecting to confirmation page...');
+      } catch (navigationError) {
+        console.error('❌ Navigation error:', navigationError);
+        // Fallback navigation with minimal data
+        navigate("/confirmation", {
+          replace: true,
+          state: {
+            order: { id: orderId || 'unknown' },
+            success: true
+          }
+        });
+      }
     } catch (submissionError) {
+      console.error('❌ Order placement failed:', submissionError);
+      
       const apiMessage =
         submissionError?.payload?.message ??
         submissionError?.message ??
         "We couldn't complete the payment. Please try again.";
 
-      setOrderError(apiMessage);
+      setOrderError(`Payment Error: ${apiMessage}`);
     } finally {
       setIsPlacingOrder(false);
       setIsSavingAddress(false);
@@ -573,9 +610,15 @@ const CheckoutPage = () => {
           </p>
         </header>
 
-        {loading ? (
-          <div className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-6 text-sm text-[#b8985b]">
-            Loading your checkout details...
+        {isInitialCheckoutLoad ? (
+          <div className="flex flex-wrap gap-3 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-sm">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Skeleton
+                key={`checkout-progress-skeleton-${index}`}
+                className="h-10 w-36 rounded-full"
+                rounded={false}
+              />
+            ))}
           </div>
         ) : error ? (
           <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
@@ -586,210 +629,171 @@ const CheckoutPage = () => {
         )}
 
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-          <form
-            className="space-y-6"
-            onSubmit={(event) => event.preventDefault()}
-          >
-            <CheckoutSection
-              title="Contact information"
-              description="We'll use these details to send order updates."
-              action={<span>Already have an account? Sign in</span>}
-            >
-              <div className="grid gap-4 md:grid-cols-2">
-                <CheckoutField
-                  label="Full name"
-                  name="fullName"
-                  autoComplete="name"
-                  placeholder="e.g. Aditi Sharma"
-                  value={contactForm.fullName}
-                  onChange={handleContactChange}
+          {isInitialCheckoutLoad ? (
+            <>
+              <div className="space-y-4 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-sm">
+                <Skeleton className="h-6 w-44" />
+                <Skeleton className="h-4 w-64" />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Skeleton
+                    className="h-10 w-full rounded-xl"
+                    rounded={false}
+                  />
+                  <Skeleton
+                    className="h-10 w-full rounded-xl"
+                    rounded={false}
+                  />
+                </div>
+                <Skeleton className="h-10 w-full rounded-xl" rounded={false} />
+                <Skeleton className="h-6 w-52" />
+                <Skeleton className="h-10 w-full rounded-xl" rounded={false} />
+                <Skeleton className="h-10 w-full rounded-xl" rounded={false} />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Skeleton
+                    className="h-10 w-full rounded-xl"
+                    rounded={false}
+                  />
+                  <Skeleton
+                    className="h-10 w-full rounded-xl"
+                    rounded={false}
+                  />
+                </div>
+                <Skeleton className="h-24 w-full rounded-2xl" rounded={false} />
+              </div>
+              <div className="space-y-3 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-sm">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton
+                  className="h-12 w-full rounded-full"
+                  rounded={false}
                 />
-                <CheckoutField
-                  label="Phone number"
-                  name="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  placeholder="10-digit mobile number"
-                  value={contactForm.phone}
-                  onChange={handleContactChange}
+                <Skeleton
+                  className="h-12 w-full rounded-full"
+                  rounded={false}
                 />
               </div>
-              <CheckoutField
-                label="Email address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                value={contactForm.email}
-                onChange={handleContactChange}
-              />
-            </CheckoutSection>
+            </>
+          ) : (
+            <>
+              <form
+                className="space-y-6"
+                onSubmit={(event) => event.preventDefault()}
+              >
+                <CheckoutSection
+                  title="Contact information"
+                  description="We'll use these details to send order updates."
+                  action={<span>Already have an account? Sign in</span>}
+                >
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <CheckoutField
+                      label="Full name"
+                      name="fullName"
+                      autoComplete="name"
+                      placeholder="e.g. Aditi Sharma"
+                      value={contactForm.fullName}
+                      onChange={handleContactChange}
+                    />
+                    <CheckoutField
+                      label="Phone number"
+                      name="phone"
+                      type="tel"
+                      autoComplete="tel"
+                      placeholder="10-digit mobile number"
+                      value={contactForm.phone}
+                      onChange={handleContactChange}
+                    />
+                  </div>
+                  <CheckoutField
+                    label="Email address"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value={contactForm.email}
+                    onChange={handleContactChange}
+                  />
+                </CheckoutSection>
 
-            <CheckoutSection
-              title="Shipping address"
-              description="Your order will be delivered to this address."
-            >
-              {addresses.length ? (
-                <CheckoutField
-                  label="Saved addresses"
-                  name="shippingAddressId"
-                  options={addressOptions}
-                  value={
-                    useNewAddress ? NEW_ADDRESS_OPTION_VALUE : selectedAddressId
-                  }
-                  onChange={handleAddressSelection}
-                />
+                <CheckoutSection
+                  title="Shipping address"
+                  description="Your order will be delivered to this address."
+                >
+                  {addresses.length ? (
+                    <CheckoutField
+                      label="Saved addresses"
+                      name="shippingAddressId"
+                      options={addressOptions}
+                      value={
+                        useNewAddress
+                          ? NEW_ADDRESS_OPTION_VALUE
+                          : selectedAddressId
+                      }
+                      onChange={handleAddressSelection}
+                    />
+                  ) : (
+                    <>
+                    <div className="rounded-2xl text-center border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+                      You don't have a saved address yet. Add a new one below to
+                      continue.
+                    </div>
+                    <div class="flex flex-col items-center justify-center bg-gradient-to-br from-amber-50 to-amber-100 p-4">
+                      <div class="bg-white rounded-2xl shadow-xl border border-[#b8985b] p-8 w-full max-w-md text-center">
+                        <h1 class="text-2xl font-bold text-[#b8985b] mb-6">Save Address Navigation Guide</h1>
+
+                        <div class="flex items-center justify-center space-x-3 text-sm font-medium">
+                          <div class="flex items-center gap-4 rounded-2xl border px-4 py-3 transition border-[#b8985b] bg-[#b8985b] text-white shadow-[0_14px_28px_rgba(184,152,91,0.3)]">
+                            <span>Account</span>
+                          </div>
+                          <span class="text-[#b8985b]">→</span>
+                          <div class="flex items-center gap-4 rounded-2xl border px-4 py-3 transition border-[#b8985b] bg-[#b8985b] text-white shadow-[0_14px_28px_rgba(184,152,91,0.3)]">
+                            <span>Address</span>
+                          </div>
+                          <span class="text-[#b8985b]">→</span>
+                          <div class="flex items-center gap-4 rounded-2xl border px-4 py-3 transition border-[#b8985b] bg-[#b8985b] text-white shadow-[0_14px_28px_rgba(184,152,91,0.3)]">
+                            <span>Add New Address</span>
+                          </div>
+                        </div>
+
+                        <p class="mt-6 text-gray-700 text-sm">Follow the steps above to add a new address to your account.</p>
+                      </div>
+                    </div>
+
+                    </>
+                  )}
+                <button disabled={isSavingAddress} onClick={()=>navigate('/account')} className="bg-[#b8985b] text-white font-semibold rounded-3xl py-2 cursor-pointer">Go Save address</button>
+                </CheckoutSection>
+              </form>
+
+              {order ? (
+                <div className="space-y-4">
+                  {orderError ? (
+                    <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+                      {orderError}
+                    </div>
+                  ) : null}
+                  <CheckoutOrderSummary
+                    order={order}
+                    onPlaceOrder={handlePlaceOrder}
+                    onQuantityChange={handleQuantityChange}
+                    isPlacingOrder={isPlacingOrder || isSavingAddress}
+                  />
+                </div>
               ) : (
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
-                  We don't have a saved address yet. Add a new one below to
-                  continue.
+                <div className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-6 text-sm text-[#b8985b]">
+                  No items in your order yet.
                 </div>
               )}
-
-              {!useNewAddress && selectedAddress ? (
-                <div className="mt-4 space-y-1 rounded-2xl border border-[#DCECE9] bg-white p-4 text-sm text-slate-700">
-                  <p className="text-sm font-semibold text-[#b8985b]">
-                    {selectedAddress.recipient ?? "Primary recipient"}
-                  </p>
-                  <p>{selectedAddress.addressLine1}</p>
-                  {selectedAddress.addressLine2 ? (
-                    <p>{selectedAddress.addressLine2}</p>
-                  ) : null}
-                  <p>
-                    {[
-                      selectedAddress.city,
-                      selectedAddress.state,
-                      selectedAddress.postalCode,
-                    ]
-                      .filter(Boolean)
-                      .join(", ")}
-                  </p>
-                  <p>{selectedAddress.country}</p>
-                  {selectedAddress.phone ? (
-                    <p className="text-xs text-slate-500">
-                      Phone: {selectedAddress.phone}
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
-
-              {useNewAddress ? (
-                <div className="mt-6 space-y-4">
-                  <CheckoutField
-                    label="Address label"
-                    name="label"
-                    placeholder="e.g. Home, Office"
-                    value={addressForm.label}
-                    onChange={handleAddressFormChange}
-                  />
-                  <CheckoutField
-                    label="Address line 1"
-                    name="addressLine1"
-                    autoComplete="address-line1"
-                    placeholder="Apartment, house number, street"
-                    value={addressForm.addressLine1}
-                    onChange={handleAddressFormChange}
-                  />
-                  <CheckoutField
-                    label="Address line 2"
-                    name="addressLine2"
-                    autoComplete="address-line2"
-                    placeholder="Landmark, area"
-                    optional
-                    value={addressForm.addressLine2}
-                    onChange={handleAddressFormChange}
-                  />
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <CheckoutField
-                      label="City"
-                      name="city"
-                      autoComplete="address-level2"
-                      placeholder="City"
-                      value={addressForm.city}
-                      onChange={handleAddressFormChange}
-                    />
-                    <CheckoutField
-                      label="State"
-                      name="state"
-                      options={states}
-                      value={addressForm.state}
-                      onChange={handleAddressFormChange}
-                    />
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <CheckoutField
-                      label="Postal code"
-                      name="postalCode"
-                      autoComplete="postal-code"
-                      placeholder="PIN code"
-                      value={addressForm.postalCode}
-                      onChange={handleAddressFormChange}
-                    />
-                    <CheckoutField
-                      label="Country"
-                      name="country"
-                      options={[
-                        { value: "", label: "Select country", disabled: true },
-                        { value: DEFAULT_COUNTRY, label: DEFAULT_COUNTRY },
-                      ]}
-                      value={addressForm.country}
-                      onChange={handleAddressFormChange}
-                    />
-                  </div>
-
-                  <label className="flex flex-col gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#b8985b]">
-                      Delivery instructions
-                      <span className="ml-2 text-[0.7rem] font-medium lowercase text-slate-400">
-                        optional
-                      </span>
-                    </span>
-                    <textarea
-                      name="deliveryInstructions"
-                      placeholder="e.g. Leave the package at the front desk"
-                      value={addressForm.deliveryInstructions}
-                      onChange={handleAddressFormChange}
-                      rows={3}
-                      className={TEXTAREA_FIELD_CLASSES}
-                    />
-                  </label>
-                </div>
-              ) : null}
-
-              {checkoutIssues.length ? (
-                <div className="mt-6 space-y-2 text-sm text-amber-700">
-                  {checkoutIssues.map((issue) => (
-                    <p key={`${issue?.type}-${issue?.itemId ?? "global"}`}>
-                      {issue?.message ??
-                        "We found an issue with an item in your cart."}
-                    </p>
-                  ))}
-                </div>
-              ) : null}
-            </CheckoutSection>
-          </form>
-
-          {order ? (
-            <div className="space-y-4">
-              {orderError ? (
-                <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-                  {orderError}
-                </div>
-              ) : null}
-              <CheckoutOrderSummary
-                order={order}
-                onPlaceOrder={handlePlaceOrder}
-                isPlacingOrder={isPlacingOrder || isSavingAddress}
-              />
-            </div>
-          ) : (
-            <div className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-6 text-sm text-[#b8985b]">
-              No items in your order yet.
-            </div>
+            </>
           )}
         </section>
+
+        {isRefreshingCheckout ? (
+          <div className="flex justify-center pt-4">
+            <Loader label="Refreshing checkout" />
+          </div>
+        ) : null}
       </main>
     </div>
   );

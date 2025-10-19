@@ -3,6 +3,8 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Breadcrumbs from "../../components/common/Breadcrumbs.jsx";
 import SectionHeading from "../../components/common/SectionHeading.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
+import Loader from "../../components/common/Loader.jsx";
+import Skeleton from "../../components/common/Skeleton.jsx";
 import ProductGallery from "../../components/user/product/ProductGallery.jsx";
 import ProductSummary from "../../components/user/product/ProductSummary.jsx";
 import ProductHighlights from "../../components/user/product/ProductHighlights.jsx";
@@ -705,8 +707,84 @@ const ProductDetailsPage = ({ isLoggedIn = false }) => {
 
       <div className="mx-auto max-w-6xl space-y-12 px-4 pb-24 pt-8">
         {loading ? (
-          <div className="rounded-3xl border border-[#DCECE9] bg-[#F2EAE0] p-8 text-center text-sm text-[#b8985b]">
-            Loading product details...
+          <div className="space-y-10">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton
+                  key={`product-breadcrumb-skeleton-${index}`}
+                  className="h-4 w-24"
+                />
+              ))}
+            </div>
+
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+              <div className="space-y-4">
+                <Skeleton
+                  className="h-[420px] w-full rounded-3xl"
+                  rounded={false}
+                />
+                <div className="grid grid-cols-5 gap-3">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Skeleton
+                      key={`product-gallery-skeleton-${index}`}
+                      className="h-20 w-full rounded-2xl"
+                      rounded={false}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-sm">
+                <Skeleton className="h-6 w-28" />
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-5 w-1/2" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton
+                  className="h-10 w-full rounded-full"
+                  rounded={false}
+                />
+                <Skeleton
+                  className="h-10 w-full rounded-full"
+                  rounded={false}
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+              <div className="space-y-3 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-sm">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <Skeleton
+                    key={`product-info-skeleton-${index}`}
+                    className="h-4 w-full"
+                  />
+                ))}
+              </div>
+              <div className="space-y-3 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-sm">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <Skeleton
+                    key={`product-highlight-skeleton-${index}`}
+                    className="h-4 w-full"
+                  />
+                ))}
+              </div>
+            </div>
+
+            <section className="space-y-6">
+              <Skeleton className="h-6 w-40" />
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <Skeleton
+                    key={`product-related-skeleton-${index}`}
+                    className="h-44 w-full rounded-2xl"
+                    rounded={false}
+                  />
+                ))}
+              </div>
+            </section>
+
+            <div className="flex justify-center pt-2">
+              <Loader label="Preparing product details" />
+            </div>
           </div>
         ) : error ? (
           <div className="rounded-3xl border border-rose-200 bg-rose-50 p-8 text-center text-sm text-rose-700">
