@@ -102,29 +102,23 @@ const Footer = () => {
               HELP & SUPPORT
             </h4>
             <ul className="flex flex-col space-y-2">
-              <Link to="/track-order">
-                <a
-                  href="/track-order"
-                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
-                >
-                  Track Order
-                </a>
+              <Link
+                to="/track-order"
+                className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+              >
+                Track Order
               </Link>
-              <Link to="/return-and-refund-policy">
-                <a
-                  href="/returns-refunds"
-                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
-                >
-                  Returns & Refunds
-                </a>
+              <Link
+                to="/return-and-refund-policy"
+                className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+              >
+                Returns & Refunds
               </Link>
-              <Link to="FAQs">
-                <a
-                  href="/faqs"
-                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
-                >
-                  FAQs
-                </a>
+              <Link
+                to="/FAQs"
+                className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+              >
+                FAQs
               </Link>
             </ul>
           </div>
@@ -135,37 +129,27 @@ const Footer = () => {
               COMPANY
             </h4>
             <ul className="flex flex-col space-y-2">
-              <Link to="our-story">
-                <a
-                  href="/our-story"
-                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
-                >
-                  Our Story
-                </a>
+              <Link
+                to="our-story"
+                className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+              ></Link>
+              <Link
+                to="/career-page"
+                className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+              >
+                Careers
               </Link>
-              <Link to="career-page">
-                <a
-                  href="/careers"
-                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
-                >
-                  Careers
-                </a>
+              <Link
+                to="/press"
+                className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+              >
+                Press
               </Link>
-              <Link to="press">
-                <a
-                  href="/press"
-                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
-                >
-                  Press
-                </a>
-              </Link>
-              <Link to="contact-us">
-                <a
-                  href="/contact"
-                  className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
-                >
-                  Contact
-                </a>
+              <Link
+                to="contact-us"
+                className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+              >
+                Contact
               </Link>
             </ul>
           </div>
@@ -177,7 +161,7 @@ const Footer = () => {
             {/* Social Media Icons */}
             <div className="flex space-x-4">
               <a
-                href="https://instagram.com"
+                // href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
@@ -185,7 +169,7 @@ const Footer = () => {
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href="https://facebook.com"
+                // href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
@@ -193,7 +177,7 @@ const Footer = () => {
                 <Facebook className="w-5 h-5" />
               </a>
               <a
-                href="https://twitter.com"
+                // href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
@@ -201,7 +185,7 @@ const Footer = () => {
                 <Twitter className="w-5 h-5" />
               </a>
               <a
-                href="https://linkedin.com"
+                // href="https://linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
