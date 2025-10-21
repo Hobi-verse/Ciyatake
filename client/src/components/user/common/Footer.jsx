@@ -11,13 +11,14 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
   return (
     <footer className="bg-[#f5f1e8] text-gray-800">
       <div className="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-16">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           {/* Brand Section */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2" onClick={()=>navigate("/")}>
               <ShoppingBag className="w-8 h-8 text-[#8b7355]" />
               <h3 className="text-2xl font-semibold text-[#8b7355]">
                 Ciyatake
