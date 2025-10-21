@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import UserNavbar from "../../components/user/common/UserNavbar";
 import Button from "../../components/common/Button";
 import Loader from "../../components/common/Loader.jsx";
@@ -309,12 +309,12 @@ const ForgetPass = () => {
           </div>
 
           <div className="mt-6 text-right text-sm">
-            <a
-              href="/login"
+            <Link
+              to="/login"
               className="font-semibold text-[#b8985b] transition hover:text-[#a9894f]"
             >
               Back to login
-            </a>
+            </Link>
           </div>
         </form>
       </div>
