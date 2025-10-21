@@ -55,44 +55,44 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4 text-[#8b7355]">SHOP</h4>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="/shop/women"
+                <Link
+                  to="/"
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Women
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/shop/men"
+                <Link
+                  to="/"
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Men
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/shop/kids"
+                <Link
+                  to="/"
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Kids
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/shop/accessories"
+                <Link
+                  to="/"
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Accessories
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/shop/home-living"
+                <Link
+                  to="/"
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Home & Living
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
