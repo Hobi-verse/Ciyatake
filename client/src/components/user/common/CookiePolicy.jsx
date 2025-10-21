@@ -1,5 +1,6 @@
-import { Cookie, Shield, Settings, Eye, BarChart, Target, CheckCircle, Info, Globe, Calendar, AlertCircle } from 'lucide-react';
+import { Cookie, Shield, Settings, Eye, BarChart, Target, CheckCircle, Info, Globe, Calendar, AlertCircle, Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { HashLink } from 'react-router-hash-link';
 
 const CookiePolicy = () => {
   const lastUpdated = "October 19, 2025";
@@ -9,6 +10,7 @@ const CookiePolicy = () => {
     functional: true,
     marketing: true
   });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleToggle = (category) => {
     if (category === 'essential') return;
@@ -211,211 +213,6 @@ You can control third-party cookies through:
 
 **Data Sharing:**
 When third-party cookies are set, information may be shared with those parties according to their privacy policies.`
-    },
-    {
-      id: 7,
-      icon: Settings,
-      title: "Managing Your Cookie Preferences",
-      content: `You have several options for controlling cookies on our website:
-
-**Cookie Settings Panel:**
-Use our cookie settings tool (available below) to:
-- View detailed information about each cookie category
-- Enable or disable optional cookie categories
-- Save your preferences for future visits
-- Update your choices at any time
-
-**Browser Settings:**
-All modern browsers allow you to control cookies:
-- Block all cookies
-- Block third-party cookies only
-- Delete cookies after each session
-- Receive notifications before cookies are set
-- View and delete existing cookies
-
-**Browser-Specific Instructions:**
-- Chrome: Settings > Privacy and Security > Cookies
-- Firefox: Settings > Privacy & Security > Cookies
-- Safari: Preferences > Privacy > Cookies
-- Edge: Settings > Privacy > Cookies
-
-**Mobile Devices:**
-- iOS: Settings > Safari > Block Cookies
-- Android: Browser Settings > Privacy > Cookies
-
-**Impact of Disabling Cookies:**
-- Essential cookies: Website may not function properly
-- Performance cookies: We cannot improve your experience
-- Functional cookies: You'll need to re-enter preferences
-- Marketing cookies: Advertisements will be less relevant
-
-**Privacy Tools:**
-Consider using privacy-focused browsers (Brave, Firefox Focus) or browser extensions that block tracking cookies.`
-    },
-    {
-      id: 8,
-      icon: Info,
-      title: "Cookies We Use",
-      content: `Here is a detailed list of cookies used on Ciyatake:
-
-**Essential Cookies:**
-- _session: Maintains your login session (Session)
-- cart_token: Stores your shopping cart items (7 days)
-- csrf_token: Security protection against attacks (Session)
-- cookie_consent: Remembers your cookie preferences (1 year)
-
-**Performance Cookies:**
-- _ga: Google Analytics visitor tracking (2 years)
-- _gid: Google Analytics session tracking (24 hours)
-- _gat: Google Analytics request throttling (1 minute)
-- analytics_session: Internal analytics (30 days)
-
-**Functional Cookies:**
-- language_pref: Your language selection (1 year)
-- currency_pref: Your currency preference (1 year)
-- view_mode: Grid/list view preference (30 days)
-- recently_viewed: Recently viewed products (30 days)
-
-**Marketing Cookies:**
-- _fbp: Facebook Pixel tracking (90 days)
-- _gcl_au: Google Ads conversion tracking (90 days)
-- retargeting_id: Retargeting campaign tracking (90 days)
-- ad_preferences: Your advertising preferences (1 year)
-
-**Third-Party Cookies:**
-Various cookies set by third-party services integrated into our website. See third-party privacy policies for details.
-
-**Cookie Updates:**
-This list may change as we update our services. We will notify you of significant changes to our cookie practices.`
-    },
-    {
-      id: 9,
-      icon: Globe,
-      title: "International Data Transfers",
-      content: `Some cookies may result in data being transferred internationally:
-
-**Data Processing Locations:**
-- Our servers are primarily located in India
-- Some third-party services process data in other countries
-- Analytics and advertising partners may have global operations
-- Data may be transferred to countries with different privacy laws
-
-**Legal Basis:**
-- Standard contractual clauses
-- Privacy Shield frameworks (where applicable)
-- Adequate data protection safeguards
-- Your consent for optional cookies
-
-**Data Protection:**
-We ensure that international data transfers comply with applicable data protection laws and that your data receives adequate protection regardless of location.
-
-**Third-Party Transfers:**
-When you consent to third-party cookies, those parties may transfer your data internationally according to their privacy policies.
-
-**Your Rights:**
-You have rights regarding your data regardless of where it is processed:
-- Access your data
-- Correct inaccuracies
-- Request deletion
-- Object to processing
-- Withdraw consent
-
-**Questions:**
-Contact us at privacy@ciyatake.com for information about specific data transfers and safeguards in place.`
-    },
-    {
-      id: 10,
-      icon: Shield,
-      title: "Children's Privacy",
-      content: `We are committed to protecting children's privacy:
-
-**Age Restrictions:**
-- Our services are not directed to children under 13
-- We do not knowingly collect data from children under 13
-- Account registration requires users to be 18 or older
-
-**Parental Guidance:**
-- Parents should monitor their children's online activities
-- Use parental control tools and browser restrictions
-- Educate children about online privacy
-- Supervise use of our website
-
-**If You're a Parent:**
-If you believe we have collected information from a child under 13:
-- Contact us immediately at privacy@ciyatake.com
-- We will promptly delete the information
-- We will take steps to prevent future collection
-
-**Cookie Controls:**
-Parents can disable cookies through browser settings to prevent tracking of children's online activities.
-
-**Compliance:**
-We comply with COPPA (Children's Online Privacy Protection Act) and similar laws protecting children's privacy.`
-    },
-    {
-      id: 11,
-      icon: AlertCircle,
-      title: "Changes to Cookie Policy",
-      content: `We may update this Cookie Policy from time to time:
-
-**Notification of Changes:**
-- Updated policy posted on this page
-- "Last Updated" date will be revised
-- Significant changes may be communicated via email or website notice
-- Cookie consent banner may be shown again for material changes
-
-**Your Options:**
-- Review this policy periodically
-- Update your cookie preferences as needed
-- Contact us with questions about changes
-- Withdraw consent for optional cookies at any time
-
-**Reason for Updates:**
-- New cookies or technologies implemented
-- Changes to third-party services
-- Legal or regulatory requirements
-- Improvements to cookie practices
-
-**Continued Use:**
-Your continued use of our website after policy changes constitutes acceptance of the updated Cookie Policy.
-
-**Historical Versions:**
-Previous versions of this policy may be available upon request for reference purposes.`
-    },
-    {
-      id: 12,
-      icon: Info,
-      title: "Contact Us",
-      content: `If you have questions about our use of cookies:
-
-**Privacy Team:**
-- Email: privacy@ciyatake.com
-- Response time: Within 2-3 business days
-
-**Customer Service:**
-- Email: care@ciyatake.com
-- Phone: +91 98765 43210
-- Hours: Monday-Saturday, 9:00 AM - 6:00 PM IST
-
-**Mailing Address:**
-Ciyatake
-123 Fashion Street, Andheri East
-Mumbai, Maharashtra 400069
-India
-
-**Data Protection Officer:**
-For data protection inquiries, contact our Data Protection Officer at dpo@ciyatake.com
-
-**Your Rights:**
-We will help you exercise your rights regarding cookies and data:
-- Access information we collect
-- Update cookie preferences
-- Request deletion of data
-- Object to certain processing
-- Lodge complaints with authorities
-
-**Feedback:**
-We welcome your feedback about our cookie practices and privacy policies.`
     }
   ];
 
@@ -454,6 +251,10 @@ We welcome your feedback about our cookie practices and privacy policies.`
     }
   ];
 
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#f5f1ed]">
       {/* Hero Section */}
@@ -473,24 +274,54 @@ We welcome your feedback about our cookie practices and privacy policies.`
         </div>
       </section>
 
-      {/* Quick Links */}
-      <section className="sticky top-0 z-10 px-4 py-8 bg-white shadow-sm">
+      {/* Navigation */}
+      <section className="sticky top-0 z-10 px-4 py-4 bg-white shadow-sm md:py-8">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-wrap justify-center gap-3">
+          {/* Mobile Menu */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="flex items-center justify-between w-full px-4 py-3 text-[#8b7355] hover:text-[#6b5847] bg-[#f5f1ed] rounded-lg transition-colors"
+            >
+              <span className="font-semibold">Quick Navigation</span>
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
+            {mobileMenuOpen && (
+              <div className="mt-2 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg max-h-96">
+                {sections.map((section) => (
+                  <HashLink
+                    key={section.id}
+                    smooth
+                    to={`#section-${section.id}`}
+                    onClick={closeMobileMenu}
+                    className="flex items-center gap-3 px-4 py-3 text-[#8b7355] hover:text-[#6b5847] hover:bg-[#f5f1ed] transition-colors border-b border-gray-100 last:border-b-0"
+                  >
+                    <section.icon className="flex-shrink-0 w-4 h-4" />
+                    <span className="text-sm font-medium">{section.title}</span>
+                  </HashLink>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Menu */}
+          <div className="flex-wrap justify-center hidden gap-3 md:flex">
             {sections.map((section) => (
-              <a
+              <HashLink
                 key={section.id}
-                href={`#section-${section.id}`}
+                smooth
+                to={`#section-${section.id}`}
                 className="text-sm text-[#8b7355] hover:text-[#6b5847] hover:bg-[#f5f1ed] px-4 py-2 rounded-lg transition-colors"
               >
                 {section.title}
-              </a>
+              </HashLink>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Cookie Preferences Panel */}
+      {/* Preferences Panel */}
       <section className="px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <div className="p-8 bg-white rounded-lg shadow-md">
@@ -524,16 +355,12 @@ We welcome your feedback about our cookie practices and privacy policies.`
                         <button
                           onClick={() => handleToggle(category.name)}
                           className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                            cookieSettings[category.name]
-                              ? 'bg-[#8b7355]'
-                              : 'bg-gray-300'
+                            cookieSettings[category.name] ? 'bg-[#8b7355]' : 'bg-gray-300'
                           }`}
                         >
                           <span
                             className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                              cookieSettings[category.name]
-                                ? 'translate-x-7'
-                                : 'translate-x-1'
+                              cookieSettings[category.name] ? 'translate-x-7' : 'translate-x-1'
                             }`}
                           />
                         </button>
@@ -555,15 +382,11 @@ We welcome your feedback about our cookie practices and privacy policies.`
         </div>
       </section>
 
-      {/* Main Content */}
+      {/* Content Sections */}
       <section className="px-4 py-16">
         <div className="max-w-4xl mx-auto space-y-12">
           {sections.map((section) => (
-            <div
-              key={section.id}
-              id={`section-${section.id}`}
-              className="p-8 bg-white rounded-lg shadow-sm scroll-mt-24"
-            >
+            <div key={section.id} id={`section-${section.id}`} className="p-8 bg-white rounded-lg shadow-sm scroll-mt-24">
               <div className="flex items-start gap-4 mb-6">
                 <div className="bg-[#f5f1ed] p-3 rounded-lg flex-shrink-0">
                   <section.icon className="w-8 h-8 text-[#8b7355]" />
@@ -580,7 +403,7 @@ We welcome your feedback about our cookie practices and privacy policies.`
         </div>
       </section>
 
-      {/* Quick Summary */}
+      {/* Summary */}
       <section className="px-4 py-16 bg-white">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-[#6b5847] text-center mb-12">Cookie Policy Summary</h2>
@@ -588,30 +411,22 @@ We welcome your feedback about our cookie practices and privacy policies.`
             <div className="bg-[#f5f1ed] p-6 rounded-lg">
               <CheckCircle className="w-8 h-8 text-[#8b7355] mb-3" />
               <h3 className="text-xl font-semibold text-[#6b5847] mb-2">Transparency</h3>
-              <p className="text-[#8b7355]">
-                We clearly explain what cookies we use, why we use them, and how they benefit you.
-              </p>
+              <p className="text-[#8b7355]">We clearly explain what cookies we use, why we use them, and how they benefit you.</p>
             </div>
             <div className="bg-[#f5f1ed] p-6 rounded-lg">
               <CheckCircle className="w-8 h-8 text-[#8b7355] mb-3" />
               <h3 className="text-xl font-semibold text-[#6b5847] mb-2">Your Control</h3>
-              <p className="text-[#8b7355]">
-                Manage your cookie preferences anytime through our settings panel or browser controls.
-              </p>
+              <p className="text-[#8b7355]">Manage your cookie preferences anytime through our settings panel or browser controls.</p>
             </div>
             <div className="bg-[#f5f1ed] p-6 rounded-lg">
               <CheckCircle className="w-8 h-8 text-[#8b7355] mb-3" />
               <h3 className="text-xl font-semibold text-[#6b5847] mb-2">Privacy Protection</h3>
-              <p className="text-[#8b7355]">
-                We respect your privacy and only use cookies that improve your shopping experience.
-              </p>
+              <p className="text-[#8b7355]">We respect your privacy and only use cookies that improve your shopping experience.</p>
             </div>
             <div className="bg-[#f5f1ed] p-6 rounded-lg">
               <CheckCircle className="w-8 h-8 text-[#8b7355] mb-3" />
               <h3 className="text-xl font-semibold text-[#6b5847] mb-2">Regular Updates</h3>
-              <p className="text-[#8b7355]">
-                We keep this policy current and notify you of any significant changes to our practices.
-              </p>
+              <p className="text-[#8b7355]">We keep this policy current and notify you of any significant changes to our practices.</p>
             </div>
           </div>
         </div>
@@ -637,7 +452,7 @@ We welcome your feedback about our cookie practices and privacy policies.`
         </div>
       </section>
 
-      {/* Footer Note */}
+      {/* Footer */}
       <section className="px-4 py-8 bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-[#8b7355] text-sm">

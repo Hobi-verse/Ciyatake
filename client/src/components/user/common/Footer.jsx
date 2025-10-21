@@ -11,6 +11,10 @@ import {
 import { Link } from "react-router-dom";
 
 const Footer = () => {
+  const handleLinkClick = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <footer className="bg-[#f5f1e8] text-gray-800">
       <div className="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-16">
@@ -19,9 +23,7 @@ const Footer = () => {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <ShoppingBag className="w-8 h-8 text-[#8b7355]" />
-              <h3 className="text-2xl font-semibold text-[#8b7355]">
-                Ciyatake
-              </h3>
+              <h3 className="text-2xl font-semibold text-[#8b7355]">Ciyatake</h3>
             </div>
             <p className="text-sm leading-relaxed text-gray-600">
               Thoughtfully curated fashion and lifestyle essentials to help you
@@ -54,44 +56,49 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4 text-[#8b7355]">SHOP</h4>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="/shop/women"
+                <Link
+                  to="/shop/women"
+                  onClick={handleLinkClick}
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Women
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/shop/men"
+                <Link
+                  to="/shop/men"
+                  onClick={handleLinkClick}
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Men
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/shop/kids"
+                <Link
+                  to="/shop/kids"
+                  onClick={handleLinkClick}
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Kids
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/shop/accessories"
+                <Link
+                  to="/shop/accessories"
+                  onClick={handleLinkClick}
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Accessories
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/shop/home-living"
+                <Link
+                  to="/shop/home-living"
+                  onClick={handleLinkClick}
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Home & Living
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -104,18 +111,21 @@ const Footer = () => {
             <ul className="flex flex-col space-y-2">
               <Link
                 to="/track-order"
+                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Track Order
               </Link>
               <Link
                 to="/return-and-refund-policy"
+                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Returns & Refunds
               </Link>
               <Link
                 to="/FAQs"
+                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 FAQs
@@ -130,23 +140,29 @@ const Footer = () => {
             </h4>
             <ul className="flex flex-col space-y-2">
               <Link
-                to="our-story"
+                to="/our-story"
+                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
-              ></Link>
+              >
+                Our Story
+              </Link>
               <Link
                 to="/career-page"
+                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Careers
               </Link>
               <Link
                 to="/press"
+                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Press
               </Link>
               <Link
-                to="contact-us"
+                to="/contact-us"
+                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Contact
@@ -161,7 +177,7 @@ const Footer = () => {
             {/* Social Media Icons */}
             <div className="flex space-x-4">
               <a
-                // href="https://instagram.com"
+                href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
@@ -169,7 +185,7 @@ const Footer = () => {
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                // href="https://facebook.com"
+                href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
@@ -177,7 +193,7 @@ const Footer = () => {
                 <Facebook className="w-5 h-5" />
               </a>
               <a
-                // href="https://twitter.com"
+                href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
@@ -185,7 +201,7 @@ const Footer = () => {
                 <Twitter className="w-5 h-5" />
               </a>
               <a
-                // href="https://linkedin.com"
+                href="https://linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
@@ -196,26 +212,29 @@ const Footer = () => {
 
             {/* Legal Links */}
             <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600 md:justify-end">
-              <a
-                href="/privacy-policy"
+              <Link
+                to="/privacy-policy"
+                onClick={handleLinkClick}
                 className="hover:text-[#8b7355] transition-colors"
               >
                 Privacy Policy
-              </a>
+              </Link>
               <span className="hidden sm:inline">•</span>
-              <a
-                href="/terms-of-service"
+              <Link
+                to="/terms-of-service"
+                onClick={handleLinkClick}
                 className="hover:text-[#8b7355] transition-colors"
               >
                 Terms of Service
-              </a>
+              </Link>
               <span className="hidden sm:inline">•</span>
-              <a
-                href="/cookie-policy"
+              <Link
+                to="/cookie-policy"
+                onClick={handleLinkClick}
                 className="hover:text-[#8b7355] transition-colors"
               >
                 Cookie Policy
-              </a>
+              </Link>
             </div>
           </div>
 

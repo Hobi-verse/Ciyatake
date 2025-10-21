@@ -10,6 +10,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const OurStory = () => {
   useEffect(() => {
@@ -20,13 +21,13 @@ const OurStory = () => {
       
       {/* Hero Section */}
       <header className="relative bg-gradient-to-br from-[#8b7355] to-[#6b5847] text-white py-20 px-4 shadow-lg overflow-hidden">
-          <a
-          href="/"
+          <Link
+          to="/"
           className="inline-flex items-center gap-2 px-4 py-2 mb-6 font-semibold transition-all duration-200 border-2 border-white rounded-lg shadow-md sm:mb-8 hover:text-black hover:shadow-xl hover:scale-105 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span>Back to Home</span>
-        </a>
+        </Link>
         <div className="absolute inset-0 opacity-10">
           <div className="absolute w-32 h-32 bg-white rounded-full top-10 left-10 blur-3xl"></div>
           <div className="absolute w-40 h-40 bg-white rounded-full bottom-10 right-10 blur-3xl"></div>

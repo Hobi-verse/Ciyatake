@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const TrackOrder = () => {
   const [orderNumber, setOrderNumber] = useState("");
@@ -107,13 +108,13 @@ const TrackOrder = () => {
   return (
     <div className="min-h-screen bg-[#faf8f5]">
       <div className="max-w-5xl px-4 py-8 mx-auto sm:px-6 lg:px-8 sm:py-12">
-        <a
-          href="/"
+        <Link
+          to="/"
           className="inline-flex items-center text-[#8b7355] hover:text-[#a08968] mb-6 sm:mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
-        </a>
+        </Link>
 
         <h1 className="text-3xl sm:text-4xl font-bold text-[#8b7355] mb-6 sm:mb-8">
           Track Your Order
