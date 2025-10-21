@@ -8,9 +8,10 @@ import {
   Twitter,
   Linkedin,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
   return (
     <footer className="bg-[#f5f1e8] text-gray-800">
       <div className="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-16">
@@ -196,26 +197,26 @@ const Footer = () => {
 
             {/* Legal Links */}
             <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600 md:justify-end">
-              <a
-                href="/privacy-policy"
+              <Link
+                to='/privacy-policy'
                 className="hover:text-[#8b7355] transition-colors"
               >
                 Privacy Policy
-              </a>
+              </Link>
               <span className="hidden sm:inline">•</span>
-              <a
-                href="/terms-of-service"
+              <Link
+                to="/terms-of-service"
                 className="hover:text-[#8b7355] transition-colors"
               >
                 Terms of Service
-              </a>
+              </Link>
               <span className="hidden sm:inline">•</span>
-              <a
-                href="/cookie-policy"
+              <Link
+                to="/cookie-policy"
                 className="hover:text-[#8b7355] transition-colors"
               >
                 Cookie Policy
-              </a>
+              </Link>
             </div>
           </div>
 
