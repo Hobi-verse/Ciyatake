@@ -4,7 +4,6 @@ import AdvancedFilters, {
   SORT_OPTIONS,
 } from "../../components/common/AdvancedFilters.jsx";
 import ProductGrid from "../../components/common/ProductGrid.jsx";
-import MobileBottomNav from "../../components/common/MobileBottomNav.jsx";
 import Loader from "../../components/common/Loader.jsx";
 import Skeleton from "../../components/common/Skeleton.jsx";
 import { fetchProducts } from "../../api/catalog.js";
@@ -1010,7 +1009,6 @@ const HomePage = ({ isLoggedIn }) => {
         </button>
       )}
 
-      <MobileBottomNav />
     </div>
   );
 };

@@ -37,6 +37,7 @@ import Press from "./components/user/common/Company/Press.jsx";
 import PrivacyPolicy from "./components/user/common/PrivacyPolicy.jsx";
 import TermsServices from "./components/user/common/TermsServices.jsx";
 import CookiePolicy from "./components/user/common/CookiePolicy.jsx";
+import MobileBottomNav from "./components/common/MobileBottomNav.jsx";
 
 function App() {
   const [authSession, setAuthSession] = useState(() => getStoredAuthSession());
@@ -176,6 +177,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
+      <MobileBottomNav />
       <Footer />
     </div>
   );
