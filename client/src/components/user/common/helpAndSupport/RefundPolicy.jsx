@@ -10,6 +10,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const RefundPolicy = () => {
   useEffect(() => {
@@ -21,13 +22,13 @@ const RefundPolicy = () => {
 
       {/* Header */}
       <header className="bg-[#8b7355] text-white py-6 px-4 shadow-md">
-          <a
-          href="/"
+          <Link
+          to="/"
           className="inline-flex items-center gap-2 px-4 py-2 mb-6 font-semibold transition-all duration-200 border-2 border-white rounded-lg shadow-md sm:mb-8 hover:text-black hover:shadow-xl hover:scale-105 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span>Back to Home</span>
-        </a>
+        </Link>
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold">Returns & Refund Policy</h1>
           <p className="text-[#f5f1ed] mt-2">
