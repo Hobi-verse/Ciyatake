@@ -20,7 +20,9 @@ const Footer = () => {
           <div className="space-y-4">
             <div className="flex items-center space-x-2" onClick={()=>navigate("/")}>
               <ShoppingBag className="w-8 h-8 text-[#8b7355]" />
-              <h3 className="text-2xl font-semibold text-[#8b7355]">Ciyatake</h3>
+              <h3 className="text-2xl font-semibold text-[#8b7355]">
+                Ciyatake
+              </h3>
             </div>
             <p className="text-sm leading-relaxed text-gray-600">
               Thoughtfully curated fashion and lifestyle essentials to help you
@@ -103,21 +105,18 @@ const Footer = () => {
             <ul className="flex flex-col space-y-2">
               <Link
                 to="/track-order"
-                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Track Order
               </Link>
               <Link
                 to="/return-and-refund-policy"
-                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Returns & Refunds
               </Link>
               <Link
                 to="/FAQs"
-                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 FAQs
@@ -132,29 +131,23 @@ const Footer = () => {
             </h4>
             <ul className="flex flex-col space-y-2">
               <Link
-                to="/our-story"
-                onClick={handleLinkClick}
+                to="our-story"
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
-              >
-                Our Story
-              </Link>
+              ></Link>
               <Link
                 to="/career-page"
-                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Careers
               </Link>
               <Link
                 to="/press"
-                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Press
               </Link>
               <Link
-                to="/contact-us"
-                onClick={handleLinkClick}
+                to="contact-us"
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Contact
