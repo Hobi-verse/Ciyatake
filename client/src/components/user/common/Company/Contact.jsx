@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import {HashLink} from "react-router-hash-link";
-import { Link } from "react-router-dom";
 import {
   Mail,
   Phone,
@@ -18,7 +16,7 @@ import {
   RefreshCw,
   HelpCircle,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
 
 const Contact = () => {
@@ -158,13 +156,13 @@ const Contact = () => {
     <div className="min-h-screen bg-[#f5f1ed]">
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-[#8b7355] to-[#6b5847] text-white py-20 px-4">
-        <Link
-          to="/"
+        <a
+          href="/"
           className="inline-flex items-center gap-2 px-4 py-2 mb-6 font-semibold transition-all duration-200 border-2 border-white rounded-lg shadow-md sm:mb-8 hover:text-black hover:shadow-xl hover:scale-105 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span>Back to Home</span>
-        </Link>
+        </a>
         <div className="max-w-6xl mx-auto text-center">
           <div className="flex justify-center mb-6">
             <MessageSquare className="w-16 h-16" />
@@ -343,12 +341,12 @@ const Contact = () => {
                             {info.title}
                           </h3>
                           {info.link ? (
-                            <HashLink
-                              to={info.link}
+                            <a
+                              href={info.link}
                               className="text-[#8b7355] hover:text-[#6b5847] block"
                             >
                               {info.content}
-                            </HashLink>
+                            </a>
                           ) : (
                             <p className="text-[#8b7355]">{info.content}</p>
                           )}
@@ -369,16 +367,16 @@ const Contact = () => {
                 </h3>
                 <div className="flex gap-4">
                   {socialLinks.map((social, index) => (
-                    <HashLink
+                    <a
                       key={index}
-                      to={social.link}
+                      href={social.link}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="bg-[#f5f1ed] p-3 rounded-lg hover:bg-[#8b7355] hover:text-white transition-colors"
                       aria-label={social.label}
                     >
                       <social.icon className="w-6 h-6" />
-                    </HashLink>
+                    </a>
                   ))}
                 </div>
               </div>
@@ -418,9 +416,9 @@ const Contact = () => {
           </p>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {quickLinks.map((link, index) => (
-              <HashLink
+              <a
                 key={index}
-                to={link.link}
+                href={link.link}
                 className="bg-[#f5f1ed] p-6 rounded-lg hover:shadow-md transition-all hover:-translate-y-1 group"
               >
                 <link.icon className="w-10 h-10 text-[#8b7355] mb-4 group-hover:scale-110 transition-transform" />
@@ -434,7 +432,7 @@ const Contact = () => {
                   Learn More
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </span>
-              </HashLink>
+              </a>
             ))}
           </div>
         </div>
