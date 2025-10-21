@@ -34,6 +34,9 @@ import OurStory from "./components/user/common/Company/OurStory.jsx";
 import Careers from "./components/user/common/Company/Careers.jsx";
 import Contact from "./components/user/common/Company/Contact.jsx";
 import Press from "./components/user/common/Company/Press.jsx";
+import PrivacyPolicy from "./components/user/common/PrivacyPolicy.jsx";
+import TermsServices from "./components/user/common/TermsServices.jsx";
+import CookiePolicy from "./components/user/common/CookiePolicy.jsx";
 
 function App() {
   const [authSession, setAuthSession] = useState(() => getStoredAuthSession());
@@ -92,6 +95,9 @@ function App() {
           <Route path="/career-page" element={<Careers />} />
           <Route path="/contact-us" element={<Contact />} />
           <Route path="/press" element={<Press />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsServices />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route
             path="/products/:productId"
             element={<ProductDetailsPage isLoggedIn={isLoggedIn} />}
