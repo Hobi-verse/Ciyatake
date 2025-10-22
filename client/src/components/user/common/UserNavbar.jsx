@@ -634,8 +634,20 @@ const UserNavbar = ({
             
 
 
-            {/* Mobile menu (three dots) and logout icon beside it */}
+            {/* Mobile menu (three dots) and logout icon, logout on the left */}
             <div className="flex items-center gap-2 lg:hidden">
+              {isLoggedIn && (
+                <button
+                  type="button"
+                  onClick={performLogout}
+                  disabled={isLoggingOut}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#b8985b] bg-[#b8985b] text-white transition hover:bg-[#a9894f] disabled:opacity-60 disabled:cursor-not-allowed"
+                  title={isLoggingOut ? 'Logging out...' : 'Log out'}
+                  style={{ zIndex: 20 }}
+                >
+                  <img src={logoutIcon} alt="Logout" className="h-5 w-5" />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen((previous) => !previous)}
@@ -650,18 +662,6 @@ const UserNavbar = ({
                   className="h-5 w-5"
                 />
               </button>
-              {isLoggedIn && (
-                <button
-                  type="button"
-                  onClick={performLogout}
-                  disabled={isLoggingOut}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#b8985b] bg-[#b8985b] text-white transition hover:bg-[#a9894f] disabled:opacity-60 disabled:cursor-not-allowed"
-                  title={isLoggingOut ? 'Logging out...' : 'Log out'}
-                  style={{ zIndex: 20 }}
-                >
-                  <img src={logoutIcon} alt="Logout" className="h-5 w-5" />
-                </button>
-              )}
             </div>
 
             
