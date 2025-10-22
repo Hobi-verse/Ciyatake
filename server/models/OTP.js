@@ -1,30 +1,23 @@
 const mongoose = require("mongoose");
-const { sendOTPEmail } = require("../utils/emailService");
+const mailSender = require("../utils/mailSender");
 
-// Define OTP schema for storing verification codes
-const otpSchema = new mongoose.Schema(
+const OTPSchema = new mongoose.Schema(
   {
-    // Email address for which OTP is generated
     email: {
       type: String,
       required: true,
-      trim: true,
-      lowercase: true,
     },
-    
-    // 6-digit OTP code sent to user
     otp: {
       type: String,
       required: true,
     },
-    
-    // OTP expiration time (valid for 10 minutes)
     expiresAt: {
       type: Date,
+      default: function() {
+        return new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
+      },
       required: true,
-      default: () => new Date(Date.now() + 10 * 60 * 1000), // 10 minutes from now
     },
-    
     // Track if OTP has been used to prevent reuse
     isUsed: {
       type: Boolean,
@@ -32,66 +25,60 @@ const otpSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, //Enables createdAt & updatedAt
   }
 );
 
-// Function to send verification email
+// TTL (15 mins = 900 seconds) based on createdAt
+OTPSchema.index({ createdAt: 1 }, { expireAfterSeconds: 900 });
+
+// Define a function to send the email
 async function sendVerificationEmail(email, otp) {
   try {
-    console.log(`📧 Sending OTP email to: ${email.replace(/(.{3}).*(@.*)/, '$1***$2')}`);
-    
-    const mailResponse = await sendOTPEmail(email, otp);
-    
-    console.log("✅ OTP email sent successfully:", mailResponse.messageId);
+    const subject = `Your OTP for ${process.env.APP_NAME || 'CiyaTake'} Account Verification`;
+    const text = `Your OTP for account verification is: ${otp}
+
+This OTP is valid for 15 minutes only.
+Don't share this OTP with anyone.
+
+If you didn't request this OTP, please ignore this email.
+
+Best regards,
+${process.env.APP_NAME || 'CiyaTake'} Team`;
+
+    const mailResponse = await mailSender(email, subject, text);
+    console.log("✅ Email sent successfully", mailResponse.response);
     return mailResponse;
   } catch (error) {
-    console.error("❌ Error occurred while sending OTP email:", error.message);
-    
-    // In production, you might want to log this to a monitoring service
-    if (process.env.NODE_ENV === 'production') {
-      console.error(`❌ Production OTP email failure for ${email}:`, {
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
-    }
-    
+    console.error("❌ Error occurred while sending email:", error.message);
     throw error;
   }
 }
 
-// Pre-save hook to automatically send email when OTP document is created
-otpSchema.pre("save", async function(next) {
+// Define a pre-save hook to send email before the document is saved
+OTPSchema.pre("save", async function (next) {
   try {
     // Only send email for new documents (not updates)
     if (this.isNew) {
       await sendVerificationEmail(this.email, this.otp);
+      console.log(`✅ OTP email sent successfully for: ${this.email}`);
     }
-    next();
   } catch (error) {
-    console.error("❌ Pre-save hook error:", error.message);
+    console.error("❌ Error sending verification email:", error.message);
     
     // In development, show fallback OTP and continue
     if (process.env.NODE_ENV !== "production") {
       console.log(`🔐 FALLBACK OTP for ${this.email}: ${this.otp}`);
-      next();
     } else {
       // In production, log error but continue with save to prevent 500 errors
-      // This allows the OTP to be saved even if email fails
       console.error(`❌ Production email failure for ${this.email}:`, {
         error: error.message,
-        otp: this.otp, // Log OTP for debugging in production logs
+        otp: this.otp,
         timestamp: new Date().toISOString()
       });
-      
-      // Save the OTP document anyway so user can potentially get it through logs
-      // or we can implement a fallback mechanism
-      next();
     }
   }
+  next();
 });
 
-// Automatically delete OTP document after expiration
-otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-
-module.exports = mongoose.model("OTP", otpSchema);
+module.exports = mongoose.model("OTP", OTPSchema);
