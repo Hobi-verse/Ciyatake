@@ -4,14 +4,15 @@ const nodemailer = require('nodemailer');
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // true for 465, false for other ports
+    port: 465,
+    secure: true, // use SSL since Render times out on STARTTLS
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD, // Use App Password for Gmail
     },
     tls: {
-      rejectUnauthorized: false
+      // Gmail requires a valid certificate; keep explicit false removal so defaults apply
+      rejectUnauthorized: true
     }
   });
 };
@@ -79,7 +80,7 @@ const sendOTPEmail = async (email, otp) => {
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('❌ Error sending OTP email:', error);
-    
+
     if (error.code === 'EAUTH') {
       throw new Error('Email authentication failed. Please check email credentials.');
     } else if (error.code === 'ENOTFOUND') {
