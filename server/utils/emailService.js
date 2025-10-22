@@ -9,18 +9,21 @@ const createTransporter = () => {
       pass: process.env.EMAIL_PASSWORD, // Use App Password for Gmail
     },
     // Enhanced timeout settings for production environments like Render
-    connectionTimeout: 120000, // 2 minutes
-    greetingTimeout: 60000, // 1 minute  
-    socketTimeout: 120000, // 2 minutes
+    connectionTimeout: 60000, // 1 minute (reduced for Render)
+    greetingTimeout: 30000, // 30 seconds
+    socketTimeout: 60000, // 1 minute  
     pool: true, // Use connection pooling for better performance
-    maxConnections: 5,
-    maxMessages: 100,
-    // Additional settings for reliability
+    maxConnections: 3, // Reduced for Render
+    maxMessages: 50, // Reduced for Render
+    // Additional settings for reliability on Render
     secure: true,
     requireTLS: true,
     tls: {
-      rejectUnauthorized: false // Allow self-signed certificates in some hosting environments
-    }
+      rejectUnauthorized: false // Allow self-signed certificates in hosting environments
+    },
+    // Render-specific optimizations
+    debug: process.env.NODE_ENV !== 'production', // Enable debug in development
+    logger: process.env.NODE_ENV !== 'production' // Enable logging in development
   });
 };
 
@@ -81,10 +84,10 @@ const sendOTPEmail = async (email, otp) => {
       text: `Your OTP for ${process.env.APP_NAME || 'CiyaTake'} account verification is: ${otp}. This OTP is valid for 10 minutes. Don't share this with anyone.`
     };
 
-    // Set a timeout for the send operation
+    // Set a timeout for the send operation (reduced for faster feedback)
     const emailPromise = transporter.sendMail(mailOptions);
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Email send timeout after 30 seconds')), 30000);
+      setTimeout(() => reject(new Error('Email send timeout after 15 seconds')), 15000);
     });
 
     const info = await Promise.race([emailPromise, timeoutPromise]);

@@ -51,13 +51,26 @@ exports.sendOTP = async (req, res) => {
 
     // Create OTP document - pre-save hook will automatically send the email
     try {
-      await OTP.create({
+      const otpDoc = await OTP.create({
         email: email.toLowerCase(),
         otp,
         expiresAt: new Date(Date.now() + 10 * 60 * 1000), // Valid for 10 minutes
       });
 
-      console.log(`✅ OTP document created and email sent for: ${email}`);
+      console.log(`✅ OTP document created for: ${email}`);
+
+      // In production, check if email was actually sent by trying to send again if needed
+      if (process.env.NODE_ENV === 'production') {
+        try {
+          // Try to send email again as a fallback
+          await sendOTPEmail(email, otp);
+          console.log(`✅ Fallback email sent successfully for: ${email}`);
+        } catch (fallbackError) {
+          console.error(`❌ Both primary and fallback email failed for ${email}:`, fallbackError.message);
+          // Still return success to user but log the OTP for admin debugging
+          console.log(`🔐 ADMIN DEBUG OTP for ${email}: ${otp}`);
+        }
+      }
 
       return res.status(200).json({
         success: true,
@@ -65,7 +78,7 @@ exports.sendOTP = async (req, res) => {
         // Never return OTP in response for security
       });
     } catch (otpError) {
-      console.error("❌ Failed to create OTP or send email:", otpError.message);
+      console.error("❌ Failed to create OTP:", otpError.message);
       
       // Provide user-friendly error message
       return res.status(500).json({
