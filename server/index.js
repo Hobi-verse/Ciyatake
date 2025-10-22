@@ -48,6 +48,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // Session configuration for Google OAuth
+// NOTE: In production, replace MemoryStore with Redis or MongoDB session store
 app.use(session({
   secret: process.env.SESSION_SECRET || "your-session-secret-change-in-production",
   resave: false,
@@ -56,6 +57,8 @@ app.use(session({
     secure: process.env.NODE_ENV === "production",
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   },
+  // TODO: Add Redis session store for production scaling
+  // store: new RedisStore({ ... })
 }));
 
 // Initialize Passport

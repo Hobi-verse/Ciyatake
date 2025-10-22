@@ -47,42 +47,33 @@ exports.sendOTP = async (req, res) => {
     // Generate 6-digit OTP
     const otp = generateOTP();
 
-    // Save OTP to database with expiration time
-    await OTP.create({
-      email: email.toLowerCase(),
-      otp,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // Valid for 10 minutes
-    });
+    console.log(`🔐 Generated OTP for ${email}: ${otp}`);
 
-    // Send OTP via email
+    // Create OTP document - pre-save hook will automatically send the email
     try {
-      await sendOTPEmail(email, otp);
-    } catch (emailError) {
-      console.error("❌ Email sending failed:", emailError.message);
+      await OTP.create({
+        email: email.toLowerCase(),
+        otp,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // Valid for 10 minutes
+      });
+
+      console.log(`✅ OTP document created and email sent for: ${email}`);
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP sent successfully to your email address",
+        // Never return OTP in response for security
+      });
+    } catch (otpError) {
+      console.error("❌ Failed to create OTP or send email:", otpError.message);
       
-      // Temporary fallback for development - log OTP if email fails
-      if (process.env.NODE_ENV !== "production") {
-        console.log(`🔐 FALLBACK OTP for ${email}: ${otp}`);
-        // Still return success so user can continue
-      } else {
-        // In production, provide more detailed error info in logs but generic message to user
-        console.error(`❌ Production email failure for ${email}:`, {
-          error: emailError.message,
-          code: emailError.code,
-          timestamp: new Date().toISOString()
-        });
-        return res.status(500).json({
-          success: false,
-          message: "Failed to send OTP email. Please try again.",
-        });
-      }
+      // Provide user-friendly error message
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send OTP email. Please try again.",
+      });
     }
 
-    return res.status(200).json({
-      success: true,
-      message: "OTP sent successfully to your email address",
-      // Never return OTP in response for security
-    });
   } catch (error) {
     console.error("Send OTP Error:", error);
     return res.status(500).json({

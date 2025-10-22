@@ -16,10 +16,10 @@ router.post("/webhook", handleWebhook); // Webhook should be public
 // Protected routes (require authentication)
 router.use(protect); // Apply authentication middleware to all routes below
 
-// Create Razorpay order (Step 1 - Secure)
+// Create Stripe Payment Intent (Step 1 - Secure)
 router.post("/create-order", createOrder);
 
-// Verify payment and create order (Step 2 - Secure)
+// Verify Stripe payment and create order (Step 2 - Secure)
 router.post("/verify-payment", verifyPaymentAndCreateOrder);
 
 // Get payment status

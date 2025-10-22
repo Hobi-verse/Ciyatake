@@ -3,31 +3,37 @@ const nodemailer = require('nodemailer');
 // Create reusable transporter object using Gmail SMTP
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use SSL since Render times out on STARTTLS
+    service: 'gmail', // Use Gmail service instead of manual SMTP config
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD, // Use App Password for Gmail
     },
+    // Enhanced timeout settings for production environments like Render
+    connectionTimeout: 120000, // 2 minutes
+    greetingTimeout: 60000, // 1 minute  
+    socketTimeout: 120000, // 2 minutes
+    pool: true, // Use connection pooling for better performance
+    maxConnections: 5,
+    maxMessages: 100,
+    // Additional settings for reliability
+    secure: true,
+    requireTLS: true,
     tls: {
-      // Gmail requires a valid certificate; keep explicit false removal so defaults apply
-      rejectUnauthorized: true
-    },
-    // Add timeout settings for production
-    connectionTimeout: 60000, // 60 seconds
-    greetingTimeout: 30000, // 30 seconds
-    socketTimeout: 60000, // 60 seconds
+      rejectUnauthorized: false // Allow self-signed certificates in some hosting environments
+    }
   });
 };
 
 // Send OTP email
 const sendOTPEmail = async (email, otp) => {
+  let transporter;
   try {
-    const transporter = createTransporter();
+    transporter = createTransporter();
 
-    // Test the connection first
-    await transporter.verify();
+    // Skip connection verification in production to avoid timeout issues
+    if (process.env.NODE_ENV !== 'production') {
+      await transporter.verify();
+    }
 
     const senderEmail = process.env.EMAIL_USER || 'noreply@ciyatake.com';
 
@@ -75,33 +81,36 @@ const sendOTPEmail = async (email, otp) => {
       text: `Your OTP for ${process.env.APP_NAME || 'CiyaTake'} account verification is: ${otp}. This OTP is valid for 10 minutes. Don't share this with anyone.`
     };
 
-    const info = await transporter.sendMail(mailOptions);
+    // Set a timeout for the send operation
+    const emailPromise = transporter.sendMail(mailOptions);
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Email send timeout after 30 seconds')), 30000);
+    });
+
+    const info = await Promise.race([emailPromise, timeoutPromise]);
     
     // Log success for monitoring purposes
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('✅ OTP email sent successfully:', info.messageId);
-    }
+    console.log('✅ OTP email sent successfully to:', email.replace(/(.{3}).*(@.*)/, '$1***$2'));
     
     return { success: true, messageId: info.messageId };
   } catch (error) {
     // Always log errors for debugging
     console.error('❌ Error sending OTP email:', error.message);
     
-    // Log detailed error info only in non-production
-    if (process.env.NODE_ENV !== 'production') {
-      console.error('❌ Error details:', {
-        code: error.code,
-        command: error.command,
-        response: error.response,
-        responseCode: error.responseCode
-      });
+    // Close transporter if it exists
+    if (transporter) {
+      try {
+        transporter.close();
+      } catch (closeError) {
+        // Ignore close errors
+      }
     }
 
     if (error.code === 'EAUTH') {
       throw new Error('Email authentication failed. Please check email credentials.');
     } else if (error.code === 'ENOTFOUND') {
       throw new Error('Email service not available. Please try again later.');
-    } else if (error.code === 'ETIMEDOUT') {
+    } else if (error.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
       throw new Error('Email service timeout. Please try again later.');
     } else if (error.code === 'ECONNECTION') {
       throw new Error('Cannot connect to email service. Please try again later.');
