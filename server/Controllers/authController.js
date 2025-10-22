@@ -58,13 +58,19 @@ exports.sendOTP = async (req, res) => {
     try {
       await sendOTPEmail(email, otp);
     } catch (emailError) {
-      console.error("Email sending failed:", emailError.message);
+      console.error("❌ Email sending failed:", emailError.message);
       
       // Temporary fallback for development - log OTP if email fails
       if (process.env.NODE_ENV !== "production") {
         console.log(`🔐 FALLBACK OTP for ${email}: ${otp}`);
         // Still return success so user can continue
       } else {
+        // In production, provide more detailed error info in logs but generic message to user
+        console.error(`❌ Production email failure for ${email}:`, {
+          error: emailError.message,
+          code: emailError.code,
+          timestamp: new Date().toISOString()
+        });
         return res.status(500).json({
           success: false,
           message: "Failed to send OTP email. Please try again.",

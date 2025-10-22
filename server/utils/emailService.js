@@ -13,22 +13,22 @@ const createTransporter = () => {
     tls: {
       // Gmail requires a valid certificate; keep explicit false removal so defaults apply
       rejectUnauthorized: true
-    }
+    },
+    // Add timeout settings for production
+    connectionTimeout: 60000, // 60 seconds
+    greetingTimeout: 30000, // 30 seconds
+    socketTimeout: 60000, // 60 seconds
   });
 };
 
 // Send OTP email
 const sendOTPEmail = async (email, otp) => {
   try {
-    console.log('🔧 Creating email transporter...');
     const transporter = createTransporter();
 
     // Test the connection first
-    console.log('🔧 Testing email connection...');
     await transporter.verify();
-    console.log('✅ Email connection verified');
 
-    // Use a fallback sender email for development
     const senderEmail = process.env.EMAIL_USER || 'noreply@ciyatake.com';
 
     const mailOptions = {
@@ -76,15 +76,35 @@ const sendOTPEmail = async (email, otp) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('✅ OTP email sent successfully:', info.messageId);
+    
+    // Log success for monitoring purposes
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('✅ OTP email sent successfully:', info.messageId);
+    }
+    
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error('❌ Error sending OTP email:', error);
+    // Always log errors for debugging
+    console.error('❌ Error sending OTP email:', error.message);
+    
+    // Log detailed error info only in non-production
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('❌ Error details:', {
+        code: error.code,
+        command: error.command,
+        response: error.response,
+        responseCode: error.responseCode
+      });
+    }
 
     if (error.code === 'EAUTH') {
       throw new Error('Email authentication failed. Please check email credentials.');
     } else if (error.code === 'ENOTFOUND') {
       throw new Error('Email service not available. Please try again later.');
+    } else if (error.code === 'ETIMEDOUT') {
+      throw new Error('Email service timeout. Please try again later.');
+    } else if (error.code === 'ECONNECTION') {
+      throw new Error('Cannot connect to email service. Please try again later.');
     } else {
       throw new Error(`Failed to send OTP email: ${error.message}`);
     }
