@@ -7,7 +7,7 @@ const RefundPolicy = () => (
     <ul className="list-disc ml-6 mb-4">
       <li>Refund requests must be made within 7 days of receiving your order.</li>
       <li>Items must be unused, in original packaging, and in resalable condition.</li>
-      <li>Refunds will be processed to your original payment method within 7-10 business days after approval.</li>
+      <li>Refunds will be credited to your original payment method within 7-10 business days after approval.</li>
       <li>Shipping charges are non-refundable unless the product is defective or incorrect.</li>
     </ul>
     <p className="mb-2">To request a refund, please contact our support team at <a href="mailto:care@ciyatake.com" className="text-[#8b7355] underline">care@ciyatake.com</a> with your order details.</p>

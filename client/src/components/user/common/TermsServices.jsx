@@ -604,7 +604,8 @@ For questions about these Terms, contact us at legal@ciyatake.com or through our
       <section className="px-4 py-8 bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-[#8b7355] text-sm">
-            By continuing to use Ciyatake, you acknowledge your acceptance of these Terms of Service and any future modifications.
+            By continuing to use Ciyatake, you acknowledge your acceptance of these Terms of Service and any future modifications.<br />
+            This website is owned by Sudarshan Singh.
           </p>
         </div>
       </section>

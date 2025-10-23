@@ -62,7 +62,7 @@ const Footer = () => {
                   Women
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   to="/"
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
@@ -93,7 +93,7 @@ const Footer = () => {
                 >
                   Home & Living
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
 
