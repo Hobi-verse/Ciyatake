@@ -198,7 +198,7 @@ const ProductSummary = ({
 
   const reviewCountValue = product.reviewCount ?? product.reviewsCount ?? 0;
 
-  const summaryText = product.summary ?? product.description ?? "";
+  const summaryText = product.summary ?? "";
 
   const benefits = useMemo(() => {
     if (!Array.isArray(product.benefits)) {
