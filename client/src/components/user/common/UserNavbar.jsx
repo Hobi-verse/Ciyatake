@@ -331,8 +331,8 @@ const UserNavbar = ({
 
   const genderLinks = [
     { label: "Women", value: "Women", to: "/women" },
-    { label: "Men", value: "Men", to: "/men" },
-    { label: "Kids", value: "Kids", to: "/kids" },
+    // { label: "Men", value: "Men", to: "/men" },
+    // { label: "Kids", value: "Kids", to: "/kids" },
   ];
 
   useEffect(() => {
@@ -533,12 +533,12 @@ const UserNavbar = ({
               Accessories
             </Link>
 
-            <Link
+            {/* <Link
               to="/home-living"
               className="px-2 py-2 transition hover:text-[#b8985b]"
             >
               Home & Living
-            </Link>
+            </Link> */}
           </div>
 
           {showCategoryDropdown && (
@@ -739,7 +739,7 @@ const UserNavbar = ({
                 <span aria-hidden>→</span>
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link
                 to="/home-living"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -748,7 +748,7 @@ const UserNavbar = ({
                 Home & Living
                 <span aria-hidden>→</span>
               </Link>
-            </li>
+            </li> */}
           </ul>
 
           {/* <div className="flex flex-wrap gap-3">
