@@ -248,8 +248,8 @@ Unauthorized use of our intellectual property may result in legal action and ter
 **Force Majeure:**
 We are not responsible for failures or delays due to circumstances beyond our control, including natural disasters, acts of war, government actions, or technical failures.
 
-**Jurisdiction:**
-Some jurisdictions do not allow certain limitations. These limitations may not apply to you if prohibited by law as per India.`
+**Law as per India:**
+Some jurisdictions do not allow certain limitations. These limitations may not apply to you if prohibited by law.`
     },
     {
       id: 10,
