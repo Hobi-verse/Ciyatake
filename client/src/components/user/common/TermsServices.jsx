@@ -290,7 +290,7 @@ If you encounter inappropriate content or behavior, please report it to us throu
 - Our Privacy Policy governs the collection and use of your personal data
 - By using our Services, you consent to our Privacy Policy
 - Please review our Privacy Policy for detailed information
-- Link: [Privacy Policy]
+
 
 **Data Security:**
 - We implement security measures to protect your data
