@@ -37,8 +37,7 @@ import Press from "./components/user/common/Company/Press.jsx";
 import PrivacyPolicy from "./components/user/common/PrivacyPolicy.jsx";
 import TermsServices from "./components/user/common/TermsServices.jsx";
 import CookiePolicy from "./components/user/common/CookiePolicy.jsx";
-import ReturnPolicy from "./components/user/common/helpAndSupport/ReturnPolicy.jsx";
-import ShippingPolicy from "./components/user/common/helpAndSupport/ShippingPolicy.jsx";
+import MobileBottomNav from "./components/common/MobileBottomNav.jsx";
 
 function App() {
   const [authSession, setAuthSession] = useState(() => getStoredAuthSession());
@@ -91,9 +90,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
           <Route path="/track-order" element={<TrackOrder />} />
-          <Route path="/return-policy" element={<ReturnPolicy />} />
-          <Route path="/refund-policy" element={<RefundPolicy />} />
-          <Route path="/shipping-policy" element={<ShippingPolicy />} />
+          <Route path="/return-and-refund-policy" element={<RefundPolicy />} />
           <Route path="/FAQs" element={<Faqs />} />
           <Route path="/Our-Story" element={<OurStory />} />
           <Route path="/career-page" element={<Careers />} />
