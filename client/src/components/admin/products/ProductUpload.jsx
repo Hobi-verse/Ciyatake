@@ -357,7 +357,7 @@ const prepareProductPayload = (form) => {
     title,
     description: form.description ?? "",
     category: categoryValue,
-    targetGender: form.targetGender || null,
+    targetGender: form.targetGender || form.gender || "Unisex",
     basePrice: Math.max(0, Number(form.price) || 0),
     media: buildMediaPayload(form),
     benefits: tags.slice(0, 4),
@@ -384,7 +384,7 @@ const mapProductToForm = (product) => {
   next.category = product.category ?? next.category;
   next.subCategory = product.subCategory ?? next.subCategory;
   next.gender = product.targetGender ?? next.gender;
-  next.targetGender = product.targetGender ?? next.targetGender;
+  next.targetGender = product.targetGender ?? "Unisex";
   next.price = product.basePrice ?? product.price ?? next.price;
   next.stockQuantity = product.totalStock ?? next.stockQuantity;
   next.sku = product.variants?.[0]?.sku ?? product.id ?? next.sku;
@@ -812,6 +812,7 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
     if (!form.title.trim()) nextErrors.title = "Product title is required";
     if (!form.description.trim())
       nextErrors.description = "Product description is required";
+    if (!form.gender) nextErrors.gender = "Select a target audience";
     if (!form.category) nextErrors.category = "Select a category";
     if (form.category === "other") {
       const trimmedName = form.customCategoryName.trim();

@@ -48,6 +48,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // Session configuration for Google OAuth
+// NOTE: In production, replace MemoryStore with Redis or MongoDB session store
 app.use(session({
   secret: process.env.SESSION_SECRET || "your-session-secret-change-in-production",
   resave: false,
@@ -56,6 +57,8 @@ app.use(session({
     secure: process.env.NODE_ENV === "production",
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   },
+  // TODO: Add Redis session store for production scaling
+  // store: new RedisStore({ ... })
 }));
 
 // Initialize Passport
@@ -87,6 +90,31 @@ app.get("/", (req, res) => {
   });
 });
 
+// Health check endpoint for monitoring and keep-alive
+app.get("/health", (req, res) => {
+  return res.json({
+    success: true,
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`);
+  
+  // Keep-alive ping for Render free tier (prevents service from sleeping)
+  if (process.env.NODE_ENV === 'production' && process.env.RENDER_EXTERNAL_URL) {
+    const https = require('https');
+    console.log('🏓 Keep-alive enabled for Render deployment');
+    
+    setInterval(() => {
+      const url = process.env.RENDER_EXTERNAL_URL + '/health';
+      https.get(url, (res) => {
+        console.log(`🏓 Keep-alive ping: ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.error('❌ Keep-alive ping failed:', err.message);
+      });
+    }, 14 * 60 * 1000); // Ping every 14 minutes
+  }
 });

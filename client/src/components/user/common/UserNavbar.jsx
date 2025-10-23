@@ -331,8 +331,8 @@ const UserNavbar = ({
 
   const genderLinks = [
     { label: "Women", value: "Women", to: "/women" },
-    { label: "Men", value: "Men", to: "/men" },
-    { label: "Kids", value: "Kids", to: "/kids" },
+    // { label: "Men", value: "Men", to: "/men" },
+    // { label: "Kids", value: "Kids", to: "/kids" },
   ];
 
   useEffect(() => {
@@ -533,12 +533,12 @@ const UserNavbar = ({
               Accessories
             </Link>
 
-            <Link
+            {/* <Link
               to="/home-living"
               className="px-2 py-2 transition hover:text-[#b8985b]"
             >
               Home & Living
-            </Link>
+            </Link> */}
           </div>
 
           {showCategoryDropdown && (
@@ -633,26 +633,42 @@ const UserNavbar = ({
 
             
 
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen((previous) => !previous)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#DCECE9] bg-white text-slate-600 transition hover:border-[#b8985b] hover:bg-[#F2EAE0] lg:hidden"
-              aria-expanded={isMobileMenuOpen}
-              aria-label="Toggle navigation menu"
-            >
-              <img
-                src={isMobileMenuOpen ? closeIcon : menuIcon}
-                alt=""
-                aria-hidden="true"
-                className="h-5 w-5"
-              />
-            </button>
+
+            {/* Mobile menu (three dots) and logout icon, logout on the left */}
+            <div className="flex items-center gap-2 lg:hidden">
+              {isLoggedIn && (
+                <button
+                  type="button"
+                  onClick={performLogout}
+                  disabled={isLoggingOut}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#b8985b] bg-[#b8985b] text-white transition hover:bg-[#a9894f] disabled:opacity-60 disabled:cursor-not-allowed"
+                  title={isLoggingOut ? 'Logging out...' : 'Log out'}
+                  style={{ zIndex: 20 }}
+                >
+                  <img src={logoutIcon} alt="Logout" className="h-5 w-5" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen((previous) => !previous)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#b8985b] bg-white text-slate-600 transition hover:border-[#a9894f] hover:bg-[#F2EAE0]"
+                aria-expanded={isMobileMenuOpen}
+                aria-label="Toggle navigation menu"
+              >
+                <img
+                  src={isMobileMenuOpen ? closeIcon : menuIcon}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                />
+              </button>
+            </div>
 
             
           </div>
         </div>
  
-     <div className="relative block md:hidden lg:hidden">
+  <div className="relative block md:hidden lg:hidden">
             <input
               type="text"
               placeholder="Search products..."
@@ -723,7 +739,7 @@ const UserNavbar = ({
                 <span aria-hidden>→</span>
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link
                 to="/home-living"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -732,7 +748,7 @@ const UserNavbar = ({
                 Home & Living
                 <span aria-hidden>→</span>
               </Link>
-            </li>
+            </li> */}
           </ul>
 
           {/* <div className="flex flex-wrap gap-3">

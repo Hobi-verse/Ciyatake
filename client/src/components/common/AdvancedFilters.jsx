@@ -4,8 +4,8 @@ import { fetchCategoryTree } from "../../api/categories.js";
 const GENDER_OPTIONS = [
   { value: "all", label: "All" },
   { value: "Women", label: "Women" },
-  { value: "Men", label: "Men" },
-  { value: "Kids", label: "Kids" },
+  // { value: "Men", label: "Men" },
+  // { value: "Kids", label: "Kids" },
   { value: "Unisex", label: "Unisex" },
 ];
 

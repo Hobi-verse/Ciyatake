@@ -1,8 +1,6 @@
-import { useState } from 'react';
-import { Shield, Lock, Eye, Database, UserCheck, Mail, FileText, AlertCircle, CheckCircle, Globe, Calendar, Menu, X } from 'lucide-react';
+import { Shield, Lock, Eye, Database, UserCheck, Mail, FileText, AlertCircle, CheckCircle, Globe, Calendar } from 'lucide-react';
 
 const PrivacyPolicy = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const lastUpdated = "October 19, 2025";
 
   const sections = [
@@ -325,23 +323,9 @@ We encourage you to review this privacy policy regularly to stay informed about 
     }
   ];
 
-  const scrollToSection = (id) => {
-    setIsMobileMenuOpen(false);
-    const element = document.getElementById(`section-${id}`);
-    if (element) {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-      setTimeout(() => {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#f5f1ed]">
-      {/* Header */}
+      {/* Hero Section */}
       <section className="bg-gradient-to-br from-[#8b7355] to-[#6b5847] text-white py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <div className="flex justify-center mb-6">
@@ -358,48 +342,20 @@ We encourage you to review this privacy policy regularly to stay informed about 
         </div>
       </section>
 
-      {/* Navigation */}
-      <section className="sticky top-0 z-10 px-4 py-4 bg-white shadow-sm">
+      {/* Quick Links */}
+      <section className="sticky top-0 z-10 px-4 py-8 bg-white shadow-sm">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between md:hidden">
-            <span className="text-[#8b7355] font-semibold">Quick Navigation</span>
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-[#8b7355] hover:bg-[#f5f1ed] rounded-lg transition-colors"
-              aria-label="Toggle menu"
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
-          <div className="flex-wrap justify-center hidden gap-3 md:flex">
+          <div className="flex flex-wrap justify-center gap-3">
             {sections.map((section) => (
-              <button
+              <a
                 key={section.id}
-                onClick={() => scrollToSection(section.id)}
+                href={`#section-${section.id}`}
                 className="text-sm text-[#8b7355] hover:text-[#6b5847] hover:bg-[#f5f1ed] px-4 py-2 rounded-lg transition-colors"
               >
                 {section.title}
-              </button>
+              </a>
             ))}
           </div>
-
-          {isMobileMenuOpen && (
-            <div className="md:hidden mt-4 bg-[#f5f1ed] rounded-lg p-4 max-h-96 overflow-y-auto">
-              {sections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => scrollToSection(section.id)}
-                  className="w-full text-left text-[#8b7355] hover:text-[#6b5847] hover:bg-white px-4 py-3 rounded-lg transition-colors mb-2"
-                >
-                  <div className="flex items-center gap-3">
-                    <section.icon className="flex-shrink-0 w-5 h-5" />
-                    <span>{section.title}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
@@ -428,7 +384,7 @@ We encourage you to review this privacy policy regularly to stay informed about 
         </div>
       </section>
 
-      {/* Key Privacy Points */}
+      {/* Key Points Summary */}
       <section className="px-4 py-16 bg-white">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-[#6b5847] text-center mb-12">Key Privacy Points</h2>
@@ -465,7 +421,7 @@ We encourage you to review this privacy policy regularly to stay informed about 
         </div>
       </section>
 
-      {/* Contact Info */}
+      {/* Contact Section */}
       <section className="px-4 py-16">
         <div className="max-w-4xl mx-auto">
           <div className="bg-gradient-to-br from-[#8b7355] to-[#6b5847] text-white p-8 rounded-lg">
@@ -496,7 +452,7 @@ We encourage you to review this privacy policy regularly to stay informed about 
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer Note */}
       <section className="px-4 py-8 bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-[#8b7355] text-sm">

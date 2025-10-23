@@ -113,7 +113,7 @@ const transformProductDetail = (product) => {
   return {
     ...product,
     price,
-    summary: product.summary ?? product.description ?? "",
+    summary: product.summary ?? "",
     rating,
     reviewCount,
     colors: normalizeColors(product.colors),

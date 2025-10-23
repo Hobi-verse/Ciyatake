@@ -1,39 +1,63 @@
+// Using SendGrid for email delivery
+const sgMail = require('@sendgrid/mail');
+
+// Comment out old nodemailer implementation
+/*
 const nodemailer = require('nodemailer');
 
 // Create reusable transporter object using Gmail SMTP
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // true for 465, false for other ports
+    service: 'gmail', // Use Gmail service instead of manual SMTP config
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD, // Use App Password for Gmail
     },
+    // Enhanced timeout settings for production environments like Render
+    connectionTimeout: 60000, // 1 minute (reduced for Render)
+    greetingTimeout: 30000, // 30 seconds
+    socketTimeout: 60000, // 1 minute  
+    pool: true, // Use connection pooling for better performance
+    maxConnections: 3, // Reduced for Render
+    maxMessages: 50, // Reduced for Render
+    // Additional settings for reliability on Render
+    secure: true,
+    requireTLS: true,
     tls: {
-      rejectUnauthorized: false
-    }
+      rejectUnauthorized: false // Allow self-signed certificates in hosting environments
+    },
+    // Render-specific optimizations
+    debug: process.env.NODE_ENV !== 'production', // Enable debug in development
+    logger: process.env.NODE_ENV !== 'production' // Enable logging in development
   });
 };
+*/
 
-// Send OTP email
+// Initialize SendGrid with API key
+const initializeSendGrid = () => {
+  // Use SMTP_PASS which contains the actual SendGrid API key
+  const apiKey = process.env.SMTP_PASS;
+  console.log("Using API key:", apiKey ? `${apiKey.substring(0, 7)}...` : "undefined");
+  sgMail.setApiKey(apiKey);
+};
+
+// Send OTP email using SendGrid
 const sendOTPEmail = async (email, otp) => {
   try {
-    console.log('🔧 Creating email transporter...');
-    const transporter = createTransporter();
+    // Initialize SendGrid
+    initializeSendGrid();
 
-    // Test the connection first
-    console.log('🔧 Testing email connection...');
-    await transporter.verify();
-    console.log('✅ Email connection verified');
+    // Use Gmail address as sender since it's already verified
+    const senderEmail = process.env.EMAIL_USER || 'ciyatake@gmail.com';
 
-    // Use a fallback sender email for development
-    const senderEmail = process.env.EMAIL_USER || 'noreply@ciyatake.com';
-
-    const mailOptions = {
-      from: `"${process.env.APP_NAME || 'CiyaTake'}" <${senderEmail}>`,
+    const msg = {
       to: email,
+      from: {
+        email: senderEmail,
+        name: process.env.APP_NAME || 'CiyaTake'
+      },
       subject: 'Your OTP for Account Verification',
+      text: `Your OTP for ${process.env.APP_NAME || 'CiyaTake'} account verification is: ${otp}. This OTP is valid for 10 minutes. Don't share this with anyone.`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
           <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -70,20 +94,30 @@ const sendOTPEmail = async (email, otp) => {
             </div>
           </div>
         </div>
-      `,
-      text: `Your OTP for ${process.env.APP_NAME || 'CiyaTake'} account verification is: ${otp}. This OTP is valid for 10 minutes. Don't share this with anyone.`
+      `
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ OTP email sent successfully:', info.messageId);
-    return { success: true, messageId: info.messageId };
-  } catch (error) {
-    console.error('❌ Error sending OTP email:', error);
+    // Set a timeout for the send operation
+    const sendPromise = sgMail.send(msg);
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Email send timeout after 15 seconds')), 15000);
+    });
+
+    await Promise.race([sendPromise, timeoutPromise]);
     
-    if (error.code === 'EAUTH') {
-      throw new Error('Email authentication failed. Please check email credentials.');
-    } else if (error.code === 'ENOTFOUND') {
-      throw new Error('Email service not available. Please try again later.');
+    // Log success for monitoring purposes
+    console.log('✅ SendGrid OTP email sent successfully to:', email.replace(/(.{3}).*(@.*)/, '$1***$2'));
+    
+    return { success: true };
+  } catch (error) {
+    // Always log errors for debugging
+    console.error('❌ Error sending SendGrid OTP email:', error.message);
+    
+    if (error.response) {
+      console.error('SendGrid API error:', error.response.body);
+      throw new Error(`SendGrid API error: ${error.response.body.errors[0]?.message || 'Unknown error'}`);
+    } else if (error.message.includes('timeout')) {
+      throw new Error('Email service timeout. Please try again later.');
     } else {
       throw new Error(`Failed to send OTP email: ${error.message}`);
     }

@@ -8,22 +8,21 @@ import {
   Twitter,
   Linkedin,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Footer = () => {
-  const handleLinkClick = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
+  const navigate = useNavigate();
   return (
     <footer className="bg-[#f5f1e8] text-gray-800">
       <div className="px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-8 lg:py-16">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           {/* Brand Section */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2" onClick={()=>navigate("/")}>
               <ShoppingBag className="w-8 h-8 text-[#8b7355]" />
-              <h3 className="text-2xl font-semibold text-[#8b7355]">Ciyatake</h3>
+              <h3 className="text-2xl font-semibold text-[#8b7355]">
+                Ciyatake
+              </h3>
             </div>
             <p className="text-sm leading-relaxed text-gray-600">
               Thoughtfully curated fashion and lifestyle essentials to help you
@@ -57,8 +56,7 @@ const Footer = () => {
             <ul className="space-y-2">
               <li>
                 <Link
-                  to="/shop/women"
-                  onClick={handleLinkClick}
+                  to="/"
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Women
@@ -66,8 +64,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/shop/men"
-                  onClick={handleLinkClick}
+                  to="/"
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Men
@@ -75,8 +72,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/shop/kids"
-                  onClick={handleLinkClick}
+                  to="/"
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Kids
@@ -84,8 +80,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/shop/accessories"
-                  onClick={handleLinkClick}
+                  to="/"
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Accessories
@@ -93,8 +88,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/shop/home-living"
-                  onClick={handleLinkClick}
+                  to="/"
                   className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
                 >
                   Home & Living
@@ -111,7 +105,6 @@ const Footer = () => {
             <ul className="flex flex-col space-y-2">
               <Link
                 to="/track-order"
-                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Track Order
@@ -139,7 +132,6 @@ const Footer = () => {
               </Link>
               <Link
                 to="/FAQs"
-                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 FAQs
@@ -154,29 +146,23 @@ const Footer = () => {
             </h4>
             <ul className="flex flex-col space-y-2">
               <Link
-                to="/our-story"
-                onClick={handleLinkClick}
+                to="our-story"
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
-              >
-                Our Story
-              </Link>
+              ></Link>
               <Link
                 to="/career-page"
-                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Careers
               </Link>
               <Link
                 to="/press"
-                onClick={handleLinkClick}
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Press
               </Link>
               <Link
-                to="/contact-us"
-                onClick={handleLinkClick}
+                to="contact-us"
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
                 Contact
@@ -191,7 +177,7 @@ const Footer = () => {
             {/* Social Media Icons */}
             <div className="flex space-x-4">
               <a
-                href="https://instagram.com"
+                href=" https://www.instagram.com/ciyatakeofficial?igsh=MjlzYXhiMHcza2M1"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#a08968] hover:bg-[#8b7355] hover:text-white transition-all"
@@ -227,8 +213,7 @@ const Footer = () => {
             {/* Legal Links */}
             <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600 md:justify-end">
               <Link
-                to="/privacy-policy"
-                onClick={handleLinkClick}
+                to='/privacy-policy'
                 className="hover:text-[#8b7355] transition-colors"
               >
                 Privacy Policy
@@ -236,7 +221,6 @@ const Footer = () => {
               <span className="hidden sm:inline">•</span>
               <Link
                 to="/terms-of-service"
-                onClick={handleLinkClick}
                 className="hover:text-[#8b7355] transition-colors"
               >
                 Terms of Service
@@ -244,7 +228,6 @@ const Footer = () => {
               <span className="hidden sm:inline">•</span>
               <Link
                 to="/cookie-policy"
-                onClick={handleLinkClick}
                 className="hover:text-[#8b7355] transition-colors"
               >
                 Cookie Policy
