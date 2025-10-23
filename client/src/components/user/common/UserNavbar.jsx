@@ -526,12 +526,12 @@ const UserNavbar = ({
               </div>
             ))}
 
-            <Link
+            {/* <Link
               to="/accessories"
               className="px-2 py-2 transition hover:text-[#b8985b]"
             >
               Accessories
-            </Link>
+            </Link> */}
 
             {/* <Link
               to="/home-living"
@@ -729,7 +729,7 @@ const UserNavbar = ({
                 </Link>
               </li>
             ))}
-            <li>
+            {/* <li>
               <Link
                 to="/accessories"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -738,7 +738,7 @@ const UserNavbar = ({
                 Accessories
                 <span aria-hidden>→</span>
               </Link>
-            </li>
+            </li> */}
             {/* <li>
               <Link
                 to="/home-living"
