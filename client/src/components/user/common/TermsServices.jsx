@@ -1,5 +1,21 @@
-import { useState } from 'react';
-import { FileText, ShoppingBag, CreditCard, Package, RefreshCw, Shield, AlertTriangle, Scale, User, Lock, Globe, Calendar, CheckCircle, Menu, X } from 'lucide-react';
+import { useState } from "react";
+import {
+  FileText,
+  ShoppingBag,
+  CreditCard,
+  Package,
+  RefreshCw,
+  Shield,
+  AlertTriangle,
+  Scale,
+  User,
+  Lock,
+  Globe,
+  Calendar,
+  CheckCircle,
+  Menu,
+  X,
+} from "lucide-react";
 
 const TermsServices = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -21,7 +37,7 @@ const TermsServices = () => {
 - We may modify these Terms at any time by posting revised Terms on our website
 
 **Acceptance:**
-Your continued use of our Services after any changes indicates your acceptance of the modified Terms. We recommend reviewing these Terms periodically.`
+Your continued use of our Services after any changes indicates your acceptance of the modified Terms. We recommend reviewing these Terms periodically.`,
     },
     {
       id: 2,
@@ -46,7 +62,7 @@ Your continued use of our Services after any changes indicates your acceptance o
 - You may close your account at any time through account settings
 - We may suspend or terminate your account for violations of these Terms
 - Upon termination, your right to use our Services ceases immediately
-- We may retain certain information as required by law or for legitimate business purposes`
+- We may retain certain information as required by law or for legitimate business purposes`,
     },
     {
       id: 3,
@@ -72,7 +88,7 @@ Your continued use of our Services after any changes indicates your acceptance o
 - Reselling products for commercial purposes without authorization
 
 **Consequences:**
-Violation of these Terms may result in account suspension or termination, legal action, and reporting to law enforcement authorities.`
+Violation of these Terms may result in account suspension or termination, legal action, and reporting to law enforcement authorities.`,
     },
     {
       id: 4,
@@ -100,7 +116,7 @@ Violation of these Terms may result in account suspension or termination, legal 
 - Out-of-stock items may be back-ordered or cancelled
 
 **Accuracy:**
-While we make every effort to ensure accuracy, errors may occur. We reserve the right to cancel orders placed for products with incorrect pricing or information.`
+While we make every effort to ensure accuracy, errors may occur. We reserve the right to cancel orders placed for products with incorrect pricing or information.`,
     },
     {
       id: 5,
@@ -131,7 +147,7 @@ While we make every effort to ensure accuracy, errors may occur. We reserve the 
 - Tax amounts are calculated based on shipping address
 
 **Currency:**
-All transactions are processed in Indian Rupees (INR) unless otherwise specified.`
+All transactions are processed in Indian Rupees (INR) unless otherwise specified.`,
     },
     {
       id: 6,
@@ -162,7 +178,7 @@ All transactions are processed in Indian Rupees (INR) unless otherwise specified
 - We will notify you of significant delays when possible
 
 **International Shipping:**
-Currently, we only ship within India. International shipping may be available in the future.`
+Currently, we only ship within India. International shipping may be available in the future.`,
     },
     {
       id: 7,
@@ -194,7 +210,7 @@ Currently, we only ship within India. International shipping may be available in
 - Contact customer service to arrange exchanges
 
 **Damaged or Defective Items:**
-Notify us within 48 hours of delivery for damaged or defective items. We will arrange for replacement or full refund including shipping charges.`
+Notify us within 48 hours of delivery for damaged or defective items. We will arrange for replacement or full refund including shipping charges.`,
     },
     {
       id: 8,
@@ -221,7 +237,7 @@ Notify us within 48 hours of delivery for damaged or defective items. We will ar
 - You are responsible for the content you submit
 
 **Prohibited Use:**
-Unauthorized use of our intellectual property may result in legal action and termination of your account.`
+Unauthorized use of our intellectual property may result in legal action and termination of your account.`,
     },
     {
       id: 9,
@@ -251,7 +267,7 @@ Unauthorized use of our intellectual property may result in legal action and ter
 We are not responsible for failures or delays due to circumstances beyond our control, including natural disasters, acts of war, government actions, or technical failures.
 
 **Jurisdiction:**
-Some jurisdictions do not allow certain limitations. These limitations may not apply to you if prohibited by law.`
+Some jurisdictions do not allow certain limitations. These limitations may not apply to you if prohibited by law.`,
     },
     {
       id: 10,
@@ -280,7 +296,7 @@ Some jurisdictions do not allow certain limitations. These limitations may not a
 - We are not obligated to monitor all user content
 
 **Reporting:**
-If you encounter inappropriate content or behavior, please report it to us through the appropriate channels.`
+If you encounter inappropriate content or behavior, please report it to us through the appropriate channels.`,
     },
     {
       id: 11,
@@ -311,7 +327,7 @@ If you encounter inappropriate content or behavior, please report it to us throu
 - Transactional emails (order confirmations, etc.) will still be sent
 
 **Third Parties:**
-We may share your information with service providers, as described in our Privacy Policy.`
+We may share your information with service providers, as described in our Privacy Policy.`,
     },
     {
       id: 12,
@@ -343,7 +359,7 @@ We may share your information with service providers, as described in our Privac
 - Interactions on social media are governed by platform rules
 
 **No Endorsement:**
-Links to third parties do not constitute endorsement of their services or products.`
+Links to third parties do not constitute endorsement of their services or products.`,
     },
     {
       id: 13,
@@ -373,7 +389,7 @@ Links to third parties do not constitute endorsement of their services or produc
 - This waiver applies to the fullest extent permitted by law
 
 **Limitation Period:**
-Any claims must be brought within one year of the cause of action arising. Claims not brought within this period are permanently barred.`
+Any claims must be brought within one year of the cause of action arising. Claims not brought within this period are permanently barred.`,
     },
     {
       id: 14,
@@ -398,7 +414,7 @@ Any claims must be brought within one year of the cause of action arising. Claim
 - Your use of Services after changes means you accept the new Terms
 
 **Version History:**
-Previous versions of Terms may be available upon request for reference purposes.`
+Previous versions of Terms may be available upon request for reference purposes.`,
     },
     {
       id: 15,
@@ -425,7 +441,7 @@ Previous versions of Terms may be available upon request for reference purposes.
 - We may delete your account and associated data
 
 **Surviving Provisions:**
-Sections regarding payment, intellectual property, disclaimers, and dispute resolution survive termination.`
+Sections regarding payment, intellectual property, disclaimers, and dispute resolution survive termination.`,
     },
     {
       id: 16,
@@ -454,31 +470,31 @@ Sections regarding payment, intellectual property, disclaimers, and dispute reso
 - Assignment does not release original party from obligations
 
 **Contact:**
-For questions about these Terms, contact us at legal@ciyatake.com or through our customer service channels.`
-    }
+For questions about these Terms, contact us at legal@ciyatake.com or through our customer service channels.`,
+    },
   ];
 
   const quickFacts = [
     {
       icon: CheckCircle,
       title: "Fair & Transparent",
-      description: "Clear terms that protect both you and Ciyatake"
+      description: "Clear terms that protect both you and Ciyatake",
     },
     {
       icon: Shield,
       title: "Your Rights Protected",
-      description: "We respect consumer rights and legal protections"
+      description: "We respect consumer rights and legal protections",
     },
     {
       icon: Scale,
       title: "Legally Binding",
-      description: "These terms form a contract between you and us"
+      description: "These terms form a contract between you and us",
     },
     {
       icon: Globe,
       title: "Governed by Indian Law",
-      description: "Subject to laws of India and courts in Mumbai"
-    }
+      description: "Subject to laws of India and courts in Mumbai",
+    },
   ];
 
   const scrollToSection = (id) => {
@@ -487,10 +503,10 @@ For questions about these Terms, contact us at legal@ciyatake.com or through our
     if (element) {
       window.scrollTo({
         top: 0,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
       setTimeout(() => {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
     }
   };
@@ -504,7 +520,8 @@ For questions about these Terms, contact us at legal@ciyatake.com or through our
           </div>
           <h1 className="mb-4 text-5xl font-bold">Terms of Service</h1>
           <p className="mb-4 text-xl opacity-90">
-            Please read these terms carefully before using Ciyatake. By using our services, you agree to these terms.
+            Please read these terms carefully before using Ciyatake. By using
+            our services, you agree to these terms.
           </p>
           <div className="flex items-center justify-center gap-2 text-sm opacity-80">
             <Calendar className="w-4 h-4" />
@@ -517,13 +534,19 @@ For questions about these Terms, contact us at legal@ciyatake.com or through our
       <section className="sticky top-0 z-10 px-4 py-4 bg-white shadow-sm">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between md:hidden">
-            <span className="text-[#8b7355] font-semibold">Quick Navigation</span>
+            <span className="text-[#8b7355] font-semibold">
+              Quick Navigation
+            </span>
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="p-2 text-[#8b7355] hover:bg-[#f5f1ed] rounded-lg transition-colors"
               aria-label="Toggle menu"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
 
@@ -565,7 +588,9 @@ For questions about these Terms, contact us at legal@ciyatake.com or through our
             {quickFacts.map((fact, index) => (
               <div key={index} className="p-6 text-center bg-white rounded-lg">
                 <fact.icon className="w-10 h-10 text-[#8b7355] mx-auto mb-3" />
-                <h3 className="font-semibold text-[#6b5847] mb-2">{fact.title}</h3>
+                <h3 className="font-semibold text-[#6b5847] mb-2">
+                  {fact.title}
+                </h3>
                 <p className="text-sm text-[#8b7355]">{fact.description}</p>
               </div>
             ))}
@@ -587,7 +612,9 @@ For questions about these Terms, contact us at legal@ciyatake.com or through our
                   <section.icon className="w-8 h-8 text-[#8b7355]" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-3xl font-bold text-[#6b5847] mb-4">{section.title}</h2>
+                  <h2 className="text-3xl font-bold text-[#6b5847] mb-4">
+                    {section.title}
+                  </h2>
                   <div className="text-[#6b5847] leading-relaxed whitespace-pre-line">
                     {section.content}
                   </div>
@@ -605,9 +632,16 @@ For questions about these Terms, contact us at legal@ciyatake.com or through our
             <div className="flex items-start gap-4">
               <AlertTriangle className="w-8 h-8 text-[#8b7355] flex-shrink-0" />
               <div>
-                <h3 className="text-xl font-bold text-[#6b5847] mb-2">Important Notice</h3>
+                <h3 className="text-xl font-bold text-[#6b5847] mb-2">
+                  Important Notice
+                </h3>
                 <p className="text-[#6b5847] leading-relaxed">
-                  These Terms of Service constitute a legally binding agreement. By using Ciyatake, you acknowledge that you have read, understood, and agree to be bound by these terms. If you do not agree to these terms, please do not use our services. For any questions or concerns, please contact our legal team at legal@ciyatake.com.
+                  These Terms of Service constitute a legally binding agreement.
+                  By using Ciyatake, you acknowledge that you have read,
+                  understood, and agree to be bound by these terms. If you do
+                  not agree to these terms, please do not use our services. For
+                  any questions or concerns, please contact our legal team at
+                  legal@ciyatake.com.
                 </p>
               </div>
             </div>
@@ -619,9 +653,12 @@ For questions about these Terms, contact us at legal@ciyatake.com or through our
       <section className="px-4 py-16">
         <div className="max-w-4xl mx-auto">
           <div className="bg-gradient-to-br from-[#8b7355] to-[#6b5847] text-white p-8 rounded-lg text-center">
-            <h2 className="mb-4 text-3xl font-bold">Questions About These Terms?</h2>
+            <h2 className="mb-4 text-3xl font-bold">
+              Questions About These Terms?
+            </h2>
             <p className="mb-6 opacity-90">
-              If you have any questions or concerns about these Terms of Service, please don't hesitate to contact us.
+              If you have any questions or concerns about these Terms of
+              Service, please don't hesitate to contact us.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <a
@@ -647,7 +684,8 @@ For questions about these Terms, contact us at legal@ciyatake.com or through our
       <section className="px-4 py-8 bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-[#8b7355] text-sm">
-            By continuing to use Ciyatake, you acknowledge your acceptance of these Terms of Service and any future modifications.
+            By continuing to use Ciyatake, you acknowledge your acceptance of
+            these Terms of Service and any future modifications.
           </p>
         </div>
       </section>
