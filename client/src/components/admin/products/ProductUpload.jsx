@@ -860,7 +860,6 @@ const ProductUpload = ({ mode = "create", productId, onSuccess }) => {
     setFeedback(null);
 
     const payload = prepareProductPayload(form);
-    console.log("Payload being sent:", JSON.stringify(payload, null, 2));
     const shouldRefreshCategories =
       payload.category === "other" && Boolean(payload.customCategoryName);
 

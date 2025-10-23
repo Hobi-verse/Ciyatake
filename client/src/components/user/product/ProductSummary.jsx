@@ -320,7 +320,10 @@ const ProductSummary = ({
         ) : null}
       </div>
 
-      <p className="text-sm leading-relaxed text-slate-600">{summaryText}</p>
+      <div
+        className="text-sm leading-relaxed text-slate-600"
+        dangerouslySetInnerHTML={{ __html: summaryText }}
+      />
 
       <div className="rounded-2xl border border-[#DCECE9] bg-[#F2EAE0] p-4 text-lg font-semibold text-[#b8985b]">
         <span className="text-sm uppercase tracking-[0.2em] text-slate-600">

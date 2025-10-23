@@ -11,9 +11,10 @@ const ProductInformation = ({ details = {}, specifications = [] }) => (
   <section className="space-y-6 rounded-3xl border border-[#DCECE9] bg-white p-6 shadow-[0_24px_56px_rgba(15,23,42,0.08)]">
     <div className="space-y-2">
       <h2 className="text-lg font-semibold text-slate-900">Product details</h2>
-      <p className="text-sm leading-relaxed text-slate-600">
-        {details.description}
-      </p>
+      <div
+        className="text-sm leading-relaxed text-slate-600"
+        dangerouslySetInnerHTML={{ __html: details.description }}
+      />
     </div>
 
     {details.features?.length ? (
