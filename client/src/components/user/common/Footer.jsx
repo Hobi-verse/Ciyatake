@@ -110,10 +110,22 @@ const Footer = () => {
                 Track Order
               </Link>
               <Link
-                to="/return-and-refund-policy"
+                to="/refund-policy"
                 className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
               >
-                Returns & Refunds
+                Refund Policy
+              </Link>
+              <Link
+                to="/return-policy"
+                className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+              >
+                Return Policy
+              </Link>
+              <Link
+                to="/shipping-policy"
+                className="text-sm text-gray-700 hover:text-[#8b7355] transition-colors"
+              >
+                Shipping Policy
               </Link>
               <Link
                 to="/FAQs"

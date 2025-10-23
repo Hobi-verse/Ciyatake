@@ -28,7 +28,9 @@ import {
 } from "./utils/authStorage";
 import Footer from "./components/user/common/Footer.jsx";
 import TrackOrder from "./components/user/common/helpAndSupport/TrackOrders.jsx";
-import RefundPolicy from "./components/user/common/helpAndSupport/RefundPolicy.jsx";
+import RefundPolicy from "./pages/RefundPolicy.jsx";
+import ReturnPolicy from "./pages/ReturnPolicy.jsx";
+import ShippingPolicy from "./pages/ShippingPolicy.jsx";
 import Faqs from "./components/user/common/helpAndSupport/Faqs.jsx";
 import OurStory from "./components/user/common/Company/OurStory.jsx";
 import Careers from "./components/user/common/Company/Careers.jsx";
@@ -90,7 +92,10 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
           <Route path="/track-order" element={<TrackOrder />} />
-          <Route path="/return-and-refund-policy" element={<RefundPolicy />} />
+          {/* <Route path="/return-and-refund-policy" element={<RefundPolicy />} /> */}
+          <Route path="/refund-policy" element={<RefundPolicy />} />
+          <Route path="/return-policy" element={<ReturnPolicy />} />
+          <Route path="/shipping-policy" element={<ShippingPolicy />} />
           <Route path="/FAQs" element={<Faqs />} />
           <Route path="/Our-Story" element={<OurStory />} />
           <Route path="/career-page" element={<Careers />} />
