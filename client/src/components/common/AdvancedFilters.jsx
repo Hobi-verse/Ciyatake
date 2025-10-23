@@ -6,7 +6,7 @@ const GENDER_OPTIONS = [
   { value: "Women", label: "Women" },
   // { value: "Men", label: "Men" },
   // { value: "Kids", label: "Kids" },
-  { value: "Unisex", label: "Unisex" },
+  // { value: "Unisex", label: "Unisex" },
 ];
 
 const SORT_OPTIONS = [
