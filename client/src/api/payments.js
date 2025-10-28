@@ -126,6 +126,8 @@ export const processPayment = async ({
       customerNotes,
     });
 
+    console.log('📦 Order response:', orderResponse);
+
     const { success, data, message } = orderResponse ?? {};
 
     if (!success || !data?.orderId || !data?.key) {
@@ -163,7 +165,7 @@ export const processPayment = async ({
       },
     });
 
-    console.log('💳 Payment completed via Razorpay');
+    console.log('💳 Payment completed via Razorpay:', paymentResponse);
 
     // Step 3: Verify payment on backend with signature validation
     const verificationResponse = await paymentAPI.verifyPayment({
@@ -173,9 +175,16 @@ export const processPayment = async ({
       customerNotes,
     });
 
+    console.log('🔍 Verification response:', verificationResponse);
+
     if (verificationResponse?.success) {
       console.log('✅ Payment verified and order created successfully');
-      onSuccess && onSuccess(verificationResponse.data);
+      onSuccess && onSuccess({
+        ...verificationResponse.data,
+        razorpay_payment_id: paymentResponse.razorpay_payment_id,
+        razorpay_order_id: paymentResponse.razorpay_order_id,
+        razorpay_signature: paymentResponse.razorpay_signature
+      });
       return verificationResponse.data;
     }
 
@@ -201,7 +210,7 @@ export const processPayment = async ({
     onFailure && onFailure(error);
 
     if (error instanceof ApiError) {
-      throw error.payload ?? error;
+      throw error;
     }
 
     throw error;

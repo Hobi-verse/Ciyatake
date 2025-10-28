@@ -1,13 +1,23 @@
-// RAZORPAY CONFIGURATION - COMMENTED OUT FOR STRIPE IMPLEMENTATION
-// const Razorpay = require("razorpay");
+const Razorpay = require('razorpay');
 
-// Initialize Razorpay instance
-// const razorpayInstance = new Razorpay({
-//   key_id: process.env.RAZORPAY_KEY_ID,
-//   key_secret: process.env.RAZORPAY_KEY_SECRET,
-// });
+// Validate required environment variables
+if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+  throw new Error('Razorpay credentials are required. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in environment variables.');
+}
 
-// module.exports = razorpayInstance;
+// Initialize Razorpay instance with production configuration
+const razorpayInstance = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
-// Temporary export to prevent import errors
-module.exports = null;
+// Test connection on startup
+razorpayInstance.orders.all({ count: 1 })
+  .then(() => {
+    console.log('✅ Razorpay connection established successfully');
+  })
+  .catch((error) => {
+    console.error('❌ Razorpay connection failed:', error.message);
+  });
+
+module.exports = razorpayInstance;

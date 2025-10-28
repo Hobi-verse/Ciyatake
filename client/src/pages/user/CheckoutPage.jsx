@@ -466,7 +466,8 @@ const CheckoutPage = () => {
           const paymentSuccessData = {
             paymentId: data?.razorpay_payment_id,
             orderId: data?.razorpay_order_id,
-            signature: data?.razorpay_signature
+            signature: data?.razorpay_signature,
+            order: data?.order
           };
           
           // Store in sessionStorage for immediate access
@@ -493,10 +494,13 @@ const CheckoutPage = () => {
       const confirmationOrder = {
         ...resolvedOrder,
         id:
-          resolvedOrder?.orderNumber ??
           resolvedOrder?.id ??
           orderId ??
+          resolvedOrder?._id ??
           nextOrder?.id ??
+          null,
+        orderNumber:
+          resolvedOrder?.orderNumber ??
           null,
         items: nextOrder?.items ?? resolvedOrder?.items ?? [],
         totals: {

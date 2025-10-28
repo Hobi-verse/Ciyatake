@@ -106,7 +106,14 @@ const ConfirmationPage = () => {
     setError(null);
 
     try {
-      const response = await fetchOrderById(runtimeData.order?.id ?? "latest");
+      // Only fetch if we have a valid order ID
+      if (!runtimeData.order?.id) {
+        console.log('⚠️ No order ID available, using runtime data only');
+        setConfirmationData({ order: runtimeData.order });
+        return;
+      }
+      
+      const response = await fetchOrderById(runtimeData.order.id);
       setConfirmationData(response);
     } catch (apiError) {
       setError(apiError);
