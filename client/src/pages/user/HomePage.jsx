@@ -8,6 +8,7 @@ import Loader from "../../components/common/Loader.jsx";
 import Skeleton from "../../components/common/Skeleton.jsx";
 import { fetchProducts } from "../../api/catalog.js";
 import { fetchCategories } from "../../api/categories.js";
+import Carousel from "../../components/common/Carousel.jsx";
 
 const toTitleCase = (value = "") =>
   value
@@ -25,6 +26,24 @@ const DEFAULT_CATEGORY_OPTIONS = [
   { label: "Suits & Dress Material", value: "suits-dress-material" },
   { label: "Lehengas", value: "lehengas" },
   { label: "Other Ethnic", value: "other-ethnic" },
+];
+
+const posters = [
+  {
+    img: "/Banner_1.png",
+    link: "/product/hoodie-purple",
+    cta: "Shop Now"
+  },
+  {
+    img: "/Banner_2.png",
+    link: "/product/hoodie-brown",
+    cta: "Explore"
+  },
+  {
+    img: "/Banner.png",
+    // no link → no navigation
+    // no CTA button → hidden
+  }
 ];
 
 const HERO_HIGHLIGHTS = [
@@ -430,6 +449,9 @@ const HomePage = ({ isLoggedIn }) => {
           </div> */}
 
       <main className="mx-auto max-w-7xl px-2 py-4 sm:px-6 sm:py-10 lg:px-8">
+
+        <Carousel slides={posters} />;
+
         {/* Header Section */}
         <div className="mb-6 text-center sm:mb-10">
           <h1 className="text-2xl font-bold tracking-tight text-[#b8985b] sm:text-4xl">
