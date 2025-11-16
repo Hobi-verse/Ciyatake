@@ -198,7 +198,7 @@ const Login = () => {
   const loaderLabel = "Signing you in";
 
   return (
-    <div className="min-h-screen bg-[#f5f2ee]">
+    <div className="min-h-screen bg-gradient-to-br from-[#f5f2ee] via-[#faf8f5] to-[#f0ede8]">
       <UserNavbar />
       <AuthForm
         title="Welcome back"
@@ -221,7 +221,7 @@ const Login = () => {
         forgetPasswordText="Forget Password?"
       />
       {showRefreshLoader ? (
-        <div className="flex justify-center pt-6">
+        <div className="flex justify-center pt-6 pb-8">
           <Loader label={loaderLabel} />
         </div>
       ) : null}

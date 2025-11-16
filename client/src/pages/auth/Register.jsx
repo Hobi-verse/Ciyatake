@@ -221,15 +221,16 @@ const Register = () => {
         };
 
         return (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <label
               htmlFor={emailId}
-              className="block text-sm font-medium text-slate-700"
+              className="block text-sm font-semibold text-slate-700"
             >
               Email address & OTP
+              <span className="ml-1 text-rose-500">*</span>
             </label>
-            <div className="grid gap-3 sm:grid-cols-[1.6fr_1fr]">
-              <div className="space-y-2">
+            <div className="grid gap-4 sm:grid-cols-[1.6fr_1fr]">
+              <div className="space-y-3">
                 <input
                   id={emailId}
                   name="email"
@@ -243,7 +244,7 @@ const Register = () => {
                 />
                 <Button
                   type="button"
-                  className="w-full disabled:opacity-60"
+                  className="w-full h-11 disabled:opacity-60 shadow-md hover:shadow-lg transition-all duration-200"
                   onClick={() =>
                     handleSendOtp(value, () => setFieldValue("otp", ""))
                   }
@@ -256,23 +257,33 @@ const Register = () => {
                     : "Send OTP"}
                 </Button>
               </div>
-              <div className="space-y-2">
-                <input
-                  id={otpId}
-                  name="otp"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  className={`${inputClasses} disabled:opacity-60`}
-                  placeholder="Enter OTP"
-                  value={formData.otp ?? ""}
-                  onChange={handleOtpChange}
-                  disabled={!isOtpSent}
-                  maxLength={OTP_LENGTH}
-                />
+              <div className="space-y-3">
+                <div className="relative">
+                  <input
+                    id={otpId}
+                    name="otp"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    className={`${inputClasses} text-center text-lg tracking-widest font-semibold disabled:opacity-60`}
+                    placeholder="000000"
+                    value={formData.otp ?? ""}
+                    onChange={handleOtpChange}
+                    disabled={!isOtpSent}
+                    maxLength={OTP_LENGTH}
+                  />
+                  {isOtpVerified && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <svg className="h-5 w-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
                 <Button
                   type="button"
-                  className="w-full border border-[#b8985b] bg-white text-[#b8985b] hover:bg-[#F2EAE0] disabled:border-[#DCECE9] disabled:text-slate-400 disabled:opacity-60"
+                  variant="outline"
+                  className="w-full h-11 border-2 border-[#b8985b] bg-white text-[#b8985b] hover:bg-[#b8985b]/10 disabled:border-[#DCECE9] disabled:text-slate-400 disabled:opacity-60 transition-all duration-200"
                   onClick={() => handleVerifyOtp(value, formData.otp ?? "")}
                   disabled={
                     !isOtpSent ||
@@ -284,23 +295,36 @@ const Register = () => {
                   {isVerifyingOtp
                     ? "Verifying..."
                     : isOtpVerified
-                    ? "OTP Verified"
+                    ? "✓ Verified"
                     : "Verify OTP"}
                 </Button>
               </div>
             </div>
             {otpFeedback ? (
-              <p
-                className={`text-sm ${
-                  otpFeedback.type === "error"
-                    ? "text-rose-600"
-                    : otpFeedback.type === "success"
-                    ? "text-teal-600"
-                    : "text-slate-500"
-                }`}
-              >
-                {otpFeedback.message}
-              </p>
+              <div className={`flex items-start gap-2 rounded-xl p-3 text-sm font-medium ${
+                otpFeedback.type === "error"
+                  ? "bg-rose-50 text-rose-700"
+                  : otpFeedback.type === "success"
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-blue-50 text-blue-700"
+              }`} style={{ animation: 'slide-in-from-top-2 0.3s ease-out' }}>
+                {otpFeedback.type === "error" && (
+                  <svg className="h-5 w-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                )}
+                {otpFeedback.type === "success" && (
+                  <svg className="h-5 w-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                )}
+                {otpFeedback.type === "info" && (
+                  <svg className="h-5 w-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                )}
+                <span className="flex-1">{otpFeedback.message}</span>
+              </div>
             ) : null}
           </div>
         );
@@ -547,7 +571,7 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f2ee]">
+    <div className="min-h-screen bg-gradient-to-br from-[#f5f2ee] via-[#faf8f5] to-[#f0ede8]">
       <UserNavbar />
       <AuthForm
         title="Create New Account"
@@ -569,7 +593,7 @@ const Register = () => {
         loading={isProcessingOAuth}
       />
       {showRefreshLoader ? (
-        <div className="flex justify-center pt-6">
+        <div className="flex justify-center pt-6 pb-8">
           <Loader label={loaderLabel} />
         </div>
       ) : null}

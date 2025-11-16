@@ -1,15 +1,15 @@
 const baseClasses =
-  "inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition duration-200 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-[#b8985b] disabled:cursor-not-allowed";
+  "inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b8985b] disabled:cursor-not-allowed active:scale-[0.98]";
 
 const variantClasses = {
-  primary: "bg-[#b8985b] text-white shadow-lg shadow-[#b8985b]/25",
+  primary: "bg-gradient-to-r from-[#b8985b] to-[#a9894f] text-white shadow-lg shadow-[#b8985b]/30",
   outline:
-    "border border-[#b8985b] bg-white text-[#b8985b] hover:border-[#a9894f] hover:bg-[#F2EAE0]",
-  ghost: "bg-transparent text-[#b8985b] hover:bg-[#F2EAE0]",
+    "border-2 border-[#b8985b] bg-white text-[#b8985b] hover:border-[#a9894f] hover:bg-[#b8985b]/5",
+  ghost: "bg-transparent text-[#b8985b] hover:bg-[#b8985b]/10",
 };
 
 const hoverClasses = {
-  primary: "hover:bg-[#a9894f]",
+  primary: "hover:from-[#a9894f] hover:to-[#98793f] hover:shadow-xl hover:shadow-[#b8985b]/40",
   outline: "hover:text-[#a9894f]",
   ghost: "hover:text-[#a9894f]",
 };
