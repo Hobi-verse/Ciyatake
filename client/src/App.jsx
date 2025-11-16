@@ -17,7 +17,6 @@ import Dashboard from "./pages/admin/Dashboard.jsx";
 import Orders from "./pages/admin/Orders.jsx";
 import Products from "./pages/admin/Products.jsx";
 import Customers from "./pages/admin/Customers.jsx";
-import Reports from "./pages/admin/Reports.jsx";
 import Reviews from "./pages/admin/Reviews.jsx";
 import Coupons from "./pages/admin/Coupons.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
@@ -171,7 +170,6 @@ function App() {
             <Route path="products" element={<Products />} />
             <Route path="customers" element={<Customers />} />
             <Route path="coupons" element={<Coupons />} />
-            <Route path="reports" element={<Reports />} />
             <Route path="reviews" element={<Reviews />} />
             <Route path="*" element={<Navigate to="dashboard" replace />} />
           </Route>

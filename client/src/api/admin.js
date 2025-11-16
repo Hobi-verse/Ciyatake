@@ -492,8 +492,3 @@ export const fetchCustomers = async (params = {}) => {
   };
 };
 
-export const fetchReports = async () => {
-  const response = await apiRequest("/admin/reports");
-  return response?.data ?? response ?? [];
-};
-

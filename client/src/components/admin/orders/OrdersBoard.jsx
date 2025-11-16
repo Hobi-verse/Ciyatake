@@ -141,89 +141,91 @@ const OrderListSkeleton = () => (
 
 const OrdersList = ({ orders, loading, error, selectedId, onSelect }) => (
   <div className="overflow-hidden rounded-2xl border border-[#e6dccb] bg-white shadow-2xl">
-    <table className="min-w-full divide-y divide-[#f2eae0]">
-      <thead className="bg-[#b8985b] text-left text-xs font-semibold uppercase tracking-wide text-white">
-        <tr>
-          <th className="px-5 py-4">Order</th>
-          <th className="px-5 py-4">Customer</th>
-          <th className="px-5 py-4">Placed</th>
-          <th className="px-5 py-4">Status</th>
-          <th className="px-5 py-4 text-right">Total</th>
-        </tr>
-      </thead>
-      {error ? (
-        <tbody>
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-[#f2eae0]">
+        <thead className="bg-[#b8985b] text-left text-xs font-semibold uppercase tracking-wide text-white">
           <tr>
-            <td
-              colSpan={5}
-              className="px-5 py-6 text-center text-sm text-rose-600"
-            >
-              Unable to load orders.
-            </td>
+            <th className="px-5 py-4">Order</th>
+            <th className="px-5 py-4">Customer</th>
+            <th className="px-5 py-4">Placed</th>
+            <th className="px-5 py-4">Status</th>
+            <th className="px-5 py-4 text-right">Total</th>
           </tr>
-        </tbody>
-      ) : loading ? (
-        <OrderListSkeleton />
-      ) : orders.length ? (
-        <tbody className="divide-y divide-[#f2eae0] text-sm">
-          {orders.map((order) => {
-            const isSelected = order.id === selectedId;
-            return (
-              <tr
-                key={order.id ?? order.orderNumber}
-                className={`cursor-pointer transition hover:bg-[#f2eae0] ${
-                  isSelected ? "bg-[#f6efe3]" : ""
-                }`}
-                onClick={() => onSelect(order.id)}
+        </thead>
+        {error ? (
+          <tbody>
+            <tr>
+              <td
+                colSpan={5}
+                className="px-5 py-6 text-center text-sm text-rose-600"
               >
-                <td className="px-5 py-4">
-                  <div className="font-semibold text-[#8f7843]">
-                    {order.orderNumber || order.id || "—"}
-                  </div>
-                  {typeof order.itemsCount === "number" && (
-                    <div className="text-xs text-slate-500">
-                      {order.itemsCount} item{order.itemsCount === 1 ? "" : "s"}
+                Unable to load orders.
+              </td>
+            </tr>
+          </tbody>
+        ) : loading ? (
+          <OrderListSkeleton />
+        ) : orders.length ? (
+          <tbody className="divide-y divide-[#f2eae0] text-sm">
+            {orders.map((order) => {
+              const isSelected = order.id === selectedId;
+              return (
+                <tr
+                  key={order.id ?? order.orderNumber}
+                  className={`cursor-pointer transition hover:bg-[#f2eae0] ${
+                    isSelected ? "bg-[#f6efe3]" : ""
+                  }`}
+                  onClick={() => onSelect(order.id)}
+                >
+                  <td className="px-5 py-4">
+                    <div className="font-semibold text-[#8f7843]">
+                      {order.orderNumber || order.id || "—"}
                     </div>
-                  )}
-                </td>
-                <td className="px-5 py-4">
-                  <div className="font-medium text-slate-700">
-                    {order.customerName || "—"}
-                  </div>
-                  {order.customerEmail && (
-                    <div className="text-xs text-slate-500">
-                      {order.customerEmail}
+                    {typeof order.itemsCount === "number" && (
+                      <div className="text-xs text-slate-500">
+                        {order.itemsCount} item{order.itemsCount === 1 ? "" : "s"}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className="font-medium text-slate-700">
+                      {order.customerName || "—"}
                     </div>
-                  )}
-                </td>
-                <td className="px-5 py-4 text-slate-500">
-                  {formatDateLabel(order.placedAt)}
-                </td>
-                <td className="px-5 py-4">
-                  <OrderStatusBadge status={order.status} />
-                </td>
-                <td className="px-5 py-4 text-right font-semibold text-slate-700">
-                  {formatCurrency(
-                    order.pricing?.grandTotal ?? order.grandTotal
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      ) : (
-        <tbody>
-          <tr>
-            <td
-              colSpan={5}
-              className="px-5 py-6 text-center text-sm text-slate-500"
-            >
-              No orders found.
-            </td>
-          </tr>
-        </tbody>
-      )}
-    </table>
+                    {order.customerEmail && (
+                      <div className="text-xs text-slate-500">
+                        {order.customerEmail}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-5 py-4 text-slate-500">
+                    {formatDateLabel(order.placedAt)}
+                  </td>
+                  <td className="px-5 py-4">
+                    <OrderStatusBadge status={order.status} />
+                  </td>
+                  <td className="px-5 py-4 text-right font-semibold text-slate-700">
+                    {formatCurrency(
+                      order.pricing?.grandTotal ?? order.grandTotal
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        ) : (
+          <tbody>
+            <tr>
+              <td
+                colSpan={5}
+                className="px-5 py-6 text-center text-sm text-slate-500"
+              >
+                No orders found.
+              </td>
+            </tr>
+          </tbody>
+        )}
+      </table>
+    </div>
   </div>
 );
 
@@ -238,45 +240,47 @@ const OrderItemsTable = ({ items }) => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-[#e6dccb]">
-      <table className="min-w-full divide-y divide-[#f2eae0]">
-        <thead className="bg-[#f9f1e3] text-left text-xs font-semibold uppercase tracking-wide text-[#8f7843]">
-          <tr>
-            <th className="px-5 py-3">Item</th>
-            <th className="px-5 py-3">Variant</th>
-            <th className="px-5 py-3 text-center">Qty</th>
-            <th className="px-5 py-3 text-right">Unit Price</th>
-            <th className="px-5 py-3 text-right">Subtotal</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-[#f2eae0] text-sm">
-          {items.map((item) => (
-            <tr key={item.id ?? `${item.productId}-${item.variantSku}`}>
-              <td className="px-5 py-4">
-                <div className="font-medium text-slate-700">
-                  {item.title || "—"}
-                </div>
-                {item.variantSku && (
-                  <div className="text-xs text-slate-400">
-                    SKU: {item.variantSku}
-                  </div>
-                )}
-              </td>
-              <td className="px-5 py-4 text-sm text-slate-500">
-                {[item.size, item.color].filter(Boolean).join(" · ") || "—"}
-              </td>
-              <td className="px-5 py-4 text-center text-sm text-slate-600">
-                {item.quantity ?? "—"}
-              </td>
-              <td className="px-5 py-4 text-right text-sm text-slate-600">
-                {formatCurrency(item.unitPrice)}
-              </td>
-              <td className="px-5 py-4 text-right font-semibold text-slate-700">
-                {formatCurrency(item.subtotal)}
-              </td>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-[#f2eae0]">
+          <thead className="bg-[#f9f1e3] text-left text-xs font-semibold uppercase tracking-wide text-[#8f7843]">
+            <tr>
+              <th className="px-5 py-3">Item</th>
+              <th className="px-5 py-3">Variant</th>
+              <th className="px-5 py-3 text-center">Qty</th>
+              <th className="px-5 py-3 text-right">Unit Price</th>
+              <th className="px-5 py-3 text-right">Subtotal</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-[#f2eae0] text-sm">
+            {items.map((item) => (
+              <tr key={item.id ?? `${item.productId}-${item.variantSku}`}>
+                <td className="px-5 py-4">
+                  <div className="font-medium text-slate-700">
+                    {item.title || "—"}
+                  </div>
+                  {item.variantSku && (
+                    <div className="text-xs text-slate-400">
+                      SKU: {item.variantSku}
+                    </div>
+                  )}
+                </td>
+                <td className="px-5 py-4 text-sm text-slate-500">
+                  {[item.size, item.color].filter(Boolean).join(" · ") || "—"}
+                </td>
+                <td className="px-5 py-4 text-center text-sm text-slate-600">
+                  {item.quantity ?? "—"}
+                </td>
+                <td className="px-5 py-4 text-right text-sm text-slate-600">
+                  {formatCurrency(item.unitPrice)}
+                </td>
+                <td className="px-5 py-4 text-right font-semibold text-slate-700">
+                  {formatCurrency(item.subtotal)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
@@ -408,7 +412,7 @@ const OrderDetailsPanel = ({
   }
 
   return (
-    <div className="flex h-full flex-col gap-5 rounded-2xl border border-[#e6dccb] bg-white p-6 shadow-2xl">
+    <div className="flex max-h-[calc(100vh-300px)] flex-col gap-5 overflow-y-auto rounded-2xl border border-[#e6dccb] bg-white p-6 shadow-2xl">
       <div className="flex flex-col gap-2 border-b border-[#f2eae0] pb-4">
         <div className="flex flex-wrap items-center gap-3">
           <h3 className="text-2xl font-semibold text-slate-900">
@@ -438,7 +442,7 @@ const OrderDetailsPanel = ({
             <div className="font-medium text-slate-800">
               {order.customerName || "—"}
             </div>
-            <div>{order.customerEmail || "No email on file"}</div>
+            <div className="break-words">{order.customerEmail || "No email on file"}</div>
             {order.customerPhone ? (
               <div className="text-sm text-slate-500">
                 Phone: {order.customerPhone}
@@ -450,7 +454,7 @@ const OrderDetailsPanel = ({
           <h4 className="text-sm font-semibold uppercase tracking-wide text-[#8f7843]">
             Shipping Address
           </h4>
-          <pre className="whitespace-pre-wrap text-sm text-slate-700">
+          <pre className="whitespace-pre-wrap break-words text-sm text-slate-700">
             {formatAddress(order.shipping)}
           </pre>
           {order.shipping?.phone && (
@@ -496,7 +500,7 @@ const OrderDetailsPanel = ({
                   </span>
                 </div>
                 {entry.description ? (
-                  <p className="text-xs text-slate-500">{entry.description}</p>
+                  <p className="break-words text-xs text-slate-500">{entry.description}</p>
                 ) : null}
               </div>
             ))
@@ -529,6 +533,7 @@ const OrdersBoard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [statusError, setStatusError] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     let isMounted = true;
@@ -572,6 +577,34 @@ const OrdersBoard = () => {
     () => orders.find((order) => order.id === selectedId) ?? null,
     [orders, selectedId]
   );
+
+  const filteredOrders = useMemo(() => {
+    if (statusFilter === "all") {
+      return orders;
+    }
+    return orders.filter((order) => order.status === statusFilter);
+  }, [orders, statusFilter]);
+
+  const statusCounts = useMemo(() => {
+    const counts = {
+      all: orders.length,
+      processing: 0,
+      delivered: 0,
+      refunded: 0,
+      cancelled: 0,
+      pending: 0,
+      confirmed: 0,
+      shipped: 0,
+    };
+
+    orders.forEach((order) => {
+      if (counts.hasOwnProperty(order.status)) {
+        counts[order.status]++;
+      }
+    });
+
+    return counts;
+  }, [orders]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -657,7 +690,7 @@ const OrdersBoard = () => {
               <Skeleton className="h-4 w-56" />
             ) : (
               <span>
-                Showing {orders.length} of {totalOrders} orders
+                Showing {filteredOrders.length} of {totalOrders} orders
               </span>
             )}
           </div>
@@ -674,20 +707,160 @@ const OrdersBoard = () => {
         </div>
       </header>
 
+      {/* Filter Section */}
+      <div className="rounded-2xl border border-[#e6dccb] bg-white p-5 shadow-lg">
+        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#8f7843]">
+          Filter by Status
+        </h3>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8">
+          <button
+            onClick={() => setStatusFilter("all")}
+            className={`flex flex-col items-center justify-center rounded-xl border-2 px-4 py-3 transition-all duration-200 ${
+              statusFilter === "all"
+                ? "border-[#b8985b] bg-[#fff8ec] shadow-md"
+                : "border-[#e6dccb] bg-white hover:border-[#d4c5a6] hover:bg-[#fefaf3]"
+            }`}
+          >
+            <span className="text-2xl font-bold text-[#8f7843]">
+              {statusCounts.all}
+            </span>
+            <span className="mt-1 text-xs font-semibold text-slate-600">
+              All Orders
+            </span>
+          </button>
+
+          <button
+            onClick={() => setStatusFilter("pending")}
+            className={`flex flex-col items-center justify-center rounded-xl border-2 px-4 py-3 transition-all duration-200 ${
+              statusFilter === "pending"
+                ? "border-amber-400 bg-amber-50 shadow-md"
+                : "border-[#e6dccb] bg-white hover:border-amber-200 hover:bg-amber-50"
+            }`}
+          >
+            <span className="text-2xl font-bold text-amber-600">
+              {statusCounts.pending}
+            </span>
+            <span className="mt-1 text-xs font-semibold text-slate-600">
+              Pending
+            </span>
+          </button>
+
+          <button
+            onClick={() => setStatusFilter("confirmed")}
+            className={`flex flex-col items-center justify-center rounded-xl border-2 px-4 py-3 transition-all duration-200 ${
+              statusFilter === "confirmed"
+                ? "border-sky-400 bg-sky-50 shadow-md"
+                : "border-[#e6dccb] bg-white hover:border-sky-200 hover:bg-sky-50"
+            }`}
+          >
+            <span className="text-2xl font-bold text-sky-600">
+              {statusCounts.confirmed}
+            </span>
+            <span className="mt-1 text-xs font-semibold text-slate-600">
+              Confirmed
+            </span>
+          </button>
+
+          <button
+            onClick={() => setStatusFilter("processing")}
+            className={`flex flex-col items-center justify-center rounded-xl border-2 px-4 py-3 transition-all duration-200 ${
+              statusFilter === "processing"
+                ? "border-amber-400 bg-amber-50 shadow-md"
+                : "border-[#e6dccb] bg-white hover:border-amber-200 hover:bg-amber-50"
+            }`}
+          >
+            <span className="text-2xl font-bold text-amber-600">
+              {statusCounts.processing}
+            </span>
+            <span className="mt-1 text-xs font-semibold text-slate-600">
+              Processing
+            </span>
+          </button>
+
+          <button
+            onClick={() => setStatusFilter("shipped")}
+            className={`flex flex-col items-center justify-center rounded-xl border-2 px-4 py-3 transition-all duration-200 ${
+              statusFilter === "shipped"
+                ? "border-blue-400 bg-blue-50 shadow-md"
+                : "border-[#e6dccb] bg-white hover:border-blue-200 hover:bg-blue-50"
+            }`}
+          >
+            <span className="text-2xl font-bold text-blue-600">
+              {statusCounts.shipped}
+            </span>
+            <span className="mt-1 text-xs font-semibold text-slate-600">
+              In Transit
+            </span>
+          </button>
+
+          <button
+            onClick={() => setStatusFilter("delivered")}
+            className={`flex flex-col items-center justify-center rounded-xl border-2 px-4 py-3 transition-all duration-200 ${
+              statusFilter === "delivered"
+                ? "border-green-400 bg-green-50 shadow-md"
+                : "border-[#e6dccb] bg-white hover:border-green-200 hover:bg-green-50"
+            }`}
+          >
+            <span className="text-2xl font-bold text-green-600">
+              {statusCounts.delivered}
+            </span>
+            <span className="mt-1 text-xs font-semibold text-slate-600">
+              Delivered
+            </span>
+          </button>
+
+          <button
+            onClick={() => setStatusFilter("cancelled")}
+            className={`flex flex-col items-center justify-center rounded-xl border-2 px-4 py-3 transition-all duration-200 ${
+              statusFilter === "cancelled"
+                ? "border-rose-400 bg-rose-50 shadow-md"
+                : "border-[#e6dccb] bg-white hover:border-rose-200 hover:bg-rose-50"
+            }`}
+          >
+            <span className="text-2xl font-bold text-rose-600">
+              {statusCounts.cancelled}
+            </span>
+            <span className="mt-1 text-xs font-semibold text-slate-600">
+              Cancelled
+            </span>
+          </button>
+
+          <button
+            onClick={() => setStatusFilter("refunded")}
+            className={`flex flex-col items-center justify-center rounded-xl border-2 px-4 py-3 transition-all duration-200 ${
+              statusFilter === "refunded"
+                ? "border-slate-400 bg-slate-50 shadow-md"
+                : "border-[#e6dccb] bg-white hover:border-slate-200 hover:bg-slate-50"
+            }`}
+          >
+            <span className="text-2xl font-bold text-slate-600">
+              {statusCounts.refunded}
+            </span>
+            <span className="mt-1 text-xs font-semibold text-slate-600">
+              Refunded
+            </span>
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_1fr]">
-        <OrdersList
-          orders={orders}
-          loading={loading}
-          error={error}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-        />
-        <OrderDetailsPanel
-          order={selectedOrder}
-          isUpdatingStatus={updatingStatus}
-          statusError={statusError}
-          onStatusUpdate={handleStatusUpdate}
-        />
+        <div className="min-w-0">
+          <OrdersList
+            orders={filteredOrders}
+            loading={loading}
+            error={error}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
+        </div>
+        <div className="min-w-0">
+          <OrderDetailsPanel
+            order={selectedOrder}
+            isUpdatingStatus={updatingStatus}
+            statusError={statusError}
+            onStatusUpdate={handleStatusUpdate}
+          />
+        </div>
       </div>
 
       {loading && !orders.length ? (

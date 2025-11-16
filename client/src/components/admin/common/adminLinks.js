@@ -4,7 +4,6 @@ import {
   FiShoppingBag,
   FiPackage,
   FiUserCheck,
-  FiPieChart,
   FiTag,
 } from "react-icons/fi";
 
@@ -15,7 +14,6 @@ export const adminLinks = [
   { label: "Products", to: "/admin/products", icon: FiPackage },
   { label: "Customers", to: "/admin/customers", icon: FiUserCheck },
   { label: "Coupons", to: "/admin/coupons", icon: FiTag },
-  { label: "Reports", to: "/admin/reports", icon: FiPieChart },
 ];
 
 export default adminLinks;
