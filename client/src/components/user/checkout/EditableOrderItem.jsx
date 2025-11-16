@@ -51,7 +51,7 @@ const EditableOrderItem = ({
           <QuantitySelector
             value={quantity}
             onChange={handleQuantityChange}
-            min={1}
+            min={0}
             max={10}
             variant="pill"
           />
