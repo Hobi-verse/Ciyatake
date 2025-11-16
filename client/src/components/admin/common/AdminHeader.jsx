@@ -136,7 +136,7 @@ const AdminHeader = () => {
           type="button"
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className="hidden items-center rounded-full border border-[#b8985b]/40 px-4 py-2 text-sm font-semibold text-[#8f7843] transition hover:bg-[#f2eae0] disabled:cursor-not-allowed disabled:opacity-70 md:inline-flex"
+          className="inline-flex items-center rounded-full border border-[#b8985b]/40 px-4 py-2 text-sm font-semibold text-[#8f7843] transition hover:bg-[#f2eae0] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isLoggingOut ? "Signing out..." : "Logout"}
         </button>
