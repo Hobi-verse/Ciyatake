@@ -636,6 +636,23 @@ const UserNavbar = ({
 
             {/* Mobile menu toggle button */}
             <div className="flex items-center gap-2 lg:hidden">
+              {isLoggedIn && (
+                <button
+                  type="button"
+                  onClick={performLogout}
+                  disabled={isLoggingOut}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#b8985b] bg-white text-slate-600 transition hover:border-[#a9894f] hover:bg-[#F2EAE0] disabled:cursor-not-allowed disabled:opacity-50"
+                  title={isLoggingOut ? "Logging out..." : "Log out"}
+                  aria-label={isLoggingOut ? "Logging out..." : "Log out"}
+                >
+                  <img
+                    src={logoutIcon}
+                    alt=""
+                    aria-hidden="true"
+                    className="h-5 w-5"
+                  />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen((previous) => !previous)}

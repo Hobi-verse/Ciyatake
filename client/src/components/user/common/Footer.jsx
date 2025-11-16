@@ -1,5 +1,4 @@
 import {
-  ShoppingBag,
   Mail,
   Phone,
   Clock,
@@ -18,8 +17,12 @@ const Footer = () => {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           {/* Brand Section */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2" onClick={()=>navigate("/")}>
-              <ShoppingBag className="w-8 h-8 text-[#8b7355]" />
+            <div className="flex items-center space-x-2 cursor-pointer" onClick={()=>navigate("/")}>
+              <img
+                src="/ciyatakeLogo.png"
+                alt="Ciyatake"
+                className="h-8 w-auto"
+              />
               <h3 className="text-2xl font-semibold text-[#8b7355]">
                 Ciyatake
               </h3>
